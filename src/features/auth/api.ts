@@ -1,0 +1,52 @@
+import { AuthSessionResponse } from "./types";
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "http://localhost:4000";
+
+async function parseJsonResponse<T>(response: Response): Promise<T> {
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    const message =
+      data && typeof data === "object" && "message" in data
+        ? String(data.message)
+        : "Nao foi possivel concluir a requisicao";
+    throw new Error(message);
+  }
+
+  return data as T;
+}
+
+export async function getSession() {
+  const response = await fetch(`${API_BASE_URL}/auth/me`, {
+    credentials: "include",
+  });
+
+  if (response.status === 401) {
+    return null;
+  }
+
+  return parseJsonResponse<AuthSessionResponse>(response);
+}
+
+export async function login(email: string, password: string) {
+  const response = await fetch(`${API_BASE_URL}/auth`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify({ email, password }),
+  });
+
+  return parseJsonResponse<AuthSessionResponse>(response);
+}
+
+export async function logout() {
+  const response = await fetch(`${API_BASE_URL}/auth/logout`, {
+    method: "POST",
+    credentials: "include",
+  });
+
+  return parseJsonResponse<{ success: boolean }>(response);
+}

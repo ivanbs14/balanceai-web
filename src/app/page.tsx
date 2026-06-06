@@ -1,5 +1,5 @@
-import { DashboardPage } from "@/features/dashboard/components/dashboard-page";
+import { AuthenticatedHome } from "@/features/auth/components/authenticated-home";
 
 export default function Home() {
-  return <DashboardPage />;
+  return <AuthenticatedHome />;
 }
