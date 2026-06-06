@@ -5,6 +5,7 @@ import {
   Banknote,
   Eye,
   EyeOff,
+  LogIn,
   Lock,
   Mail,
   ShieldCheck,
@@ -13,12 +14,14 @@ import {
 type LoginFormProps = {
   errorMessage: string | null;
   isSubmitting: boolean;
+  onGoogleLogin: () => void;
   onSubmit: (email: string, password: string) => Promise<void>;
 };
 
 export function LoginForm({
   errorMessage,
   isSubmitting,
+  onGoogleLogin,
   onSubmit,
 }: LoginFormProps) {
   const [email, setEmail] = useState("");
@@ -154,6 +157,16 @@ export function LoginForm({
               className="w-full border-b-4 border-black/10 bg-[#db2777] px-4 py-3.5 text-[20px] font-semibold leading-7 text-white transition hover:bg-primary disabled:cursor-not-allowed disabled:opacity-70"
             >
               {isSubmitting ? "Entrando..." : "Entrar"}
+            </button>
+
+            <button
+              type="button"
+              onClick={onGoogleLogin}
+              disabled={isSubmitting}
+              className="flex w-full items-center justify-center gap-2 border border-[#f3bfd0] bg-white px-4 py-3 text-[13px] font-semibold text-[#5f0f2c] transition hover:border-primary disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              <LogIn size={16} />
+              Entrar com Google
             </button>
           </form>
 

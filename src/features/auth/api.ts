@@ -3,6 +3,10 @@ import { AuthSessionResponse } from "./types";
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "http://localhost:4000";
 
+export function getGoogleLoginUrl() {
+  return `${API_BASE_URL}/auth/google`;
+}
+
 async function parseJsonResponse<T>(response: Response): Promise<T> {
   const data = await response.json().catch(() => null);
 

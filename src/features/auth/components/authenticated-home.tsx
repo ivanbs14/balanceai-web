@@ -2,17 +2,40 @@
 
 import { startTransition, useEffect, useState } from "react";
 import { DashboardPage } from "@/features/dashboard/components/dashboard-page";
-import { getSession, login, logout } from "../api";
+import { getGoogleLoginUrl, getSession, login, logout } from "../api";
 import { AuthUser } from "../types";
 import { LoginForm } from "./login-form";
+
+const AUTH_ERROR_MAP: Record<string, string> = {
+  google_state_invalid: "Nao foi possivel validar o login com Google.",
+  google_login_failed: "Nao foi possivel concluir o login com Google.",
+};
 
 export function AuthenticatedHome() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const authErrorMessage =
+    typeof window === "undefined"
+      ? null
+      : AUTH_ERROR_MAP[
+          new URLSearchParams(window.location.search).get("auth_error") ?? ""
+        ] ?? null;
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const authError = params.get("auth_error");
+
+    if (authError && AUTH_ERROR_MAP[authError]) {
+      params.delete("auth_error");
+      const nextQuery = params.toString();
+      const nextUrl = nextQuery
+        ? `${window.location.pathname}?${nextQuery}`
+        : window.location.pathname;
+      window.history.replaceState({}, "", nextUrl);
+    }
+
     let isMounted = true;
 
     startTransition(() => {
@@ -76,6 +99,10 @@ export function AuthenticatedHome() {
     }
   }
 
+  function handleGoogleLogin() {
+    window.location.assign(getGoogleLoginUrl());
+  }
+
   if (isLoading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[linear-gradient(180deg,#fff7f8_0%,#f6e5ec_100%)] px-6 text-primary">
@@ -89,8 +116,9 @@ export function AuthenticatedHome() {
   if (!user) {
     return (
       <LoginForm
-        errorMessage={errorMessage}
+        errorMessage={errorMessage ?? authErrorMessage}
         isSubmitting={isSubmitting}
+        onGoogleLogin={handleGoogleLogin}
         onSubmit={handleLogin}
       />
     );
@@ -98,18 +126,20 @@ export function AuthenticatedHome() {
 
   return (
     <div className="relative">
-      <div className="absolute top-4 right-4 z-20 flex items-center gap-3">
-        <div className="hidden border border-border bg-surface px-4 py-2 text-sm text-primary sm:block">
-          {user.name}
+      <div className="absolute top-4 left-1/2 z-20 w-full max-w-[1440px] -translate-x-1/2 px-6 lg:px-10">
+        <div className="flex justify-end gap-3">
+          <div className="hidden h-10 items-center border border-border bg-surface px-5 text-sm text-primary sm:inline-flex">
+            {user.name}
+          </div>
+          <button
+            type="button"
+            onClick={handleLogout}
+            disabled={isSubmitting}
+            className="inline-flex h-10 items-center justify-center border border-primary bg-surface px-5 text-sm font-semibold text-primary transition hover:bg-primary hover:text-white disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {isSubmitting ? "Saindo..." : "Sair"}
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={handleLogout}
-          disabled={isSubmitting}
-          className="border border-primary bg-surface px-4 py-2 text-sm font-semibold text-primary transition hover:bg-primary hover:text-white disabled:cursor-not-allowed disabled:opacity-70"
-        >
-          {isSubmitting ? "Saindo..." : "Sair"}
-        </button>
       </div>
       <DashboardPage />
     </div>
