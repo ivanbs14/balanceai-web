@@ -13,6 +13,7 @@ export type FixedCostItem = {
   id: string;
   name: string;
   paymentType: string;
+  category: string;
   dueDay: number;
   status: FixedCostStatus;
   amount: CurrencyAmount;

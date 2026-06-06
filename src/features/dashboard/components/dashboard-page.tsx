@@ -64,6 +64,9 @@ export function DashboardPage() {
   const [fixedCostStatusOverrides, setFixedCostStatusOverrides] = useState<
     Partial<Record<MonthId, Record<string, FixedCostStatus>>>
   >({});
+  const [monthlyExpenseStatusOverrides, setMonthlyExpenseStatusOverrides] = useState<
+    Partial<Record<MonthId, Record<string, FixedCostStatus>>>
+  >({});
   const activeMonth = getActiveMonth(activeMonthId);
 
   const monthOptions = dashboardMonths.map((month) => ({
@@ -80,12 +83,26 @@ export function DashboardPage() {
     };
   });
 
+  const monthlyExpenses = activeMonth.fixedCosts.map((item) => {
+    const monthOverrides = monthlyExpenseStatusOverrides[activeMonth.id] ?? {};
+
+    return {
+      ...item,
+      status: monthOverrides[item.id] ?? item.status,
+    };
+  });
+
   const fixedCostsColumns = [
     { key: "name", header: "Nome", render: (row: (typeof fixedCosts)[number]) => row.name },
     {
       key: "type",
       header: "Tipo",
       render: (row: (typeof fixedCosts)[number]) => row.paymentType,
+    },
+    {
+      key: "category",
+      header: "Categoria",
+      render: (row: (typeof fixedCosts)[number]) => row.category,
     },
     {
       key: "paid",
@@ -114,6 +131,21 @@ export function DashboardPage() {
       header: "Valor",
       align: "right" as const,
       render: (row: (typeof fixedCosts)[number]) => formatCurrency(row.amount),
+    },
+  ];
+
+  const monthlyExpensesColumns = [
+    { key: "name", header: "Nome", render: (row: (typeof monthlyExpenses)[number]) => row.name },
+    {
+      key: "type",
+      header: "Tipo",
+      render: (row: (typeof monthlyExpenses)[number]) => row.paymentType,
+    },
+    {
+      key: "amount",
+      header: "Valor",
+      align: "right" as const,
+      render: (row: (typeof monthlyExpenses)[number]) => formatCurrency(row.amount),
     },
   ];
 
@@ -198,18 +230,17 @@ export function DashboardPage() {
       secondaryTables={
         <div className="grid gap-6 xl:grid-cols-2">
           <LedgerTableCard<(typeof fixedCosts)[number]>
-            title="Custos Fixos"
-            total={formatCurrency(sumAmounts(fixedCosts))}
-            rows={fixedCosts}
-            columns={fixedCostsColumns}
+            title="Gastos do Mês"
+            total={formatCurrency(sumAmounts(monthlyExpenses))}
+            rows={monthlyExpenses}
+            columns={monthlyExpensesColumns}
             addLabel="Adicionar Item"
           />
           <LedgerTableCard<CreditCardItem>
-            title="Cartao de Credito"
+            title="Cartão de Crédito"
             total={formatCurrency(sumAmounts(activeMonth.creditCard))}
             rows={activeMonth.creditCard}
             columns={creditCardColumns}
-            addLabel="Adicionar Item"
           />
         </div>
       }

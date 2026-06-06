@@ -12,7 +12,7 @@ type LedgerTableCardProps<T> = {
   total: string;
   rows: T[];
   columns: Array<LedgerColumn<T>>;
-  addLabel: string;
+  addLabel?: string;
 };
 
 export function LedgerTableCard<T>({
@@ -84,13 +84,15 @@ export function LedgerTableCard<T>({
         ))}
       </div>
 
-      <button
-        type="button"
-        className="mt-4 flex w-full items-center justify-center gap-3 border border-dashed border-border px-4 py-4 text-lg text-muted sm:text-xl"
-      >
-        <span className="text-2xl leading-none sm:text-3xl">+</span>
-        <span>{addLabel}</span>
-      </button>
+      {addLabel ? (
+        <button
+          type="button"
+          className="mt-4 flex w-full items-center justify-center gap-3 border border-dashed border-border px-4 py-4 text-lg text-muted sm:text-xl"
+        >
+          <span className="text-2xl leading-none sm:text-3xl">+</span>
+          <span>{addLabel}</span>
+        </button>
+      ) : null}
     </article>
   );
 }
