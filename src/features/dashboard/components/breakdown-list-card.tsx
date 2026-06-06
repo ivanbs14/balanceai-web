@@ -38,7 +38,7 @@ export function BreakdownListCard({
       <div className="flex items-center justify-between gap-4">
         <h2
           className={[
-            "text-[1.35rem] font-semibold tracking-tight sm:text-[1.45rem]",
+            "text-[1.15rem] font-semibold tracking-tight sm:text-[1.25rem]",
             styles.title,
           ].join(" ")}
         >
@@ -46,7 +46,7 @@ export function BreakdownListCard({
         </h2>
         <span
           className={[
-            "rounded-full px-3 py-1 font-mono text-[0.65rem] uppercase tracking-[0.18em]",
+            "rounded-full px-3 py-1 font-mono text-[0.6rem] uppercase tracking-[0.16em]",
             styles.chip,
           ].join(" ")}
         >
@@ -58,7 +58,7 @@ export function BreakdownListCard({
         {rows.map((row) => (
           <div
             key={row.id}
-            className="flex items-center justify-between gap-4 border-b border-border py-3 text-sm sm:text-[0.95rem]"
+            className="flex items-center justify-between gap-4 border-b border-border py-3 text-[0.9rem] sm:text-[0.92rem]"
           >
             <span>{row.label}</span>
             <span className={["font-medium", styles.accent].join(" ")}>
@@ -68,7 +68,7 @@ export function BreakdownListCard({
         ))}
       </div>
 
-      <div className="mt-5 flex items-center justify-between gap-4 text-base font-semibold sm:text-lg">
+      <div className="mt-5 flex items-center justify-between gap-4 text-[0.88rem] font-semibold sm:text-[0.95rem]">
         <span className={["uppercase", styles.accent].join(" ")}>
           {totalLabel}
         </span>

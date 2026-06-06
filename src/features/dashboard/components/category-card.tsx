@@ -17,7 +17,7 @@ export function CategoryCard({ items }: CategoryCardProps) {
 
   return (
     <article className="border border-border bg-surface p-5">
-      <h2 className="text-[1.35rem] font-semibold tracking-tight text-primary sm:text-[1.45rem]">
+      <h2 className="text-[1.15rem] font-semibold tracking-tight text-primary sm:text-[1.25rem]">
         Gastos por Categoria
       </h2>
 
@@ -34,10 +34,10 @@ export function CategoryCard({ items }: CategoryCardProps) {
               aria-pressed={isActive}
               className="block w-full text-left"
             >
-              <div className="flex items-center justify-between gap-4 text-sm sm:text-[0.95rem]">
+              <div className="flex items-center justify-between gap-4 text-[0.9rem] sm:text-[0.92rem]">
                 <span
                   className={[
-                    "uppercase tracking-[0.06em]",
+                    "uppercase tracking-[0.05em]",
                     isActive ? "text-primary" : "",
                   ].join(" ")}
                 >

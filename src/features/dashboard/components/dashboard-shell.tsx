@@ -27,12 +27,12 @@ export function DashboardShell({
   return (
     <main className="min-h-screen">
       <header className="border-b border-border bg-[#fff7f8]/95">
-        <div className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-6 px-6 py-5 lg:px-10">
+        <div className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-4 px-6 py-4 lg:px-10">
           <div className="text-[1.7rem] font-semibold tracking-tight text-primary sm:text-[2rem]">
             Controle Financeiro
           </div>
 
-          <nav className="flex flex-wrap items-center gap-5 text-[1rem] text-foreground sm:text-[1.1rem]">
+          <nav className="flex flex-wrap items-center gap-3 text-[1rem] text-foreground sm:text-[1.1rem]">
             {navItems.map((item, index) => (
               <span
                 key={item}
@@ -47,7 +47,7 @@ export function DashboardShell({
             ))}
           </nav>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <button
               type="button"
               className="rounded-2xl bg-primary px-3.5 py-2 text-xs font-semibold text-white sm:px-4 sm:py-2.5 sm:text-sm"
@@ -69,7 +69,7 @@ export function DashboardShell({
         </div>
       </header>
 
-      <div className="mx-auto max-w-[1440px] px-6 py-8 lg:px-10 lg:py-10">
+      <div className="mx-auto max-w-[1440px] px-6 pt-4 pb-8 lg:px-10 lg:pt-5 lg:pb-10">
         <section className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
           <div>{monthSelector}</div>
           <div className="grid gap-4 sm:grid-cols-2 xl:min-w-[520px]">
