@@ -22,7 +22,7 @@ export function MonthSelector({
             type="button"
             onClick={() => onChange(month.id)}
             className={[
-              "min-w-32 rounded-2xl border px-6 py-3 text-lg font-semibold transition-colors",
+              "min-w-24 rounded-2xl border px-4 py-2 text-sm font-semibold transition-colors sm:text-base",
               isActive
                 ? "border-primary bg-primary text-white"
                 : "border-border bg-surface text-primary hover:border-primary/70",

@@ -10,14 +10,14 @@ type CategoryCardProps = {
 export function CategoryCard({ items }: CategoryCardProps) {
   return (
     <article className="border border-border bg-surface p-5">
-      <h2 className="text-[2rem] font-semibold tracking-tight text-primary">
+      <h2 className="text-[1.35rem] font-semibold tracking-tight text-primary sm:text-[1.45rem]">
         Gastos por Categoria
       </h2>
 
       <div className="mt-6 space-y-5">
         {items.map((item) => (
           <div key={item.id}>
-            <div className="flex items-center justify-between gap-4 text-lg">
+            <div className="flex items-center justify-between gap-4 text-sm sm:text-[0.95rem]">
               <span className="uppercase tracking-[0.06em]">{item.label}</span>
               <span>{item.percentage}%</span>
             </div>

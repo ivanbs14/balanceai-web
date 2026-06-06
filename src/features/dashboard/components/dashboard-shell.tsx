@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Bell, CalendarDays, CircleUserRound } from "lucide-react";
 
 type DashboardShellProps = {
   monthSelector: ReactNode;
@@ -27,11 +28,11 @@ export function DashboardShell({
     <main className="min-h-screen">
       <header className="border-b border-border bg-[#fff7f8]/95">
         <div className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-6 px-6 py-5 lg:px-10">
-          <div className="text-5xl font-semibold tracking-tight text-primary">
+          <div className="text-[1.7rem] font-semibold tracking-tight text-primary sm:text-[2rem]">
             Controle Financeiro
           </div>
 
-          <nav className="flex flex-wrap items-center gap-7 text-[1.85rem] text-foreground">
+          <nav className="flex flex-wrap items-center gap-5 text-[1rem] text-foreground sm:text-[1.1rem]">
             {navItems.map((item, index) => (
               <span
                 key={item}
@@ -49,19 +50,19 @@ export function DashboardShell({
           <div className="flex items-center gap-4">
             <button
               type="button"
-              className="rounded-2xl bg-primary px-6 py-4 text-lg font-semibold text-white"
+              className="rounded-2xl bg-primary px-3.5 py-2 text-xs font-semibold text-white sm:px-4 sm:py-2.5 sm:text-sm"
             >
               + Novo Lancamento
             </button>
-            <div className="hidden items-center gap-3 text-xs font-mono uppercase tracking-[0.18em] text-primary lg:flex">
-              <span className="rounded-full border border-border px-3 py-2">
-                Cal
+            <div className="hidden items-center gap-2 text-primary lg:flex">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface-soft">
+                <CalendarDays className="h-4 w-4" strokeWidth={1.8} />
               </span>
-              <span className="rounded-full border border-border px-3 py-2">
-                Not
+              <span className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface-soft">
+                <Bell className="h-4 w-4" strokeWidth={1.8} />
               </span>
-              <span className="rounded-full border border-border px-3 py-2">
-                Usr
+              <span className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface-soft">
+                <CircleUserRound className="h-4 w-4" strokeWidth={1.8} />
               </span>
             </div>
           </div>
