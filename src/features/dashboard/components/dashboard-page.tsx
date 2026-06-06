@@ -6,14 +6,15 @@ import type {
   BreakdownItem,
   CreditCardItem,
   DashboardMonthData,
-  FixedCostItem,
+  FixedCostStatus,
+  MonthId,
 } from "../types";
 import { BreakdownListCard } from "./breakdown-list-card";
 import { CategoryCard } from "./category-card";
 import { DashboardShell } from "./dashboard-shell";
 import { LedgerTableCard } from "./ledger-table-card";
+import { MonthlySummary } from "./monthly-summary";
 import { MonthSelector } from "./month-selector";
-import { SummaryCard } from "./summary-card";
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("pt-BR", {
@@ -54,8 +55,15 @@ function toBreakdownRows(items: BreakdownItem[]) {
   }));
 }
 
+function toggleFixedCostStatus(status: FixedCostStatus): FixedCostStatus {
+  return status === "paid" ? "pending" : "paid";
+}
+
 export function DashboardPage() {
   const [activeMonthId, setActiveMonthId] = useState(defaultDashboardMonthId);
+  const [fixedCostStatusOverrides, setFixedCostStatusOverrides] = useState<
+    Partial<Record<MonthId, Record<string, FixedCostStatus>>>
+  >({});
   const activeMonth = getActiveMonth(activeMonthId);
 
   const monthOptions = dashboardMonths.map((month) => ({
@@ -63,43 +71,83 @@ export function DashboardPage() {
     label: month.label,
   }));
 
+  const fixedCosts = activeMonth.fixedCosts.map((item) => {
+    const monthOverrides = fixedCostStatusOverrides[activeMonth.id] ?? {};
+
+    return {
+      ...item,
+      status: monthOverrides[item.id] ?? item.status,
+    };
+  });
+
   const fixedCostsColumns = [
-    { key: "name", header: "Nome", render: (row: FixedCostItem) => row.name },
+    { key: "name", header: "Nome", render: (row: (typeof fixedCosts)[number]) => row.name },
     {
       key: "type",
       header: "Tipo",
-      render: (row: FixedCostItem) => row.paymentType,
+      render: (row: (typeof fixedCosts)[number]) => row.paymentType,
     },
     {
       key: "paid",
       header: "Pago?",
       align: "center" as const,
-      render: (row: FixedCostItem) => (
-        <span className={row.paid ? "text-primary" : "text-muted"}>
-          {row.paid ? "■" : "□"}
-        </span>
-      ),
+      render: (row: (typeof fixedCosts)[number]) => {
+        const isPaid = row.status === "paid";
+
+        return (
+          <button
+            type="button"
+            onClick={() => handleToggleFixedCost(row.id)}
+            className="inline-flex items-center justify-center text-base transition-colors hover:text-primary"
+            aria-pressed={isPaid}
+            aria-label={isPaid ? "Marcar como pendente" : "Marcar como pago"}
+          >
+            <span className={isPaid ? "text-primary" : "text-muted"}>
+              {isPaid ? "■" : "□"}
+            </span>
+          </button>
+        );
+      },
     },
     {
       key: "amount",
       header: "Valor",
       align: "right" as const,
-      render: (row: FixedCostItem) => formatCurrency(row.amount),
+      render: (row: (typeof fixedCosts)[number]) => formatCurrency(row.amount),
     },
   ];
 
   const creditCardColumns = [
-    { key: "name", header: "Nome", render: (row: CreditCardItem) => row.name },
+    {
+      key: "name",
+      header: "Nome",
+      render: (row: CreditCardItem) => row.description,
+    },
     {
       key: "type",
       header: "Tipo",
-      render: (row: CreditCardItem) => row.paymentType,
+      render: (row: CreditCardItem) => row.cardName,
     },
     {
       key: "installment",
       header: "Parc.",
       align: "center" as const,
-      render: (row: CreditCardItem) => row.installmentLabel,
+      render: (row: CreditCardItem) => {
+        const isInstallmentPurchase = row.installmentTotal > 1;
+
+        return (
+          <span
+            className={[
+              "inline-flex rounded-full px-3 py-1 font-mono text-[0.65rem] uppercase tracking-[0.12em]",
+              isInstallmentPurchase
+                ? "bg-primary-soft text-primary"
+                : "bg-surface-soft text-muted",
+            ].join(" ")}
+          >
+            {row.installmentCurrent}/{row.installmentTotal}
+          </span>
+        );
+      },
     },
     {
       key: "amount",
@@ -108,6 +156,25 @@ export function DashboardPage() {
       render: (row: CreditCardItem) => formatCurrency(row.amount),
     },
   ];
+
+  function handleToggleFixedCost(itemId: string) {
+    setFixedCostStatusOverrides((current) => {
+      const monthOverrides = current[activeMonth.id] ?? {};
+      const baseItem = activeMonth.fixedCosts.find((item) => item.id === itemId);
+
+      if (!baseItem) {
+        return current;
+      }
+
+      return {
+        ...current,
+        [activeMonth.id]: {
+          ...monthOverrides,
+          [itemId]: toggleFixedCostStatus(monthOverrides[itemId] ?? baseItem.status),
+        },
+      };
+    });
+  }
 
   return (
     <DashboardShell
@@ -118,34 +185,22 @@ export function DashboardPage() {
           onChange={setActiveMonthId}
         />
       }
-      summaryCards={
-        <>
-          <SummaryCard
-            label="Total de Gastos"
-            value={formatCurrency(activeMonth.summary.totalExpenses)}
-          />
-          <SummaryCard
-            label="Saldo"
-            value={formatCurrency(activeMonth.summary.balance)}
-            tone={activeMonth.summary.balance < 0 ? "negative" : "default"}
-          />
-        </>
-      }
+      summaryCards={<MonthlySummary summary={activeMonth.summary} />}
       primaryTable={
-        <LedgerTableCard<FixedCostItem>
+        <LedgerTableCard<(typeof fixedCosts)[number]>
           title="Custos Fixos"
-          total={formatCurrency(sumAmounts(activeMonth.fixedCosts))}
-          rows={activeMonth.fixedCosts}
+          total={formatCurrency(sumAmounts(fixedCosts))}
+          rows={fixedCosts}
           columns={fixedCostsColumns}
           addLabel="Adicionar Item"
         />
       }
       secondaryTables={
         <div className="grid gap-6 xl:grid-cols-2">
-          <LedgerTableCard<FixedCostItem>
+          <LedgerTableCard<(typeof fixedCosts)[number]>
             title="Custos Fixos"
-            total={formatCurrency(sumAmounts(activeMonth.fixedCosts))}
-            rows={activeMonth.fixedCosts}
+            total={formatCurrency(sumAmounts(fixedCosts))}
+            rows={fixedCosts}
             columns={fixedCostsColumns}
             addLabel="Adicionar Item"
           />
@@ -165,18 +220,21 @@ export function DashboardPage() {
             rows={toBreakdownRows(activeMonth.income)}
             totalLabel="Total"
             totalValue={formatCurrency(sumAmounts(activeMonth.income))}
+            tone="income"
           />
           <BreakdownListCard
             title="Saidas"
             rows={toBreakdownRows(activeMonth.expenses)}
             totalLabel="Total"
             totalValue={formatCurrency(sumAmounts(activeMonth.expenses))}
+            tone="expense"
           />
           <BreakdownListCard
             title="Investimentos"
             rows={toBreakdownRows(activeMonth.investments)}
             totalLabel="Total Aplicado"
             totalValue={formatCurrency(sumAmounts(activeMonth.investments))}
+            tone="investment"
           />
           <CategoryCard items={activeMonth.categories} />
         </>
