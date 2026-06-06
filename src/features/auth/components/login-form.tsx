@@ -1,6 +1,14 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import {
+  Banknote,
+  Eye,
+  EyeOff,
+  Lock,
+  Mail,
+  ShieldCheck,
+} from "lucide-react";
 
 type LoginFormProps = {
   errorMessage: string | null;
@@ -15,6 +23,7 @@ export function LoginForm({
 }: LoginFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -22,54 +31,116 @@ export function LoginForm({
   }
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,#fff7f8_0%,#f6e5ec_100%)] px-6 py-10 text-foreground">
-      <div className="mx-auto grid max-w-5xl gap-10 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
-        <section className="space-y-6">
-          <p className="font-mono text-xs uppercase tracking-[0.24em] text-primary">
-            Balance
-          </p>
-          <h1 className="max-w-xl text-4xl font-semibold tracking-tight text-primary sm:text-5xl">
-            Entre para continuar o controle financeiro do seu mes.
-          </h1>
-          <p className="max-w-lg text-base leading-7 text-muted sm:text-lg">
-            A sessao web agora usa cookie seguro emitido pelo backend. Faca login
-            para abrir sua dashboard.
-          </p>
-        </section>
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#fff8f7] px-4 py-8 text-foreground sm:px-6">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-60"
+        style={{
+          backgroundImage: "radial-gradient(#f3bfd0 0.8px, transparent 0.8px)",
+          backgroundSize: "24px 24px",
+        }}
+      />
 
-        <section className="border border-border bg-surface p-6 shadow-[0_24px_80px_rgba(112,31,72,0.08)] sm:p-8">
-          <form className="space-y-5" onSubmit={handleSubmit}>
+      <div
+        aria-hidden
+        className="pointer-events-none absolute left-6 top-6 hidden h-40 w-40 rounded-sm border border-[#f0d2db] bg-[linear-gradient(160deg,#fbe8ef_0%,#f7dbe6_100%)] opacity-80 lg:block"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute bottom-6 right-6 hidden h-44 w-44 border border-[#f0d2db] bg-[linear-gradient(180deg,#f4d6e0_0%,#f9ebf0_100%)] lg:block"
+      >
+        <div className="absolute bottom-8 left-1/2 h-40 w-28 -translate-x-1/2 rounded-md border border-[#edd3dc] bg-[#f8e8ee]" />
+      </div>
+
+      <div className="relative z-10 w-full max-w-110">
+        <header className="mb-10 text-center">
+          <div className="mb-5 inline-flex h-20 w-20 items-center justify-center rounded-2xl bg-[#db2777] text-white">
+            <Banknote size={34} strokeWidth={2.2} />
+          </div>
+          <h1 className="text-[40px] font-bold leading-12 tracking-[-0.02em] text-primary">
+            Petal Ledger
+          </h1>
+          <p className="mt-2 text-sm leading-5 text-foreground">
+            Sua vida financeira como um ritual de cuidado.
+          </p>
+        </header>
+
+        <section className="rounded-md border border-[#f3bfd0] bg-[#fffdfd]/95 p-6 sm:p-10">
+          <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-primary" htmlFor="email">
+              <label
+                className="block font-mono text-xs uppercase tracking-[0.2em] text-primary"
+                htmlFor="email"
+              >
                 E-mail
               </label>
-              <input
-                id="email"
-                type="email"
-                autoComplete="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                className="w-full border border-border bg-white px-4 py-3 outline-none transition focus:border-primary"
-                placeholder="voce@exemplo.com"
-                required
-              />
+              <div className="relative border border-[#f3bfd0] bg-white transition focus-within:border-primary">
+                <Mail
+                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#8d6f77]"
+                  size={18}
+                />
+                <input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  className="w-full border-none bg-transparent py-3 pl-12 pr-4 text-[13px] font-medium leading-4.5 text-foreground outline-none placeholder:text-[#d8b5c2]"
+                  placeholder="seu@email.com"
+                  required
+                />
+              </div>
             </div>
 
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-primary" htmlFor="password">
-                Senha
-              </label>
-              <input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                className="w-full border border-border bg-white px-4 py-3 outline-none transition focus:border-primary"
-                placeholder="Sua senha"
-                required
-              />
+              <div className="flex items-center justify-between gap-4">
+                <label
+                  className="block font-mono text-xs uppercase tracking-[0.2em] text-primary"
+                  htmlFor="password"
+                >
+                  Senha
+                </label>
+                <button
+                  type="button"
+                  className="font-mono text-xs tracking-wider text-[#6f3157] transition hover:text-primary"
+                >
+                  Esqueci minha senha
+                </button>
+              </div>
+
+              <div className="relative border border-[#f3bfd0] bg-white transition focus-within:border-primary">
+                <Lock
+                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#8d6f77]"
+                  size={18}
+                />
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  className="w-full border-none bg-transparent py-3 pl-12 pr-14 text-[13px] font-medium leading-4.5 text-foreground outline-none placeholder:text-[#d8b5c2]"
+                  placeholder="••••••••"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((current) => !current)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8d6f77] transition hover:text-primary"
+                  aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
+
+            <label className="flex items-center gap-3 text-[13px] text-foreground">
+              <input
+                type="checkbox"
+                className="h-5 w-5 rounded-xs border border-[#e1bec6] text-primary focus:ring-primary"
+              />
+              <span>Lembrar deste dispositivo</span>
+            </label>
 
             {errorMessage ? (
               <p className="border border-[#d5a4b8] bg-[#fff2f6] px-4 py-3 text-sm text-primary">
@@ -80,12 +151,37 @@ export function LoginForm({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-primary px-4 py-3 text-sm font-semibold text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-70"
+              className="w-full border-b-4 border-black/10 bg-[#db2777] px-4 py-3.5 text-[20px] font-semibold leading-7 text-white transition hover:bg-primary disabled:cursor-not-allowed disabled:opacity-70"
             >
               {isSubmitting ? "Entrando..." : "Entrar"}
             </button>
           </form>
+
+          <div className="my-10 flex items-center">
+            <div className="h-px flex-1 bg-[#f3bfd0]" />
+            <span className="px-4 font-mono text-xs uppercase tracking-[0.2em] text-[#d3a7b6]">
+              OU
+            </span>
+            <div className="h-px flex-1 bg-[#f3bfd0]" />
+          </div>
+
+          <footer className="text-center text-foreground">
+            <p className="text-sm leading-5">
+              Ainda nao tem uma conta?{" "}
+              <button
+                type="button"
+                className="font-bold text-primary transition hover:text-primary-strong"
+              >
+                Criar conta
+              </button>
+            </p>
+          </footer>
         </section>
+
+        <p className="mt-8 flex items-center justify-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-[#8d6f77]">
+          <ShieldCheck size={16} />
+          Ambiente seguro e criptografado
+        </p>
       </div>
     </main>
   );
