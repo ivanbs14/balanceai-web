@@ -13,6 +13,8 @@ type LedgerTableCardProps<T> = {
   rows: T[];
   columns: Array<LedgerColumn<T>>;
   addLabel?: string;
+  hideHeader?: boolean;
+  embedded?: boolean;
 };
 
 export function LedgerTableCard<T>({
@@ -21,19 +23,28 @@ export function LedgerTableCard<T>({
   rows,
   columns,
   addLabel,
+  hideHeader = false,
+  embedded = false,
 }: LedgerTableCardProps<T>) {
   return (
-    <article className="border border-border bg-surface p-5">
-      <div className="flex items-start justify-between gap-4">
-        <h2 className="text-[1.35rem] font-semibold tracking-tight text-primary sm:text-[1.45rem]">
-          {title}
-        </h2>
-        <p className="pt-2 text-[1.3rem] font-semibold text-foreground sm:text-[1.45rem]">
-          {total}
-        </p>
-      </div>
+    <article className={embedded ? "" : "border border-border bg-surface p-5"}>
+      {!hideHeader ? (
+        <div className="flex items-start justify-between gap-4">
+          <h2 className="text-[1.35rem] font-semibold tracking-tight text-primary sm:text-[1.45rem]">
+            {title}
+          </h2>
+          <p className="pt-2 text-[1.3rem] font-semibold text-foreground sm:text-[1.45rem]">
+            {total}
+          </p>
+        </div>
+      ) : null}
 
-      <div className="mt-5 overflow-hidden border border-border">
+      <div
+        className={[
+          "overflow-hidden border border-border",
+          hideHeader ? "mt-0" : "mt-5",
+        ].join(" ")}
+      >
         <div
           className="grid bg-surface-soft"
           style={{

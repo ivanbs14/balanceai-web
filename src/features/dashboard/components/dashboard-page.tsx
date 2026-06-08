@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   getDashboardApiPayload,
-  updateFixedCostMonthlyStatus,
 } from "../api";
 import {
   createEmptyDashboardViewModel,
@@ -13,11 +12,11 @@ import type {
   BreakdownItem,
   CreditCardItem,
   DashboardViewModel,
-  FixedCostItem,
   MonthlyExpenseItem,
   MonthId,
 } from "../types";
 import { BreakdownListCard } from "./breakdown-list-card";
+import { AccordionCard } from "./accordion-card";
 import { CategoryCard } from "./category-card";
 import { DashboardShell } from "./dashboard-shell";
 import { LedgerTableCard } from "./ledger-table-card";
@@ -96,7 +95,6 @@ export function DashboardPage({ userId }: DashboardPageProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
-  const [updatingFixedCostIds, setUpdatingFixedCostIds] = useState<string[]>([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -146,42 +144,8 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     setActiveMonthId(monthId);
   }
 
-  async function handleFixedCostStatusToggle(item: FixedCostItem) {
-    if (updatingFixedCostIds.includes(item.id)) {
-      return;
-    }
-
-    const nextStatus = item.status === "paid" ? "PENDING" : "PAID";
-
-    setUpdatingFixedCostIds((current) => [...current, item.id]);
-    setErrorMessage(null);
-
-    try {
-      await updateFixedCostMonthlyStatus({
-        fixedCostId: item.id,
-        monthId: activeMonthId,
-        status: nextStatus,
-      });
-
-      setIsLoading(true);
-      setReloadToken((current) => current + 1);
-    } catch (error) {
-      setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Nao foi possivel atualizar o status do custo fixo.",
-      );
-    } finally {
-      setUpdatingFixedCostIds((current) =>
-        current.filter((fixedCostId) => fixedCostId !== item.id),
-      );
-    }
-  }
-
-  const fixedCosts = dashboardData.fixedCosts;
   const monthlyExpenses = dashboardData.monthlyExpenses;
   const hasDashboardData =
-    fixedCosts.length > 0 ||
     monthlyExpenses.length > 0 ||
     dashboardData.creditCard.length > 0 ||
     dashboardData.income.length > 0 ||
@@ -190,54 +154,6 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     dashboardData.categories.length > 0 ||
     dashboardData.summary.totalExpenses !== 0 ||
     dashboardData.summary.balance !== 0;
-
-  const fixedCostsColumns = [
-    { key: "name", header: "Nome", render: (row: FixedCostItem) => row.name },
-    {
-      key: "type",
-      header: "Tipo",
-      render: (row: FixedCostItem) => row.paymentType,
-    },
-    {
-      key: "category",
-      header: "Categoria",
-      render: (row: FixedCostItem) => row.category,
-    },
-    {
-      key: "paid",
-      header: "Pago?",
-      align: "center" as const,
-      render: (row: FixedCostItem) => {
-        const isPaid = row.status === "paid";
-        const isUpdating = updatingFixedCostIds.includes(row.id);
-        const actionLabel = isPaid ? "Marcar como pendente" : "Marcar como pago";
-
-        return (
-          <button
-            type="button"
-            onClick={() => {
-              void handleFixedCostStatusToggle(row);
-            }}
-            disabled={isUpdating}
-            className="inline-flex items-center justify-center text-base text-muted transition hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
-            aria-pressed={isPaid}
-            aria-label={actionLabel}
-            title={actionLabel}
-          >
-            <span className={isPaid ? "text-primary" : "text-muted"}>
-              {isPaid ? "■" : "□"}
-            </span>
-          </button>
-        );
-      },
-    },
-    {
-      key: "amount",
-      header: "Valor",
-      align: "right" as const,
-      render: (row: FixedCostItem) => formatCurrency(row.amount),
-    },
-  ];
 
   const monthlyExpensesColumns = [
     { key: "name", header: "Nome", render: (row: MonthlyExpenseItem) => row.name },
@@ -310,15 +226,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         />
       }
       summaryCards={<MonthlySummary summary={dashboardData.summary} />}
-      primaryTable={
-        <LedgerTableCard<FixedCostItem>
-          title="Custos Fixos"
-          total={formatCurrency(sumAmounts(fixedCosts))}
-          rows={fixedCosts}
-          columns={fixedCostsColumns}
-          addLabel="Adicionar Item"
-        />
-      }
+      primaryTable={null}
       secondaryTables={
         <>
           {isLoading ? (
@@ -343,20 +251,35 @@ export function DashboardPage({ userId }: DashboardPageProps) {
               Nenhum dado encontrado para {formatMonthLabel(activeMonthId)}.
             </div>
           ) : null}
-          <div className="grid gap-6 xl:grid-cols-2">
-            <LedgerTableCard<MonthlyExpenseItem>
+          <div className="flex flex-col gap-6">
+            <AccordionCard
               title="Gastos do Mês"
               total={formatCurrency(sumAmounts(monthlyExpenses))}
-              rows={monthlyExpenses}
-              columns={monthlyExpensesColumns}
-              addLabel="Adicionar Item"
-            />
-            <LedgerTableCard<CreditCardItem>
+              showPlusBeforeTotal
+              defaultOpen
+            >
+              <LedgerTableCard<MonthlyExpenseItem>
+                title="Gastos do Mês"
+                total={formatCurrency(sumAmounts(monthlyExpenses))}
+                rows={monthlyExpenses}
+                columns={monthlyExpensesColumns}
+                hideHeader
+                embedded
+              />
+            </AccordionCard>
+            <AccordionCard
               title="Cartão de Crédito"
               total={formatCurrency(sumAmounts(dashboardData.creditCard))}
-              rows={dashboardData.creditCard}
-              columns={creditCardColumns}
-            />
+            >
+              <LedgerTableCard<CreditCardItem>
+                title="Cartão de Crédito"
+                total={formatCurrency(sumAmounts(dashboardData.creditCard))}
+                rows={dashboardData.creditCard}
+                columns={creditCardColumns}
+                hideHeader
+                embedded
+              />
+            </AccordionCard>
           </div>
         </>
       }
