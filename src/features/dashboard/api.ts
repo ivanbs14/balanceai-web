@@ -5,6 +5,7 @@ import type {
   ApiFixedCostsResponse,
   ApiSummaryResponse,
   ApiTransaction,
+  CreateCardPayload,
 } from "./api-types";
 
 const API_BASE_URL =
@@ -91,6 +92,19 @@ export async function getCardsByUserId(userId: string): Promise<ApiCardsResponse
   return fetchDashboardResource<ApiCardsResponse>(
     `/cards/user/${encodeURIComponent(userId)}`,
   );
+}
+
+export async function createCard(payload: CreateCardPayload) {
+  const response = await fetch(`${API_BASE_URL}/cards`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  return parseJsonResponse(response);
 }
 
 export async function updateFixedCostMonthlyStatus(params: {

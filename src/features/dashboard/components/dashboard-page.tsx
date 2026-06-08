@@ -20,6 +20,7 @@ import type {
 } from "../types";
 import { BreakdownListCard } from "./breakdown-list-card";
 import { AccordionCard } from "./accordion-card";
+import { AddCardModal } from "./add-card-modal";
 import { AddIncomeModal } from "./add-income-modal";
 import { AddInvestmentModal } from "./add-investment-modal";
 import { AddMonthlyExpenseModal } from "./add-monthly-expense-modal";
@@ -154,6 +155,8 @@ export function DashboardPage({ userId }: DashboardPageProps) {
   const [deletingTransactionIds, setDeletingTransactionIds] = useState<string[]>([]);
   const [pendingDeleteTransaction, setPendingDeleteTransaction] =
     useState<PendingDeleteTransaction | null>(null);
+  const [cardSuccessMessage, setCardSuccessMessage] = useState<string | null>(null);
+  const [isAddCardModalOpen, setIsAddCardModalOpen] = useState(false);
   const [isAddIncomeModalOpen, setIsAddIncomeModalOpen] = useState(false);
   const [isAddInvestmentModalOpen, setIsAddInvestmentModalOpen] = useState(false);
   const [isAddMonthlyExpenseModalOpen, setIsAddMonthlyExpenseModalOpen] = useState(false);
@@ -519,165 +522,203 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     ? formatMonthLabel(activeMonthId)
     : `o ano de ${activeYear}`;
 
-  return (
-    <DashboardShell
-      monthSelector={
-        <MonthSelector
-          years={yearOptions}
-          activeYear={activeYear}
-          months={monthOptions}
-          activeMonthId={activeMonthId}
-          onYearChange={handleYearChange}
-          onMonthChange={handleMonthChange}
-        />
-      }
-      summaryCards={<MonthlySummary summary={dashboardData.summary} />}
-      primaryTable={null}
-      secondaryTables={
-        <>
-          {isLoading ? (
-            <div className="mb-4 border border-border bg-surface p-4 text-sm text-muted">
-              Carregando dados de {activePeriodLabel}...
-            </div>
-          ) : null}
-          {errorMessage ? (
-            <div className="mb-4 flex flex-col gap-3 border border-border bg-surface p-4 text-sm text-[#8a486f] sm:flex-row sm:items-center sm:justify-between">
-              <p>Nao foi possivel atualizar o dashboard: {errorMessage}</p>
-              <button
-                type="button"
-                onClick={handleRetryLoad}
-                className="inline-flex items-center justify-center border border-primary px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-primary transition hover:bg-primary hover:text-white"
-              >
-                Tentar novamente
-              </button>
-            </div>
-          ) : null}
-          {!isLoading && !errorMessage && !activeMonthId ? (
-            <div className="mb-4 border border-border bg-surface p-4 text-sm text-muted">
-              Nenhum mes disponivel para o ano de {activeYear}.
-            </div>
-          ) : null}
-          {!isLoading && !errorMessage && activeMonthId && !hasDashboardData ? (
-            <div className="mb-4 border border-border bg-surface p-4 text-sm text-muted">
-              Nenhum dado encontrado para {activePeriodLabel}.
-            </div>
-          ) : null}
-          <div className="flex flex-col gap-6">
-            <DeleteTransactionModal
-              isOpen={pendingDeleteTransaction !== null}
-              isSubmitting={
-                pendingDeleteTransaction
-                  ? deletingTransactionIds.includes(pendingDeleteTransaction.id)
-                  : false
-              }
-              transactionLabel={pendingDeleteTransaction?.label ?? ""}
-              isInstallmentPurchase={
-                pendingDeleteTransaction?.isInstallmentPurchase ?? false
-              }
-              onClose={() => setPendingDeleteTransaction(null)}
-              onConfirm={() => {
-                void handleConfirmDeleteTransaction();
-              }}
-            />
-            <AddMonthlyExpenseModal
-              isOpen={isAddMonthlyExpenseModalOpen}
-              onClose={() => setIsAddMonthlyExpenseModalOpen(false)}
-              userId={userId}
-              fallbackMonthId={activeMonthId}
-              onCreated={() => {
-                setIsLoading(true);
-                setErrorMessage(null);
-                setReloadToken((current) => current + 1);
-              }}
-            />
-            <AccordionCard
-              title="Gastos do Mês"
-              titleBadge={monthlyExpensesCountLabel}
-              total={formatCurrency(sumAmounts(filteredMonthlyExpenses))}
-              showPlusBeforeTotal
-              onPlusClick={() => setIsAddMonthlyExpenseModalOpen(true)}
-              defaultOpen
-            >
-              <LedgerTableCard<MonthlyExpenseItem>
-                title="Gastos do Mês"
-                total={formatCurrency(sumAmounts(filteredMonthlyExpenses))}
-                rows={filteredMonthlyExpenses}
-                columns={monthlyExpensesColumns}
-                hideHeader
-                embedded
-              />
-            </AccordionCard>
-            <AccordionCard
-              title="Cartão de Crédito"
-              titleBadge={creditCardCountLabel}
-              total={formatCurrency(sumAmounts(dashboardData.creditCard))}
-            >
-              <LedgerTableCard<CreditCardItem>
-                title="Cartão de Crédito"
-                total={formatCurrency(sumAmounts(dashboardData.creditCard))}
-                rows={dashboardData.creditCard}
-                columns={creditCardColumns}
-                hideHeader
-                embedded
-              />
-            </AccordionCard>
-          </div>
-        </>
-      }
-      sidebar={
-        <>
-          <AddIncomeModal
-            isOpen={isAddIncomeModalOpen}
-            onClose={() => setIsAddIncomeModalOpen(false)}
-            userId={userId}
-            fallbackMonthId={activeMonthId}
-            onCreated={() => {
-              setIsLoading(true);
-              setErrorMessage(null);
-              setReloadToken((current) => current + 1);
-            }}
-          />
-          <AddInvestmentModal
-            isOpen={isAddInvestmentModalOpen}
-            onClose={() => setIsAddInvestmentModalOpen(false)}
-            userId={userId}
-            fallbackMonthId={activeMonthId}
-            onCreated={() => {
-              setIsLoading(true);
-              setErrorMessage(null);
-              setReloadToken((current) => current + 1);
-            }}
-          />
-          <BreakdownListCard
-            title="Entradas"
-            rows={toBreakdownRows(dashboardData.income)}
-            totalLabel="Total"
-            totalValue={formatCurrency(sumAmounts(dashboardData.income))}
-            tone="income"
-            onAddClick={() => setIsAddIncomeModalOpen(true)}
-            addButtonLabel="Adicionar entrada"
-            addButtonVariant="ghost"
-          />
-          <BreakdownListCard
-            title="Saidas"
-            rows={toBreakdownRows(dashboardData.expenses)}
-            totalLabel="Total"
-            totalValue={formatCurrency(sumAmounts(dashboardData.expenses))}
-            tone="expense"
-          />
-          <BreakdownListCard
-            title="Investimentos"
-            rows={toBreakdownRows(dashboardData.investments)}
-            totalLabel="Total Aplicado"
-            totalValue={formatCurrency(sumAmounts(dashboardData.investments))}
-            tone="investment"
-            onAddClick={() => setIsAddInvestmentModalOpen(true)}
-            addButtonLabel="Adicionar investimento"
-            addButtonVariant="ghost"
-          />
-          <CategoryCard items={dashboardData.categories} />
-        </>
-      }
+  const monthSelector = (
+    <MonthSelector
+      years={yearOptions}
+      activeYear={activeYear}
+      months={monthOptions}
+      activeMonthId={activeMonthId}
+      onYearChange={handleYearChange}
+      onMonthChange={handleMonthChange}
     />
+  );
+
+  const summaryCards = <MonthlySummary summary={dashboardData.summary} />;
+
+  const dashboardFeedback = (
+    <>
+      {isLoading ? (
+        <div className="border border-border bg-surface p-4 text-sm text-muted">
+          Carregando dados de {activePeriodLabel}...
+        </div>
+      ) : null}
+      {errorMessage ? (
+        <div className="flex flex-col gap-3 border border-border bg-surface p-4 text-sm text-[#8a486f] sm:flex-row sm:items-center sm:justify-between">
+          <p>Nao foi possivel atualizar o dashboard: {errorMessage}</p>
+          <button
+            type="button"
+            onClick={handleRetryLoad}
+            className="inline-flex items-center justify-center border border-primary px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-primary transition hover:bg-primary hover:text-white"
+          >
+            Tentar novamente
+          </button>
+        </div>
+      ) : null}
+      {cardSuccessMessage ? (
+        <div className="border border-[#efc2d4] bg-[#fff5f8] p-4 text-sm text-[#8a486f]">
+          {cardSuccessMessage}
+        </div>
+      ) : null}
+      {!isLoading && !errorMessage && !activeMonthId ? (
+        <div className="border border-border bg-surface p-4 text-sm text-muted">
+          Nenhum mes disponivel para o ano de {activeYear}.
+        </div>
+      ) : null}
+      {!isLoading && !errorMessage && activeMonthId && !hasDashboardData ? (
+        <div className="border border-border bg-surface p-4 text-sm text-muted">
+          Nenhum dado encontrado para {activePeriodLabel}.
+        </div>
+      ) : null}
+    </>
+  );
+
+  const monthlyExpensesSection = (
+    <AccordionCard
+      title="Gastos do Mês"
+      titleBadge={monthlyExpensesCountLabel}
+      total={formatCurrency(sumAmounts(filteredMonthlyExpenses))}
+      showPlusBeforeTotal
+      onPlusClick={() => setIsAddMonthlyExpenseModalOpen(true)}
+      defaultOpen
+    >
+      <LedgerTableCard<MonthlyExpenseItem>
+        title="Gastos do Mês"
+        total={formatCurrency(sumAmounts(filteredMonthlyExpenses))}
+        rows={filteredMonthlyExpenses}
+        columns={monthlyExpensesColumns}
+        hideHeader
+        embedded
+      />
+    </AccordionCard>
+  );
+
+  const creditCardSection = (
+    <AccordionCard
+      title="Cartão de Crédito"
+      titleBadge={creditCardCountLabel}
+      titleActionLabel="Cadastrar cartao"
+      onTitleActionClick={() => {
+        setCardSuccessMessage(null);
+        setIsAddCardModalOpen(true);
+      }}
+      total={formatCurrency(sumAmounts(dashboardData.creditCard))}
+    >
+      <LedgerTableCard<CreditCardItem>
+        title="Cartão de Crédito"
+        total={formatCurrency(sumAmounts(dashboardData.creditCard))}
+        rows={dashboardData.creditCard}
+        columns={creditCardColumns}
+        hideHeader
+        embedded
+      />
+    </AccordionCard>
+  );
+
+  const sidebar = (
+    <>
+      <BreakdownListCard
+        title="Entradas"
+        rows={toBreakdownRows(dashboardData.income)}
+        totalLabel="Total"
+        totalValue={formatCurrency(sumAmounts(dashboardData.income))}
+        tone="income"
+        onAddClick={() => setIsAddIncomeModalOpen(true)}
+        addButtonLabel="Adicionar entrada"
+        addButtonVariant="ghost"
+      />
+      <BreakdownListCard
+        title="Saidas"
+        rows={toBreakdownRows(dashboardData.expenses)}
+        totalLabel="Total"
+        totalValue={formatCurrency(sumAmounts(dashboardData.expenses))}
+        tone="expense"
+      />
+      <BreakdownListCard
+        title="Investimentos"
+        rows={toBreakdownRows(dashboardData.investments)}
+        totalLabel="Total Aplicado"
+        totalValue={formatCurrency(sumAmounts(dashboardData.investments))}
+        tone="investment"
+        onAddClick={() => setIsAddInvestmentModalOpen(true)}
+        addButtonLabel="Adicionar investimento"
+        addButtonVariant="ghost"
+      />
+      <CategoryCard items={dashboardData.categories} />
+    </>
+  );
+
+  return (
+    <>
+      <DeleteTransactionModal
+        isOpen={pendingDeleteTransaction !== null}
+        isSubmitting={
+          pendingDeleteTransaction
+            ? deletingTransactionIds.includes(pendingDeleteTransaction.id)
+            : false
+        }
+        transactionLabel={pendingDeleteTransaction?.label ?? ""}
+        isInstallmentPurchase={
+          pendingDeleteTransaction?.isInstallmentPurchase ?? false
+        }
+        onClose={() => setPendingDeleteTransaction(null)}
+        onConfirm={() => {
+          void handleConfirmDeleteTransaction();
+        }}
+      />
+      <AddCardModal
+        isOpen={isAddCardModalOpen}
+        onClose={() => setIsAddCardModalOpen(false)}
+        userId={userId}
+        onCreated={(cardName) => {
+          setCardSuccessMessage(`Cartao ${cardName} cadastrado com sucesso.`);
+        }}
+      />
+      <AddMonthlyExpenseModal
+        isOpen={isAddMonthlyExpenseModalOpen}
+        onClose={() => setIsAddMonthlyExpenseModalOpen(false)}
+        userId={userId}
+        fallbackMonthId={activeMonthId}
+        onCreated={() => {
+          setIsLoading(true);
+          setErrorMessage(null);
+          setReloadToken((current) => current + 1);
+        }}
+      />
+      <AddIncomeModal
+        isOpen={isAddIncomeModalOpen}
+        onClose={() => setIsAddIncomeModalOpen(false)}
+        userId={userId}
+        fallbackMonthId={activeMonthId}
+        onCreated={() => {
+          setIsLoading(true);
+          setErrorMessage(null);
+          setReloadToken((current) => current + 1);
+        }}
+      />
+      <AddInvestmentModal
+        isOpen={isAddInvestmentModalOpen}
+        onClose={() => setIsAddInvestmentModalOpen(false)}
+        userId={userId}
+        fallbackMonthId={activeMonthId}
+        onCreated={() => {
+          setIsLoading(true);
+          setErrorMessage(null);
+          setReloadToken((current) => current + 1);
+        }}
+      />
+      <DashboardShell
+        monthSelector={monthSelector}
+        summaryCards={summaryCards}
+        primaryTable={null}
+        secondaryTables={
+          <div className="flex flex-col gap-6">
+            {dashboardFeedback}
+            {monthlyExpensesSection}
+            {creditCardSection}
+          </div>
+        }
+        sidebar={sidebar}
+      />
+    </>
   );
 }

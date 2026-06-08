@@ -4,21 +4,25 @@ import { Plus } from "lucide-react";
 type AccordionCardProps = {
   title: string;
   titleBadge?: string;
+  titleActionLabel?: string;
   total?: string;
   showPlusBeforeTotal?: boolean;
   defaultOpen?: boolean;
   children: ReactNode;
   onPlusClick?: () => void;
+  onTitleActionClick?: () => void;
 };
 
 export function AccordionCard({
   title,
   titleBadge,
+  titleActionLabel,
   total,
   showPlusBeforeTotal = false,
   defaultOpen = false,
   children,
   onPlusClick,
+  onTitleActionClick,
 }: AccordionCardProps) {
   return (
     <details className="group border border-border bg-surface" open={defaultOpen}>
@@ -38,6 +42,19 @@ export function AccordionCard({
               <span className="inline-flex items-center rounded-full bg-[#ffd8e6] px-3 py-1 font-mono text-[0.68rem] uppercase tracking-[0.24em] text-[#d61b72]">
                 {titleBadge}
               </span>
+            ) : null}
+            {titleActionLabel ? (
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  onTitleActionClick?.();
+                }}
+                className="inline-flex items-center border-b border-transparent pt-0.5 text-sm font-medium text-[#d61b72] transition hover:border-[#d61b72] hover:text-[#b31660]"
+              >
+                {titleActionLabel}
+              </button>
             ) : null}
           </div>
         </div>

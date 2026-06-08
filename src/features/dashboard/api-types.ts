@@ -86,6 +86,14 @@ export type ApiCardsResponse = {
   data?: ApiCardItem[];
 };
 
+export type CreateCardPayload = {
+  name: string;
+  invoiceDate: string;
+  limitBalance: string;
+  invoicePayment: string;
+  userId: string;
+};
+
 export type ApiDashboardMonthlyResponse = {
   summary: ApiSummaryResponse;
   fixedCosts: ApiFixedCostsResponse;
