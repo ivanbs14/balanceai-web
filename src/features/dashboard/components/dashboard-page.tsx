@@ -43,6 +43,18 @@ function getCurrentMonthId() {
   return `${now.getFullYear()}-${month}`;
 }
 
+function getCurrentYear() {
+  return new Date().getFullYear();
+}
+
+function buildMonthId(year: number, monthNumber: number) {
+  return `${year}-${`${monthNumber}`.padStart(2, "0")}`;
+}
+
+function getYearFromMonthId(monthId: MonthId) {
+  return Number.parseInt(monthId.slice(0, 4), 10);
+}
+
 function toBreakdownRows(items: BreakdownItem[]) {
   return items.map((item) => ({
     id: item.id,
@@ -51,7 +63,7 @@ function toBreakdownRows(items: BreakdownItem[]) {
   }));
 }
 
-function formatMonthLabel(monthId: MonthId) {
+function formatMonthLabel(monthId: MonthId, includeYear = true) {
   const [year, month] = monthId.split("-");
   const parsedYear = Number.parseInt(year, 10);
   const parsedMonth = Number.parseInt(month, 10) - 1;
@@ -62,22 +74,44 @@ function formatMonthLabel(monthId: MonthId) {
 
   const label = new Intl.DateTimeFormat("pt-BR", {
     month: "long",
-    year: "numeric",
+    ...(includeYear ? { year: "numeric" } : {}),
   }).format(new Date(parsedYear, parsedMonth, 1));
 
   return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
-function buildRecentMonthOptions(monthCount: number) {
-  const base = new Date();
+function buildYearRange(centerYear: number, yearsBefore = 2, yearsAfter = 3) {
+  return Array.from(
+    { length: yearsBefore + yearsAfter + 1 },
+    (_, index) => centerYear - yearsBefore + index,
+  );
+}
 
-  return Array.from({ length: monthCount }, (_, index) => {
-    const date = new Date(base.getFullYear(), base.getMonth() - index, 1);
-    const monthId = `${date.getFullYear()}-${`${date.getMonth() + 1}`.padStart(2, "0")}`;
+function getMonthNumberFromMonthId(monthId: MonthId) {
+  return Number.parseInt(monthId.slice(5, 7), 10);
+}
+
+function resolveMonthIdForYear(params: {
+  year: number;
+  preferredMonthId: MonthId | null;
+  fallbackMonthId: MonthId;
+}) {
+  const { year, preferredMonthId, fallbackMonthId } = params;
+  const preferredMonthNumber = preferredMonthId
+    ? getMonthNumberFromMonthId(preferredMonthId)
+    : getMonthNumberFromMonthId(fallbackMonthId);
+
+  return buildMonthId(year, preferredMonthNumber);
+}
+
+function buildMonthOptionsForYear(year: number) {
+  return Array.from({ length: 12 }, (_, index) => {
+    const monthId = buildMonthId(year, index + 1);
 
     return {
       id: monthId,
-      label: formatMonthLabel(monthId),
+      label: formatMonthLabel(monthId, false),
+      disabled: false,
     };
   });
 }
@@ -89,12 +123,17 @@ type DashboardPageProps = {
 type FixedFilter = "all" | "fixed" | "not-fixed";
 
 export function DashboardPage({ userId }: DashboardPageProps) {
-  const monthOptions = useMemo(() => buildRecentMonthOptions(8), []);
-  const [activeMonthId, setActiveMonthId] = useState<MonthId>(
-    monthOptions[0]?.id ?? getCurrentMonthId(),
+  const currentMonthId = useMemo(() => getCurrentMonthId(), []);
+  const currentYear = useMemo(() => getCurrentYear(), []);
+  const initialMonthId = useMemo(() => currentMonthId, [currentMonthId]);
+  const yearOptions = useMemo(() => buildYearRange(currentYear), [currentYear]);
+  const [activeYear, setActiveYear] = useState<number>(
+    initialMonthId ? getYearFromMonthId(initialMonthId) : currentYear,
   );
+  const [activeMonthId, setActiveMonthId] = useState<MonthId | null>(initialMonthId);
+  const monthOptions = useMemo(() => buildMonthOptionsForYear(activeYear), [activeYear]);
   const [dashboardData, setDashboardData] = useState<DashboardViewModel>(() =>
-    createEmptyDashboardViewModel(monthOptions[0]?.id ?? getCurrentMonthId()),
+    createEmptyDashboardViewModel(initialMonthId ?? buildMonthId(currentYear, 1)),
   );
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -103,6 +142,10 @@ export function DashboardPage({ userId }: DashboardPageProps) {
   const [updatingTransactionIds, setUpdatingTransactionIds] = useState<string[]>([]);
 
   useEffect(() => {
+    if (!activeMonthId) {
+      return;
+    }
+
     let isMounted = true;
 
     getDashboardApiPayload(userId, activeMonthId)
@@ -147,8 +190,24 @@ export function DashboardPage({ userId }: DashboardPageProps) {
   function handleMonthChange(monthId: MonthId) {
     setIsLoading(true);
     setErrorMessage(null);
+    setActiveYear(getYearFromMonthId(monthId));
     setActiveMonthId(monthId);
     setFixedFilter("all");
+  }
+
+  function handleYearChange(year: number) {
+    const preferredMonthId = year === currentYear ? currentMonthId : activeMonthId;
+    const nextMonthId = resolveMonthIdForYear({
+      year,
+      preferredMonthId,
+      fallbackMonthId: currentMonthId,
+    });
+
+    setActiveYear(year);
+    setActiveMonthId(nextMonthId);
+    setErrorMessage(null);
+    setFixedFilter("all");
+    setIsLoading(true);
   }
 
   const monthlyExpenses = dashboardData.monthlyExpenses;
@@ -298,6 +357,10 @@ export function DashboardPage({ userId }: DashboardPageProps) {
   ];
 
   function handleRetryLoad() {
+    if (!activeMonthId) {
+      return;
+    }
+
     setIsLoading(true);
     setErrorMessage(null);
     setReloadToken((current) => current + 1);
@@ -326,13 +389,20 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     }
   }
 
+  const activePeriodLabel = activeMonthId
+    ? formatMonthLabel(activeMonthId)
+    : `o ano de ${activeYear}`;
+
   return (
     <DashboardShell
       monthSelector={
         <MonthSelector
+          years={yearOptions}
+          activeYear={activeYear}
           months={monthOptions}
           activeMonthId={activeMonthId}
-          onChange={handleMonthChange}
+          onYearChange={handleYearChange}
+          onMonthChange={handleMonthChange}
         />
       }
       summaryCards={<MonthlySummary summary={dashboardData.summary} />}
@@ -341,7 +411,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         <>
           {isLoading ? (
             <div className="mb-4 border border-border bg-surface p-4 text-sm text-muted">
-              Carregando dados de {formatMonthLabel(activeMonthId)}...
+              Carregando dados de {activePeriodLabel}...
             </div>
           ) : null}
           {errorMessage ? (
@@ -356,9 +426,14 @@ export function DashboardPage({ userId }: DashboardPageProps) {
               </button>
             </div>
           ) : null}
-          {!isLoading && !errorMessage && !hasDashboardData ? (
+          {!isLoading && !errorMessage && !activeMonthId ? (
             <div className="mb-4 border border-border bg-surface p-4 text-sm text-muted">
-              Nenhum dado encontrado para {formatMonthLabel(activeMonthId)}.
+              Nenhum mes disponivel para o ano de {activeYear}.
+            </div>
+          ) : null}
+          {!isLoading && !errorMessage && activeMonthId && !hasDashboardData ? (
+            <div className="mb-4 border border-border bg-surface p-4 text-sm text-muted">
+              Nenhum dado encontrado para {activePeriodLabel}.
             </div>
           ) : null}
           <div className="flex flex-col gap-6">
