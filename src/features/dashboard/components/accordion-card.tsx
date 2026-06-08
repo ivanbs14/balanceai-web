@@ -7,6 +7,7 @@ type AccordionCardProps = {
   showPlusBeforeTotal?: boolean;
   defaultOpen?: boolean;
   children: ReactNode;
+  onPlusClick?: () => void;
 };
 
 export function AccordionCard({
@@ -15,6 +16,7 @@ export function AccordionCard({
   showPlusBeforeTotal = false,
   defaultOpen = false,
   children,
+  onPlusClick,
 }: AccordionCardProps) {
   return (
     <details className="group border border-border bg-surface" open={defaultOpen}>
@@ -32,7 +34,18 @@ export function AccordionCard({
         </div>
         <div className="flex h-8 items-center gap-3">
           {showPlusBeforeTotal ? (
-            <Plus size={28} strokeWidth={2.2} className="text-primary hover:text-green-600 hover:bg-green-100" />
+            <button
+              type="button"
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onPlusClick?.();
+              }}
+              aria-label={`Adicionar item em ${title}`}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full text-primary transition hover:bg-green-100 hover:text-green-700"
+            >
+              <Plus size={28} strokeWidth={2.2} />
+            </button>
           ) : null}
           {total ? (
             <p className="flex h-full items-center text-[1.3rem] font-semibold leading-none text-foreground sm:text-[1.45rem]">

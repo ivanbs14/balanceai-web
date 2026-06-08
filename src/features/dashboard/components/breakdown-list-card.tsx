@@ -1,9 +1,14 @@
+import { Plus } from "lucide-react";
+
 type BreakdownListCardProps = {
   title: string;
   rows: Array<{ id: string; label: string; amount: string }>;
   totalLabel: string;
   totalValue: string;
   tone: "income" | "expense" | "investment";
+  onAddClick?: () => void;
+  addButtonLabel?: string;
+  addButtonVariant?: "default" | "ghost";
 };
 
 const toneStyles = {
@@ -30,6 +35,9 @@ export function BreakdownListCard({
   totalLabel,
   totalValue,
   tone,
+  onAddClick,
+  addButtonLabel,
+  addButtonVariant = "default",
 }: BreakdownListCardProps) {
   const styles = toneStyles[tone];
 
@@ -44,14 +52,31 @@ export function BreakdownListCard({
         >
           {title}
         </h2>
-        <span
-          className={[
-            "rounded-full px-3 py-1 font-mono text-[0.6rem] uppercase tracking-[0.16em]",
-            styles.chip,
-          ].join(" ")}
-        >
-          {rows.length} itens
-        </span>
+        <div className="flex items-center gap-2">
+          {onAddClick ? (
+            <button
+              type="button"
+              onClick={onAddClick}
+              aria-label={addButtonLabel ?? `Adicionar item em ${title}`}
+              className={[
+                "inline-flex h-9 w-9 items-center justify-center rounded-full text-primary transition",
+                addButtonVariant === "ghost"
+                  ? "border border-transparent bg-transparent hover:bg-green-100 hover:text-green-700"
+                  : "border border-border bg-surface-soft hover:border-border-strong hover:bg-primary hover:text-white",
+              ].join(" ")}
+            >
+              <Plus size={18} strokeWidth={2.4} />
+            </button>
+          ) : null}
+          <span
+            className={[
+              "rounded-full px-3 py-1 font-mono text-[0.6rem] uppercase tracking-[0.16em]",
+              styles.chip,
+            ].join(" ")}
+          >
+            {rows.length} itens
+          </span>
+        </div>
       </div>
 
       <div className="mt-4 space-y-0">

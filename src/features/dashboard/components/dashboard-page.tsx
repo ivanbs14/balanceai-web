@@ -19,6 +19,9 @@ import type {
 } from "../types";
 import { BreakdownListCard } from "./breakdown-list-card";
 import { AccordionCard } from "./accordion-card";
+import { AddIncomeModal } from "./add-income-modal";
+import { AddInvestmentModal } from "./add-investment-modal";
+import { AddMonthlyExpenseModal } from "./add-monthly-expense-modal";
 import { CategoryCard } from "./category-card";
 import { DashboardShell } from "./dashboard-shell";
 import { LedgerTableCard } from "./ledger-table-card";
@@ -140,6 +143,9 @@ export function DashboardPage({ userId }: DashboardPageProps) {
   const [reloadToken, setReloadToken] = useState(0);
   const [fixedFilter, setFixedFilter] = useState<FixedFilter>("all");
   const [updatingTransactionIds, setUpdatingTransactionIds] = useState<string[]>([]);
+  const [isAddIncomeModalOpen, setIsAddIncomeModalOpen] = useState(false);
+  const [isAddInvestmentModalOpen, setIsAddInvestmentModalOpen] = useState(false);
+  const [isAddMonthlyExpenseModalOpen, setIsAddMonthlyExpenseModalOpen] = useState(false);
 
   useEffect(() => {
     if (!activeMonthId) {
@@ -437,10 +443,15 @@ export function DashboardPage({ userId }: DashboardPageProps) {
             </div>
           ) : null}
           <div className="flex flex-col gap-6">
+            <AddMonthlyExpenseModal
+              isOpen={isAddMonthlyExpenseModalOpen}
+              onClose={() => setIsAddMonthlyExpenseModalOpen(false)}
+            />
             <AccordionCard
               title="Gastos do Mês"
               total={formatCurrency(sumAmounts(filteredMonthlyExpenses))}
               showPlusBeforeTotal
+              onPlusClick={() => setIsAddMonthlyExpenseModalOpen(true)}
               defaultOpen
             >
               <LedgerTableCard<MonthlyExpenseItem>
@@ -470,12 +481,23 @@ export function DashboardPage({ userId }: DashboardPageProps) {
       }
       sidebar={
         <>
+          <AddIncomeModal
+            isOpen={isAddIncomeModalOpen}
+            onClose={() => setIsAddIncomeModalOpen(false)}
+          />
+          <AddInvestmentModal
+            isOpen={isAddInvestmentModalOpen}
+            onClose={() => setIsAddInvestmentModalOpen(false)}
+          />
           <BreakdownListCard
             title="Entradas"
             rows={toBreakdownRows(dashboardData.income)}
             totalLabel="Total"
             totalValue={formatCurrency(sumAmounts(dashboardData.income))}
             tone="income"
+            onAddClick={() => setIsAddIncomeModalOpen(true)}
+            addButtonLabel="Adicionar entrada"
+            addButtonVariant="ghost"
           />
           <BreakdownListCard
             title="Saidas"
@@ -490,6 +512,9 @@ export function DashboardPage({ userId }: DashboardPageProps) {
             totalLabel="Total Aplicado"
             totalValue={formatCurrency(sumAmounts(dashboardData.investments))}
             tone="investment"
+            onAddClick={() => setIsAddInvestmentModalOpen(true)}
+            addButtonLabel="Adicionar investimento"
+            addButtonVariant="ghost"
           />
           <CategoryCard items={dashboardData.categories} />
         </>
