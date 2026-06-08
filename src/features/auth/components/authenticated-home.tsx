@@ -141,7 +141,7 @@ export function AuthenticatedHome() {
           </button>
         </div>
       </div>
-      <DashboardPage />
+      <DashboardPage userId={user.id} />
     </div>
   );
 }

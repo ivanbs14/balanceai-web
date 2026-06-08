@@ -1,12 +1,20 @@
 "use client";
 
-import { useState } from "react";
-import { dashboardMonths, defaultDashboardMonthId } from "../mock-data";
+import { useEffect, useMemo, useState } from "react";
+import {
+  getDashboardApiPayload,
+  updateFixedCostMonthlyStatus,
+} from "../api";
+import {
+  createEmptyDashboardViewModel,
+  mapDashboardViewModel,
+} from "../mappers";
 import type {
   BreakdownItem,
   CreditCardItem,
-  DashboardMonthData,
-  FixedCostStatus,
+  DashboardViewModel,
+  FixedCostItem,
+  MonthlyExpenseItem,
   MonthId,
 } from "../types";
 import { BreakdownListCard } from "./breakdown-list-card";
@@ -27,24 +35,11 @@ function sumAmounts<T extends { amount: number }>(items: T[]) {
   return items.reduce((total, item) => total + item.amount, 0);
 }
 
-function getActiveMonth(monthId: string): DashboardMonthData {
-  const fallbackMonth: DashboardMonthData = {
-    id: "",
-    label: "",
-    summary: { totalExpenses: 0, balance: 0 },
-    fixedCosts: [],
-    creditCard: [],
-    income: [],
-    expenses: [],
-    investments: [],
-    categories: [],
-  };
+function getCurrentMonthId() {
+  const now = new Date();
+  const month = `${now.getMonth() + 1}`.padStart(2, "0");
 
-  return (
-    dashboardMonths.find((month) => month.id === monthId) ??
-    dashboardMonths[0] ??
-    fallbackMonth
-  );
+  return `${now.getFullYear()}-${month}`;
 }
 
 function toBreakdownRows(items: BreakdownItem[]) {
@@ -55,69 +50,179 @@ function toBreakdownRows(items: BreakdownItem[]) {
   }));
 }
 
-function toggleFixedCostStatus(status: FixedCostStatus): FixedCostStatus {
-  return status === "paid" ? "pending" : "paid";
+function formatMonthLabel(monthId: MonthId) {
+  const [year, month] = monthId.split("-");
+  const parsedYear = Number.parseInt(year, 10);
+  const parsedMonth = Number.parseInt(month, 10) - 1;
+
+  if (!Number.isFinite(parsedYear) || !Number.isFinite(parsedMonth)) {
+    return monthId;
+  }
+
+  const label = new Intl.DateTimeFormat("pt-BR", {
+    month: "long",
+    year: "numeric",
+  }).format(new Date(parsedYear, parsedMonth, 1));
+
+  return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
-export function DashboardPage() {
-  const [activeMonthId, setActiveMonthId] = useState(defaultDashboardMonthId);
-  const [fixedCostStatusOverrides, setFixedCostStatusOverrides] = useState<
-    Partial<Record<MonthId, Record<string, FixedCostStatus>>>
-  >({});
-  const [monthlyExpenseStatusOverrides, setMonthlyExpenseStatusOverrides] = useState<
-    Partial<Record<MonthId, Record<string, FixedCostStatus>>>
-  >({});
-  const activeMonth = getActiveMonth(activeMonthId);
+function buildRecentMonthOptions(monthCount: number) {
+  const base = new Date();
 
-  const monthOptions = dashboardMonths.map((month) => ({
-    id: month.id,
-    label: month.label,
-  }));
-
-  const fixedCosts = activeMonth.fixedCosts.map((item) => {
-    const monthOverrides = fixedCostStatusOverrides[activeMonth.id] ?? {};
+  return Array.from({ length: monthCount }, (_, index) => {
+    const date = new Date(base.getFullYear(), base.getMonth() - index, 1);
+    const monthId = `${date.getFullYear()}-${`${date.getMonth() + 1}`.padStart(2, "0")}`;
 
     return {
-      ...item,
-      status: monthOverrides[item.id] ?? item.status,
+      id: monthId,
+      label: formatMonthLabel(monthId),
     };
   });
+}
 
-  const monthlyExpenses = activeMonth.fixedCosts.map((item) => {
-    const monthOverrides = monthlyExpenseStatusOverrides[activeMonth.id] ?? {};
+type DashboardPageProps = {
+  userId: string;
+};
 
-    return {
-      ...item,
-      status: monthOverrides[item.id] ?? item.status,
+export function DashboardPage({ userId }: DashboardPageProps) {
+  const monthOptions = useMemo(() => buildRecentMonthOptions(8), []);
+  const [activeMonthId, setActiveMonthId] = useState<MonthId>(
+    monthOptions[0]?.id ?? getCurrentMonthId(),
+  );
+  const [dashboardData, setDashboardData] = useState<DashboardViewModel>(() =>
+    createEmptyDashboardViewModel(monthOptions[0]?.id ?? getCurrentMonthId()),
+  );
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [reloadToken, setReloadToken] = useState(0);
+  const [updatingFixedCostIds, setUpdatingFixedCostIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    getDashboardApiPayload(userId, activeMonthId)
+      .then((payload) => {
+        if (!isMounted) {
+          return;
+        }
+
+        setDashboardData(
+          mapDashboardViewModel({
+            monthId: activeMonthId,
+            summary: payload.summary,
+            fixedCosts: payload.fixedCosts,
+            transactions: payload.transactions,
+            creditCard: payload.creditCard,
+          }),
+        );
+      })
+      .catch((error) => {
+        if (!isMounted) {
+          return;
+        }
+
+        setDashboardData(createEmptyDashboardViewModel(activeMonthId));
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : "Nao foi possivel carregar os dados do dashboard.",
+        );
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
     };
-  });
+  }, [activeMonthId, reloadToken, userId]);
+
+  function handleMonthChange(monthId: MonthId) {
+    setIsLoading(true);
+    setErrorMessage(null);
+    setActiveMonthId(monthId);
+  }
+
+  async function handleFixedCostStatusToggle(item: FixedCostItem) {
+    if (updatingFixedCostIds.includes(item.id)) {
+      return;
+    }
+
+    const nextStatus = item.status === "paid" ? "PENDING" : "PAID";
+
+    setUpdatingFixedCostIds((current) => [...current, item.id]);
+    setErrorMessage(null);
+
+    try {
+      await updateFixedCostMonthlyStatus({
+        fixedCostId: item.id,
+        monthId: activeMonthId,
+        status: nextStatus,
+      });
+
+      setIsLoading(true);
+      setReloadToken((current) => current + 1);
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Nao foi possivel atualizar o status do custo fixo.",
+      );
+    } finally {
+      setUpdatingFixedCostIds((current) =>
+        current.filter((fixedCostId) => fixedCostId !== item.id),
+      );
+    }
+  }
+
+  const fixedCosts = dashboardData.fixedCosts;
+  const monthlyExpenses = dashboardData.monthlyExpenses;
+  const hasDashboardData =
+    fixedCosts.length > 0 ||
+    monthlyExpenses.length > 0 ||
+    dashboardData.creditCard.length > 0 ||
+    dashboardData.income.length > 0 ||
+    dashboardData.expenses.length > 0 ||
+    dashboardData.investments.length > 0 ||
+    dashboardData.categories.length > 0 ||
+    dashboardData.summary.totalExpenses !== 0 ||
+    dashboardData.summary.balance !== 0;
 
   const fixedCostsColumns = [
-    { key: "name", header: "Nome", render: (row: (typeof fixedCosts)[number]) => row.name },
+    { key: "name", header: "Nome", render: (row: FixedCostItem) => row.name },
     {
       key: "type",
       header: "Tipo",
-      render: (row: (typeof fixedCosts)[number]) => row.paymentType,
+      render: (row: FixedCostItem) => row.paymentType,
     },
     {
       key: "category",
       header: "Categoria",
-      render: (row: (typeof fixedCosts)[number]) => row.category,
+      render: (row: FixedCostItem) => row.category,
     },
     {
       key: "paid",
       header: "Pago?",
       align: "center" as const,
-      render: (row: (typeof fixedCosts)[number]) => {
+      render: (row: FixedCostItem) => {
         const isPaid = row.status === "paid";
+        const isUpdating = updatingFixedCostIds.includes(row.id);
+        const actionLabel = isPaid ? "Marcar como pendente" : "Marcar como pago";
 
         return (
           <button
             type="button"
-            onClick={() => handleToggleFixedCost(row.id)}
-            className="inline-flex items-center justify-center text-base transition-colors hover:text-primary"
+            onClick={() => {
+              void handleFixedCostStatusToggle(row);
+            }}
+            disabled={isUpdating}
+            className="inline-flex items-center justify-center text-base text-muted transition hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
             aria-pressed={isPaid}
-            aria-label={isPaid ? "Marcar como pendente" : "Marcar como pago"}
+            aria-label={actionLabel}
+            title={actionLabel}
           >
             <span className={isPaid ? "text-primary" : "text-muted"}>
               {isPaid ? "■" : "□"}
@@ -130,22 +235,22 @@ export function DashboardPage() {
       key: "amount",
       header: "Valor",
       align: "right" as const,
-      render: (row: (typeof fixedCosts)[number]) => formatCurrency(row.amount),
+      render: (row: FixedCostItem) => formatCurrency(row.amount),
     },
   ];
 
   const monthlyExpensesColumns = [
-    { key: "name", header: "Nome", render: (row: (typeof monthlyExpenses)[number]) => row.name },
+    { key: "name", header: "Nome", render: (row: MonthlyExpenseItem) => row.name },
     {
       key: "type",
       header: "Tipo",
-      render: (row: (typeof monthlyExpenses)[number]) => row.paymentType,
+      render: (row: MonthlyExpenseItem) => row.paymentType,
     },
     {
       key: "amount",
       header: "Valor",
       align: "right" as const,
-      render: (row: (typeof monthlyExpenses)[number]) => formatCurrency(row.amount),
+      render: (row: MonthlyExpenseItem) => formatCurrency(row.amount),
     },
   ];
 
@@ -189,23 +294,10 @@ export function DashboardPage() {
     },
   ];
 
-  function handleToggleFixedCost(itemId: string) {
-    setFixedCostStatusOverrides((current) => {
-      const monthOverrides = current[activeMonth.id] ?? {};
-      const baseItem = activeMonth.fixedCosts.find((item) => item.id === itemId);
-
-      if (!baseItem) {
-        return current;
-      }
-
-      return {
-        ...current,
-        [activeMonth.id]: {
-          ...monthOverrides,
-          [itemId]: toggleFixedCostStatus(monthOverrides[itemId] ?? baseItem.status),
-        },
-      };
-    });
+  function handleRetryLoad() {
+    setIsLoading(true);
+    setErrorMessage(null);
+    setReloadToken((current) => current + 1);
   }
 
   return (
@@ -213,13 +305,13 @@ export function DashboardPage() {
       monthSelector={
         <MonthSelector
           months={monthOptions}
-          activeMonthId={activeMonth.id}
-          onChange={setActiveMonthId}
+          activeMonthId={activeMonthId}
+          onChange={handleMonthChange}
         />
       }
-      summaryCards={<MonthlySummary summary={activeMonth.summary} />}
+      summaryCards={<MonthlySummary summary={dashboardData.summary} />}
       primaryTable={
-        <LedgerTableCard<(typeof fixedCosts)[number]>
+        <LedgerTableCard<FixedCostItem>
           title="Custos Fixos"
           total={formatCurrency(sumAmounts(fixedCosts))}
           rows={fixedCosts}
@@ -228,46 +320,70 @@ export function DashboardPage() {
         />
       }
       secondaryTables={
-        <div className="grid gap-6 xl:grid-cols-2">
-          <LedgerTableCard<(typeof fixedCosts)[number]>
-            title="Gastos do Mês"
-            total={formatCurrency(sumAmounts(monthlyExpenses))}
-            rows={monthlyExpenses}
-            columns={monthlyExpensesColumns}
-            addLabel="Adicionar Item"
-          />
-          <LedgerTableCard<CreditCardItem>
-            title="Cartão de Crédito"
-            total={formatCurrency(sumAmounts(activeMonth.creditCard))}
-            rows={activeMonth.creditCard}
-            columns={creditCardColumns}
-          />
-        </div>
+        <>
+          {isLoading ? (
+            <div className="mb-4 border border-border bg-surface p-4 text-sm text-muted">
+              Carregando dados de {formatMonthLabel(activeMonthId)}...
+            </div>
+          ) : null}
+          {errorMessage ? (
+            <div className="mb-4 flex flex-col gap-3 border border-border bg-surface p-4 text-sm text-[#8a486f] sm:flex-row sm:items-center sm:justify-between">
+              <p>Nao foi possivel atualizar o dashboard: {errorMessage}</p>
+              <button
+                type="button"
+                onClick={handleRetryLoad}
+                className="inline-flex items-center justify-center border border-primary px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-primary transition hover:bg-primary hover:text-white"
+              >
+                Tentar novamente
+              </button>
+            </div>
+          ) : null}
+          {!isLoading && !errorMessage && !hasDashboardData ? (
+            <div className="mb-4 border border-border bg-surface p-4 text-sm text-muted">
+              Nenhum dado encontrado para {formatMonthLabel(activeMonthId)}.
+            </div>
+          ) : null}
+          <div className="grid gap-6 xl:grid-cols-2">
+            <LedgerTableCard<MonthlyExpenseItem>
+              title="Gastos do Mês"
+              total={formatCurrency(sumAmounts(monthlyExpenses))}
+              rows={monthlyExpenses}
+              columns={monthlyExpensesColumns}
+              addLabel="Adicionar Item"
+            />
+            <LedgerTableCard<CreditCardItem>
+              title="Cartão de Crédito"
+              total={formatCurrency(sumAmounts(dashboardData.creditCard))}
+              rows={dashboardData.creditCard}
+              columns={creditCardColumns}
+            />
+          </div>
+        </>
       }
       sidebar={
         <>
           <BreakdownListCard
             title="Entradas"
-            rows={toBreakdownRows(activeMonth.income)}
+            rows={toBreakdownRows(dashboardData.income)}
             totalLabel="Total"
-            totalValue={formatCurrency(sumAmounts(activeMonth.income))}
+            totalValue={formatCurrency(sumAmounts(dashboardData.income))}
             tone="income"
           />
           <BreakdownListCard
             title="Saidas"
-            rows={toBreakdownRows(activeMonth.expenses)}
+            rows={toBreakdownRows(dashboardData.expenses)}
             totalLabel="Total"
-            totalValue={formatCurrency(sumAmounts(activeMonth.expenses))}
+            totalValue={formatCurrency(sumAmounts(dashboardData.expenses))}
             tone="expense"
           />
           <BreakdownListCard
             title="Investimentos"
-            rows={toBreakdownRows(activeMonth.investments)}
+            rows={toBreakdownRows(dashboardData.investments)}
             totalLabel="Total Aplicado"
-            totalValue={formatCurrency(sumAmounts(activeMonth.investments))}
+            totalValue={formatCurrency(sumAmounts(dashboardData.investments))}
             tone="investment"
           />
-          <CategoryCard items={activeMonth.categories} />
+          <CategoryCard items={dashboardData.categories} />
         </>
       }
     />

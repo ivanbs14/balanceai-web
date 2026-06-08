@@ -29,6 +29,13 @@ export type CreditCardItem = {
   amount: CurrencyAmount;
 };
 
+export type MonthlyExpenseItem = {
+  id: string;
+  name: string;
+  paymentType: string;
+  amount: CurrencyAmount;
+};
+
 export type BreakdownItem = {
   id: string;
   label: string;
@@ -47,6 +54,19 @@ export type DashboardMonthData = {
   label: string;
   summary: SummaryMetrics;
   fixedCosts: FixedCostItem[];
+  creditCard: CreditCardItem[];
+  income: BreakdownItem[];
+  expenses: BreakdownItem[];
+  investments: BreakdownItem[];
+  categories: CategorySpendItem[];
+};
+
+export type DashboardViewModel = {
+  monthId: MonthId;
+  monthLabel: string;
+  summary: SummaryMetrics;
+  fixedCosts: FixedCostItem[];
+  monthlyExpenses: MonthlyExpenseItem[];
   creditCard: CreditCardItem[];
   income: BreakdownItem[];
   expenses: BreakdownItem[];
