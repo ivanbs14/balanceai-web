@@ -32,7 +32,10 @@ export type CreditCardItem = {
 export type MonthlyExpenseItem = {
   id: string;
   name: string;
+  category: string;
+  isFixed: boolean;
   paymentType: string;
+  paymentStatus: FixedCostStatus;
   amount: CurrencyAmount;
 };
 

@@ -2,8 +2,9 @@ import type { ReactNode } from "react";
 
 type LedgerColumn<T> = {
   key: string;
-  header: string;
+  header: ReactNode;
   align?: "left" | "center" | "right";
+  width?: string;
   render: (row: T) => ReactNode;
 };
 
@@ -26,6 +27,10 @@ export function LedgerTableCard<T>({
   hideHeader = false,
   embedded = false,
 }: LedgerTableCardProps<T>) {
+  const gridTemplateColumns = columns
+    .map((column) => column.width ?? "minmax(0, 1fr)")
+    .join(" ");
+
   return (
     <article className={embedded ? "" : "border border-border bg-surface p-5"}>
       {!hideHeader ? (
@@ -48,14 +53,14 @@ export function LedgerTableCard<T>({
         <div
           className="grid bg-surface-soft"
           style={{
-            gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))`,
+            gridTemplateColumns,
           }}
         >
           {columns.map((column) => (
             <div
               key={column.key}
               className={[
-                "border-b border-border px-4 py-3 font-mono text-[0.65rem] uppercase tracking-[0.18em] text-primary sm:text-[0.7rem]",
+                "border-b border-border px-4 py-2 font-mono text-[0.65rem] uppercase tracking-[0.18em] text-primary sm:text-[0.7rem]",
                 column.align === "right"
                   ? "text-right"
                   : column.align === "center"
@@ -73,14 +78,14 @@ export function LedgerTableCard<T>({
             key={rowIndex}
             className="grid border-b border-border last:border-b-0"
             style={{
-              gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))`,
+              gridTemplateColumns,
             }}
           >
             {columns.map((column) => (
               <div
                 key={column.key}
                 className={[
-                  "px-4 py-4 text-sm text-foreground sm:text-[0.95rem]",
+                  "px-4 py-2.5 text-sm text-foreground sm:text-[0.95rem]",
                   column.align === "right"
                     ? "text-right"
                     : column.align === "center"

@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { Bolt, FunnelPlus, LocateFixed } from "lucide-react";
 import {
   getDashboardApiPayload,
+  updateTransationPaymentStatus,
 } from "../api";
 import {
   createEmptyDashboardViewModel,
@@ -84,6 +86,8 @@ type DashboardPageProps = {
   userId: string;
 };
 
+type FixedFilter = "all" | "fixed" | "not-fixed";
+
 export function DashboardPage({ userId }: DashboardPageProps) {
   const monthOptions = useMemo(() => buildRecentMonthOptions(8), []);
   const [activeMonthId, setActiveMonthId] = useState<MonthId>(
@@ -95,6 +99,8 @@ export function DashboardPage({ userId }: DashboardPageProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
+  const [fixedFilter, setFixedFilter] = useState<FixedFilter>("all");
+  const [updatingTransactionIds, setUpdatingTransactionIds] = useState<string[]>([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -142,9 +148,21 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     setIsLoading(true);
     setErrorMessage(null);
     setActiveMonthId(monthId);
+    setFixedFilter("all");
   }
 
   const monthlyExpenses = dashboardData.monthlyExpenses;
+  const filteredMonthlyExpenses = monthlyExpenses.filter((item) => {
+    if (fixedFilter === "fixed") {
+      return item.isFixed;
+    }
+
+    if (fixedFilter === "not-fixed") {
+      return !item.isFixed;
+    }
+
+    return true;
+  });
   const hasDashboardData =
     monthlyExpenses.length > 0 ||
     dashboardData.creditCard.length > 0 ||
@@ -155,18 +173,87 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     dashboardData.summary.totalExpenses !== 0 ||
     dashboardData.summary.balance !== 0;
 
+  function handleFixedFilterToggle() {
+    setFixedFilter((current) => {
+      if (current === "all") {
+        return "fixed";
+      }
+
+      if (current === "fixed") {
+        return "not-fixed";
+      }
+
+      return "all";
+    });
+  }
+
+  const fixedHeaderIcon =
+    fixedFilter === "fixed" ? (
+      <LocateFixed size={14} strokeWidth={2.2} aria-hidden />
+    ) : fixedFilter === "not-fixed" ? (
+      <Bolt size={14} strokeWidth={2.2} aria-hidden />
+    ) : (
+      <FunnelPlus size={14} strokeWidth={2.2} aria-hidden />
+    );
+
   const monthlyExpensesColumns = [
     { key: "name", header: "Nome", render: (row: MonthlyExpenseItem) => row.name },
+    {
+      key: "category",
+      header: "Categoria",
+      render: (row: MonthlyExpenseItem) => row.category,
+    },
     {
       key: "type",
       header: "Tipo",
       render: (row: MonthlyExpenseItem) => row.paymentType,
     },
     {
+      key: "fixed",
+      header: (
+        <button
+          type="button"
+          onClick={handleFixedFilterToggle}
+          className="inline-flex items-center gap-1.5"
+          aria-label="Alternar filtro da coluna Fixos"
+          title="Clique para alternar: Fixos, Nao fixos e Todos"
+        >
+          <span>Fixos</span>
+          {fixedHeaderIcon}
+        </button>
+      ),
+      align: "center" as const,
+      render: (row: MonthlyExpenseItem) => (row.isFixed ? "Sim" : "Nao"),
+    },
+    {
       key: "amount",
       header: "Valor",
       align: "right" as const,
       render: (row: MonthlyExpenseItem) => formatCurrency(row.amount),
+    },
+    {
+      key: "paid",
+      header: "Pago",
+      align: "center" as const,
+      width: "76px",
+      render: (row: MonthlyExpenseItem) => {
+        const isUpdating = updatingTransactionIds.includes(row.id);
+
+        return (
+          <label className="inline-flex items-center justify-center">
+            <input
+              type="checkbox"
+              checked={row.paymentStatus === "paid"}
+              onChange={() => {
+                void handleMonthlyExpensePaymentToggle(row);
+              }}
+              disabled={isUpdating}
+              aria-label={`Marcar ${row.name} como pago`}
+              className="h-4 w-4 cursor-pointer accent-primary disabled:cursor-not-allowed"
+            />
+          </label>
+        );
+      },
     },
   ];
 
@@ -216,6 +303,29 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     setReloadToken((current) => current + 1);
   }
 
+  async function handleMonthlyExpensePaymentToggle(row: MonthlyExpenseItem) {
+    const nextStatus = row.paymentStatus === "paid" ? "PENDING" : "PAID";
+
+    setUpdatingTransactionIds((current) => [...current, row.id]);
+
+    try {
+      await updateTransationPaymentStatus({
+        transationId: row.id,
+        paymentStatus: nextStatus,
+      });
+
+      setReloadToken((current) => current + 1);
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Nao foi possivel atualizar o status de pagamento.",
+      );
+    } finally {
+      setUpdatingTransactionIds((current) => current.filter((id) => id !== row.id));
+    }
+  }
+
   return (
     <DashboardShell
       monthSelector={
@@ -254,14 +364,14 @@ export function DashboardPage({ userId }: DashboardPageProps) {
           <div className="flex flex-col gap-6">
             <AccordionCard
               title="Gastos do Mês"
-              total={formatCurrency(sumAmounts(monthlyExpenses))}
+              total={formatCurrency(sumAmounts(filteredMonthlyExpenses))}
               showPlusBeforeTotal
               defaultOpen
             >
               <LedgerTableCard<MonthlyExpenseItem>
                 title="Gastos do Mês"
-                total={formatCurrency(sumAmounts(monthlyExpenses))}
-                rows={monthlyExpenses}
+                total={formatCurrency(sumAmounts(filteredMonthlyExpenses))}
+                rows={filteredMonthlyExpenses}
                 columns={monthlyExpensesColumns}
                 hideHeader
                 embedded

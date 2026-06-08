@@ -142,7 +142,13 @@ function mapMonthlyExpenses(transactions: ApiTransaction[]): MonthlyExpenseItem[
     .map((transaction) => ({
       id: transaction.id,
       name: transaction.name,
+      category: toCategoryLabel(transaction.category),
+      isFixed: Boolean(transaction.isFixed),
       paymentType: toPaymentMethodLabel(transaction.paymentMethod),
+      paymentStatus:
+        transaction.paymentStatus === "PAID"
+          ? ("paid" as const)
+          : ("pending" as const),
       amount: toNumber(transaction.amount),
     }))
     .sort((left, right) => right.amount - left.amount);

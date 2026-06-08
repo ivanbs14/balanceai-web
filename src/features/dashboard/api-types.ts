@@ -42,8 +42,11 @@ export type ApiTransaction = {
   name: string;
   type: "DEPOSIT" | "EXPENSE" | "INVESTMENT";
   amount: ApiNumericValue;
+  isFixed?: boolean | null;
   category: string;
   paymentMethod: string;
+  paymentStatus?: "PAID" | "PENDING";
+  paidAt?: string | null;
   installments?: number | null;
   installmentInfo?: string | null;
   nameCard?: string | null;

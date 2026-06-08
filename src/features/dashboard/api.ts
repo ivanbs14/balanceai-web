@@ -39,6 +39,7 @@ export type DashboardApiPayload = {
 };
 
 export type ApiFixedCostMonthlyStatus = "PAID" | "PENDING";
+export type ApiTransationPaymentStatus = "PAID" | "PENDING";
 
 export async function getDashboardApiPayload(
   userId: string,
@@ -66,6 +67,29 @@ export async function updateFixedCostMonthlyStatus(params: {
       },
       body: JSON.stringify({
         status: params.status,
+      }),
+    },
+  );
+
+  await parseJsonResponse<unknown>(response);
+}
+
+export async function updateTransationPaymentStatus(params: {
+  transationId: string;
+  paymentStatus: ApiTransationPaymentStatus;
+  paidAt?: string;
+}) {
+  const response = await fetch(
+    `${API_BASE_URL}/transations/${encodeURIComponent(params.transationId)}/payment-status`,
+    {
+      method: "PATCH",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        paymentStatus: params.paymentStatus,
+        ...(params.paidAt ? { paidAt: params.paidAt } : {}),
       }),
     },
   );
