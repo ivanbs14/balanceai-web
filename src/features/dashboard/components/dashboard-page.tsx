@@ -217,6 +217,12 @@ export function DashboardPage({ userId }: DashboardPageProps) {
   }
 
   const monthlyExpenses = dashboardData.monthlyExpenses;
+  const monthlyExpensesCountLabel =
+    monthlyExpenses.length === 1 ? "1 ITEM" : `${monthlyExpenses.length} ITENS`;
+  const creditCardCountLabel =
+    dashboardData.creditCard.length === 1
+      ? "1 ITEM"
+      : `${dashboardData.creditCard.length} ITENS`;
   const filteredMonthlyExpenses = monthlyExpenses.filter((item) => {
     if (fixedFilter === "fixed") {
       return item.isFixed;
@@ -449,6 +455,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
             />
             <AccordionCard
               title="Gastos do Mês"
+              titleBadge={monthlyExpensesCountLabel}
               total={formatCurrency(sumAmounts(filteredMonthlyExpenses))}
               showPlusBeforeTotal
               onPlusClick={() => setIsAddMonthlyExpenseModalOpen(true)}
@@ -465,6 +472,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
             </AccordionCard>
             <AccordionCard
               title="Cartão de Crédito"
+              titleBadge={creditCardCountLabel}
               total={formatCurrency(sumAmounts(dashboardData.creditCard))}
             >
               <LedgerTableCard<CreditCardItem>

@@ -3,6 +3,7 @@ import { Plus } from "lucide-react";
 
 type AccordionCardProps = {
   title: string;
+  titleBadge?: string;
   total?: string;
   showPlusBeforeTotal?: boolean;
   defaultOpen?: boolean;
@@ -12,6 +13,7 @@ type AccordionCardProps = {
 
 export function AccordionCard({
   title,
+  titleBadge,
   total,
   showPlusBeforeTotal = false,
   defaultOpen = false,
@@ -21,16 +23,23 @@ export function AccordionCard({
   return (
     <details className="group border border-border bg-surface" open={defaultOpen}>
       <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4">
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 items-center gap-3">
           <span
             aria-hidden
             className="text-xl leading-none text-muted transition-transform duration-200 group-open:rotate-180"
           >
             ▾
           </span>
-          <h2 className="text-[1.35rem] font-semibold tracking-tight text-primary sm:text-[1.45rem]">
-            {title}
-          </h2>
+          <div className="flex min-w-0 flex-wrap items-center gap-3">
+            <h2 className="text-[1.35rem] font-semibold tracking-tight text-primary sm:text-[1.45rem]">
+              {title}
+            </h2>
+            {titleBadge ? (
+              <span className="inline-flex items-center rounded-full bg-[#ffd8e6] px-3 py-1 font-mono text-[0.68rem] uppercase tracking-[0.24em] text-[#d61b72]">
+                {titleBadge}
+              </span>
+            ) : null}
+          </div>
         </div>
         <div className="flex h-8 items-center gap-3">
           {showPlusBeforeTotal ? (
