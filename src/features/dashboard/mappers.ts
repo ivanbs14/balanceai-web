@@ -149,6 +149,9 @@ function mapMonthlyExpenses(transactions: ApiTransaction[]): MonthlyExpenseItem[
         transaction.paymentStatus === "PAID"
           ? ("paid" as const)
           : ("pending" as const),
+      isCreditCardInstallmentPurchase:
+        transaction.paymentMethod === "CREDIT_CARD" &&
+        Number(transaction.installments ?? 0) > 1,
       amount: toNumber(transaction.amount),
     }))
     .sort((left, right) => right.amount - left.amount);
@@ -177,6 +180,9 @@ function mapCreditCardItems(
         statementMonthLabel,
         installmentCurrent: installment.installmentCurrent,
         installmentTotal: installment.installmentTotal,
+        canDeletePendingInstallments:
+          transaction.paymentMethod === "CREDIT_CARD" &&
+          Number(transaction.installments ?? 0) > 1,
         amount: toNumber(transaction.amount),
       };
     })
@@ -193,6 +199,7 @@ function mapCreditCardItems(
     statementMonthLabel,
     installmentCurrent: 1,
     installmentTotal: 1,
+    canDeletePendingInstallments: false,
     amount: toNumber(card.valorTotalMes),
   }));
 }
@@ -227,7 +234,7 @@ function mapInvestmentBreakdown(transactions: ApiTransaction[]): BreakdownItem[]
       .filter((transaction) => transaction.type === "INVESTMENT")
       .map((transaction) => ({
         id: transaction.id,
-        label: toCategoryLabel(transaction.category),
+        label: transaction.name,
         amount: toNumber(transaction.amount),
       })),
   );

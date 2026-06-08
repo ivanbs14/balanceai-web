@@ -10,10 +10,6 @@ type DashboardShellProps = {
 
 const navItems = [
   "Dashboard",
-  "Custos Fixos",
-  "Cartao",
-  "Investimentos",
-  "Categorias",
 ];
 
 export function DashboardShell({

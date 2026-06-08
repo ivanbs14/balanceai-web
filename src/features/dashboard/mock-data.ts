@@ -54,6 +54,7 @@ export const dashboardMonths: DashboardMonthData[] = [
         statementMonthLabel: "Janeiro",
         installmentCurrent: 1,
         installmentTotal: 1,
+        canDeletePendingInstallments: false,
         amount: 840.3,
       },
       {
@@ -63,6 +64,7 @@ export const dashboardMonths: DashboardMonthData[] = [
         statementMonthLabel: "Janeiro",
         installmentCurrent: 1,
         installmentTotal: 1,
+        canDeletePendingInstallments: false,
         amount: 14.9,
       },
       {
@@ -72,6 +74,7 @@ export const dashboardMonths: DashboardMonthData[] = [
         statementMonthLabel: "Janeiro",
         installmentCurrent: 3,
         installmentTotal: 10,
+        canDeletePendingInstallments: true,
         amount: 189.9,
       },
     ],
@@ -195,6 +198,7 @@ export const dashboardMonths: DashboardMonthData[] = [
         statementMonthLabel: "Fevereiro",
         installmentCurrent: 2,
         installmentTotal: 6,
+        canDeletePendingInstallments: true,
         amount: 199.9,
       },
       {
@@ -204,6 +208,7 @@ export const dashboardMonths: DashboardMonthData[] = [
         statementMonthLabel: "Fevereiro",
         installmentCurrent: 1,
         installmentTotal: 1,
+        canDeletePendingInstallments: false,
         amount: 84.4,
       },
       {
@@ -213,6 +218,7 @@ export const dashboardMonths: DashboardMonthData[] = [
         statementMonthLabel: "Fevereiro",
         installmentCurrent: 1,
         installmentTotal: 1,
+        canDeletePendingInstallments: false,
         amount: 39.9,
       },
     ],

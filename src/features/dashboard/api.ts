@@ -138,6 +138,22 @@ export async function updateTransationPaymentStatus(params: {
   await parseJsonResponse<unknown>(response);
 }
 
+export async function deleteTransation(params: { transationId: string }) {
+  const response = await fetch(
+    `${API_BASE_URL}/transations/${encodeURIComponent(params.transationId)}`,
+    {
+      method: "DELETE",
+      credentials: "include",
+    },
+  );
+
+  return parseJsonResponse<{
+    deletedCount: number;
+    deletedTransactionId?: string;
+    preservedPaidCount: number;
+  }>(response);
+}
+
 export async function createTransation(payload: CreateTransationPayload) {
   const response = await fetch(`${API_BASE_URL}/transations`, {
     method: "POST",

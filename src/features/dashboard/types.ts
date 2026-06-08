@@ -26,6 +26,7 @@ export type CreditCardItem = {
   statementMonthLabel: string;
   installmentCurrent: number;
   installmentTotal: number;
+  canDeletePendingInstallments: boolean;
   amount: CurrencyAmount;
 };
 
@@ -36,6 +37,7 @@ export type MonthlyExpenseItem = {
   isFixed: boolean;
   paymentType: string;
   paymentStatus: FixedCostStatus;
+  isCreditCardInstallmentPurchase: boolean;
   amount: CurrencyAmount;
 };
 

@@ -49,6 +49,7 @@ export type ApiTransaction = {
   paidAt?: string | null;
   installments?: number | null;
   installmentInfo?: string | null;
+  installmentGroupId?: string | null;
   nameCard?: string | null;
   cardId?: string | null;
   Date: string;

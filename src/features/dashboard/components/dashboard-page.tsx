@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Bolt, FunnelPlus, LocateFixed } from "lucide-react";
+import { Bolt, FunnelPlus, LocateFixed, Trash2 } from "lucide-react";
 import {
+  deleteTransation,
   getDashboardApiPayload,
   updateTransationPaymentStatus,
 } from "../api";
@@ -23,6 +24,7 @@ import { AddIncomeModal } from "./add-income-modal";
 import { AddInvestmentModal } from "./add-investment-modal";
 import { AddMonthlyExpenseModal } from "./add-monthly-expense-modal";
 import { CategoryCard } from "./category-card";
+import { DeleteTransactionModal } from "./delete-transaction-modal";
 import { DashboardShell } from "./dashboard-shell";
 import { LedgerTableCard } from "./ledger-table-card";
 import { MonthlySummary } from "./monthly-summary";
@@ -125,6 +127,12 @@ type DashboardPageProps = {
 
 type FixedFilter = "all" | "fixed" | "not-fixed";
 
+type PendingDeleteTransaction = {
+  id: string;
+  label: string;
+  isInstallmentPurchase: boolean;
+};
+
 export function DashboardPage({ userId }: DashboardPageProps) {
   const currentMonthId = useMemo(() => getCurrentMonthId(), []);
   const currentYear = useMemo(() => getCurrentYear(), []);
@@ -143,6 +151,9 @@ export function DashboardPage({ userId }: DashboardPageProps) {
   const [reloadToken, setReloadToken] = useState(0);
   const [fixedFilter, setFixedFilter] = useState<FixedFilter>("all");
   const [updatingTransactionIds, setUpdatingTransactionIds] = useState<string[]>([]);
+  const [deletingTransactionIds, setDeletingTransactionIds] = useState<string[]>([]);
+  const [pendingDeleteTransaction, setPendingDeleteTransaction] =
+    useState<PendingDeleteTransaction | null>(null);
   const [isAddIncomeModalOpen, setIsAddIncomeModalOpen] = useState(false);
   const [isAddInvestmentModalOpen, setIsAddInvestmentModalOpen] = useState(false);
   const [isAddMonthlyExpenseModalOpen, setIsAddMonthlyExpenseModalOpen] = useState(false);
@@ -294,6 +305,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         </button>
       ),
       align: "center" as const,
+      width: "92px",
       render: (row: MonthlyExpenseItem) => (row.isFixed ? "Sim" : "Nao"),
     },
     {
@@ -323,6 +335,30 @@ export function DashboardPage({ userId }: DashboardPageProps) {
               className="h-4 w-4 cursor-pointer accent-primary disabled:cursor-not-allowed"
             />
           </label>
+        );
+      },
+    },
+    {
+      key: "actions",
+      header: "Acoes",
+      align: "center" as const,
+      width: "84px",
+      render: (row: MonthlyExpenseItem) => {
+        const isDeleting = deletingTransactionIds.includes(row.id);
+
+        return (
+          <button
+            type="button"
+            onClick={() => {
+              void handleDeleteMonthlyExpense(row);
+            }}
+            disabled={isDeleting}
+            aria-label={`Deletar ${row.name}`}
+            title="Deletar transacao"
+            className="inline-flex items-center justify-center text-primary transition hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <Trash2 size={16} strokeWidth={2} aria-hidden />
+          </button>
         );
       },
     },
@@ -366,6 +402,30 @@ export function DashboardPage({ userId }: DashboardPageProps) {
       align: "right" as const,
       render: (row: CreditCardItem) => formatCurrency(row.amount),
     },
+    {
+      key: "actions",
+      header: "Acoes",
+      align: "center" as const,
+      width: "84px",
+      render: (row: CreditCardItem) => {
+        const isDeleting = deletingTransactionIds.includes(row.id);
+
+        return (
+          <button
+            type="button"
+            onClick={() => {
+              void handleDeleteCreditCardExpense(row);
+            }}
+            disabled={isDeleting}
+            aria-label={`Deletar ${row.description}`}
+            title="Deletar transacao"
+            className="inline-flex items-center justify-center text-primary transition hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <Trash2 size={16} strokeWidth={2} aria-hidden />
+          </button>
+        );
+      },
+    },
   ];
 
   function handleRetryLoad() {
@@ -399,6 +459,60 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     } finally {
       setUpdatingTransactionIds((current) => current.filter((id) => id !== row.id));
     }
+  }
+
+  async function deleteTransactionWithConfirmation(params: {
+    transactionId: string;
+    label: string;
+    isInstallmentPurchase: boolean;
+  }) {
+    setPendingDeleteTransaction({
+      id: params.transactionId,
+      label: params.label,
+      isInstallmentPurchase: params.isInstallmentPurchase,
+    });
+  }
+
+  async function handleConfirmDeleteTransaction() {
+    if (!pendingDeleteTransaction) {
+      return;
+    }
+
+    setDeletingTransactionIds((current) => [...current, pendingDeleteTransaction.id]);
+    setErrorMessage(null);
+
+    try {
+      await deleteTransation({ transationId: pendingDeleteTransaction.id });
+      setPendingDeleteTransaction(null);
+      setIsLoading(true);
+      setReloadToken((current) => current + 1);
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Nao foi possivel deletar a transacao.",
+      );
+    } finally {
+      setDeletingTransactionIds((current) =>
+        current.filter((id) => id !== pendingDeleteTransaction.id),
+      );
+    }
+  }
+
+  async function handleDeleteMonthlyExpense(row: MonthlyExpenseItem) {
+    await deleteTransactionWithConfirmation({
+      transactionId: row.id,
+      label: row.name,
+      isInstallmentPurchase: row.isCreditCardInstallmentPurchase,
+    });
+  }
+
+  async function handleDeleteCreditCardExpense(row: CreditCardItem) {
+    await deleteTransactionWithConfirmation({
+      transactionId: row.id,
+      label: row.description,
+      isInstallmentPurchase: row.canDeletePendingInstallments,
+    });
   }
 
   const activePeriodLabel = activeMonthId
@@ -449,6 +563,22 @@ export function DashboardPage({ userId }: DashboardPageProps) {
             </div>
           ) : null}
           <div className="flex flex-col gap-6">
+            <DeleteTransactionModal
+              isOpen={pendingDeleteTransaction !== null}
+              isSubmitting={
+                pendingDeleteTransaction
+                  ? deletingTransactionIds.includes(pendingDeleteTransaction.id)
+                  : false
+              }
+              transactionLabel={pendingDeleteTransaction?.label ?? ""}
+              isInstallmentPurchase={
+                pendingDeleteTransaction?.isInstallmentPurchase ?? false
+              }
+              onClose={() => setPendingDeleteTransaction(null)}
+              onConfirm={() => {
+                void handleConfirmDeleteTransaction();
+              }}
+            />
             <AddMonthlyExpenseModal
               isOpen={isAddMonthlyExpenseModalOpen}
               onClose={() => setIsAddMonthlyExpenseModalOpen(false)}

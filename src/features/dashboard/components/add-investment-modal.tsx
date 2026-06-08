@@ -19,13 +19,11 @@ type AddInvestmentModalProps = {
 
 const investmentMethodOptions = ["Transferencia", "Pix", "Debito em conta", "TED"];
 const investmentCategoryOptions = ["Renda fixa", "Tesouro", "Acoes", "Fundo"];
-const installmentOptions = ["1/1", "1/2", "1/3", "1/6", "1/12"];
 
 type InvestmentFormState = {
   name: string;
   method: string;
   category: string;
-  installments: string;
   amount: string;
   date: string;
 };
@@ -35,7 +33,6 @@ function createInitialFormState(): InvestmentFormState {
     name: "",
     method: investmentMethodOptions[0],
     category: investmentCategoryOptions[0],
-    installments: installmentOptions[0],
     amount: "",
     date: "",
   };
@@ -239,7 +236,6 @@ export function AddInvestmentModal({
                 amount,
                 category: mapInvestmentCategoryToApi(formState.category),
                 paymentMethod: mapInvestmentMethodToApi(formState.method),
-                installments: 1,
                 Date: resolveDate(formState.date, fallbackMonthId),
               });
 
@@ -329,34 +325,7 @@ export function AddInvestmentModal({
             </div>
           </div>
 
-          <div className="grid gap-5 sm:grid-cols-3">
-            <div>
-              <FieldLabel>Parcelas</FieldLabel>
-              <FieldShell>
-                <select
-                  value={formState.installments}
-                  onChange={(event) =>
-                    setFormState((current) => ({
-                      ...current,
-                      installments: event.target.value,
-                    }))
-                  }
-                  className="h-14 w-full appearance-none rounded-[0.55rem] border-0 bg-transparent px-4 pr-12 text-[1rem] text-foreground outline-none sm:text-[1.05rem]"
-                >
-                  {installmentOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown
-                  aria-hidden
-                  size={20}
-                  className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-muted"
-                />
-              </FieldShell>
-            </div>
-
+          <div className="grid gap-5 sm:grid-cols-2">
             <div>
               <FieldLabel>Valor</FieldLabel>
               <FieldShell className="flex items-center">
