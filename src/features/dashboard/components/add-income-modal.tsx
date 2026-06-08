@@ -3,10 +3,18 @@
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 import { CalendarDays, ChevronDown, X } from "lucide-react";
+import {
+  createTransation,
+  type ApiTransationCategory,
+  type ApiTransationPaymentMethod,
+} from "../api";
 
 type AddIncomeModalProps = {
   isOpen: boolean;
   onClose: () => void;
+  userId: string;
+  fallbackMonthId: string | null;
+  onCreated: () => void;
 };
 
 const incomeMethodOptions = ["Pix", "Transferencia", "Deposito", "Dinheiro"];
@@ -63,11 +71,72 @@ function FieldShell({ children, className }: FieldShellProps) {
   );
 }
 
-export function AddIncomeModal({ isOpen, onClose }: AddIncomeModalProps) {
+function normalizeAmountInput(value: string) {
+  const sanitized = value.replace(/\s/g, "");
+
+  if (!sanitized) {
+    return null;
+  }
+
+  const normalized = sanitized.replace(/\./g, "").replace(",", ".");
+  const parsed = Number.parseFloat(normalized);
+
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return null;
+  }
+
+  return parsed.toFixed(2);
+}
+
+function resolveDate(value: string, fallbackMonthId: string | null) {
+  if (value) {
+    return value;
+  }
+
+  if (fallbackMonthId) {
+    return `${fallbackMonthId}-01`;
+  }
+
+  return new Date().toISOString().slice(0, 10);
+}
+
+function mapIncomeMethodToApi(method: string): ApiTransationPaymentMethod {
+  switch (method) {
+    case "Pix":
+      return "PIX";
+    case "Transferencia":
+      return "Bank_Transfer";
+    case "Deposito":
+      return "CASH";
+    case "Dinheiro":
+      return "CASH";
+    default:
+      return "OTHER";
+  }
+}
+
+function mapIncomeCategoryToApi(category: string): ApiTransationCategory {
+  switch (category) {
+    case "Salario":
+      return "SALARY";
+    default:
+      return "OTHER";
+  }
+}
+
+export function AddIncomeModal({
+  isOpen,
+  onClose,
+  userId,
+  fallbackMonthId,
+  onCreated,
+}: AddIncomeModalProps) {
   const dateInputRef = useRef<HTMLInputElement | null>(null);
   const [formState, setFormState] = useState<IncomeFormState>(() =>
     createInitialFormState(),
   );
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   function handleDateIconClick() {
     const input = dateInputRef.current;
@@ -86,6 +155,8 @@ export function AddIncomeModal({ isOpen, onClose }: AddIncomeModalProps) {
   useEffect(() => {
     if (!isOpen) {
       setFormState(createInitialFormState());
+      setErrorMessage(null);
+      setIsSubmitting(false);
       return;
     }
 
@@ -138,9 +209,48 @@ export function AddIncomeModal({ isOpen, onClose }: AddIncomeModalProps) {
 
         <form
           className="space-y-7 px-7 py-8 sm:px-8 sm:py-9"
-          onSubmit={(event) => {
+          onSubmit={async (event) => {
             event.preventDefault();
-            onClose();
+
+            const amount = normalizeAmountInput(formState.amount);
+            const name = formState.name.trim();
+
+            if (!name) {
+              setErrorMessage("Informe o nome do lancamento.");
+              return;
+            }
+
+            if (!amount) {
+              setErrorMessage("Informe um valor valido maior que zero.");
+              return;
+            }
+
+            setIsSubmitting(true);
+            setErrorMessage(null);
+
+            try {
+              await createTransation({
+                userId,
+                name,
+                type: "DEPOSIT",
+                amount,
+                category: mapIncomeCategoryToApi(formState.category),
+                paymentMethod: mapIncomeMethodToApi(formState.method),
+                installments: 1,
+                Date: resolveDate(formState.date, fallbackMonthId),
+              });
+
+              onCreated();
+              onClose();
+            } catch (error) {
+              setErrorMessage(
+                error instanceof Error
+                  ? error.message
+                  : "Nao foi possivel salvar o lancamento.",
+              );
+            } finally {
+              setIsSubmitting(false);
+            }
           }}
         >
           <div>
@@ -301,19 +411,27 @@ export function AddIncomeModal({ isOpen, onClose }: AddIncomeModalProps) {
             </div>
           </div>
 
+          {errorMessage ? (
+            <div className="rounded-[0.5rem] border border-[#efc2d4] bg-[#fff5f8] px-4 py-3 text-sm text-[#9a3b65]">
+              {errorMessage}
+            </div>
+          ) : null}
+
           <div className="grid gap-4 pt-2 sm:grid-cols-2">
             <button
               type="button"
               onClick={onClose}
+              disabled={isSubmitting}
               className="h-14 rounded-[0.5rem] border border-[#da4f8a] bg-white px-4 text-[1rem] font-semibold text-primary transition hover:bg-[#fff3f7]"
             >
               Cancelar
             </button>
             <button
               type="submit"
+              disabled={isSubmitting}
               className="h-14 rounded-[0.5rem] bg-primary px-4 text-[1rem] font-semibold text-white transition hover:bg-primary-strong"
             >
-              Salvar Lancamento
+              {isSubmitting ? "Salvando..." : "Salvar Lancamento"}
             </button>
           </div>
         </form>

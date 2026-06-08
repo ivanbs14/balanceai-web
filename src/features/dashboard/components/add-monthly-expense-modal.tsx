@@ -3,10 +3,20 @@
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 import { CalendarDays, ChevronDown, X } from "lucide-react";
+import {
+  createTransation,
+  getCardsByUserId,
+  type ApiTransationCategory,
+  type ApiTransationPaymentMethod,
+} from "../api";
+import type { ApiCardItem } from "../api-types";
 
 type AddMonthlyExpenseModalProps = {
   isOpen: boolean;
   onClose: () => void;
+  userId: string;
+  fallbackMonthId: string | null;
+  onCreated: () => void;
 };
 
 const paymentMethodOptions = ["Debito", "Pix", "Credito", "Boleto"];
@@ -35,6 +45,7 @@ type MonthlyExpenseFormState = {
   method: string;
   category: string;
   installments: string;
+  cardId: string;
   amount: string;
   date: string;
 };
@@ -45,6 +56,7 @@ function createInitialFormState(): MonthlyExpenseFormState {
     method: paymentMethodOptions[0],
     category: categoryOptions[0],
     installments: installmentOptions[0],
+    cardId: "",
     amount: "",
     date: "",
   };
@@ -80,14 +92,101 @@ function FieldShell({ children, className }: FieldShellProps) {
   );
 }
 
+function normalizeAmountInput(value: string) {
+  const sanitized = value.replace(/\s/g, "");
+
+  if (!sanitized) {
+    return null;
+  }
+
+  const normalized = sanitized.replace(/\./g, "").replace(",", ".");
+  const parsed = Number.parseFloat(normalized);
+
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return null;
+  }
+
+  return parsed.toFixed(2);
+}
+
+function resolveDate(value: string, fallbackMonthId: string | null) {
+  if (value) {
+    return value;
+  }
+
+  if (fallbackMonthId) {
+    return `${fallbackMonthId}-01`;
+  }
+
+  return new Date().toISOString().slice(0, 10);
+}
+
+function parseInstallments(value: string) {
+  const [currentInstallment, totalInstallments] = value.split("/");
+  const current = Number.parseInt(currentInstallment ?? "1", 10);
+  const total = Number.parseInt(totalInstallments ?? "1", 10);
+
+  if (!Number.isFinite(current) || !Number.isFinite(total) || total < 1) {
+    return 1;
+  }
+
+  return total;
+}
+
+function mapExpenseMethodToApi(method: string): ApiTransationPaymentMethod {
+  switch (method) {
+    case "Debito":
+      return "DEBIT_CARD";
+    case "Pix":
+      return "PIX";
+    case "Credito":
+      return "CREDIT_CARD";
+    case "Boleto":
+      return "BANK_SLIP";
+    default:
+      return "OTHER";
+  }
+}
+
+function mapExpenseCategoryToApi(category: string): ApiTransationCategory {
+  switch (category) {
+    case "Mercado":
+    case "IFood/restaurante":
+      return "FOOD";
+    case "Aluguel":
+      return "HOUSING";
+    case "Uber/transporte":
+      return "TRANSPORTION";
+    case "Saude":
+      return "HEALTH";
+    case "Contas":
+    case "Assinaturas":
+      return "UTILITY";
+    case "Lazer":
+    case "Presentes":
+      return "ENTERTAINMENT";
+    default:
+      return "OTHER";
+  }
+}
+
 export function AddMonthlyExpenseModal({
   isOpen,
   onClose,
+  userId,
+  fallbackMonthId,
+  onCreated,
 }: AddMonthlyExpenseModalProps) {
   const dateInputRef = useRef<HTMLInputElement | null>(null);
   const [formState, setFormState] = useState<MonthlyExpenseFormState>(() =>
     createInitialFormState(),
   );
+  const [cards, setCards] = useState<ApiCardItem[]>([]);
+  const [isLoadingCards, setIsLoadingCards] = useState(false);
+  const [cardsErrorMessage, setCardsErrorMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isCreditCard = formState.method === "Credito";
 
   function handleDateIconClick() {
     const input = dateInputRef.current;
@@ -106,6 +205,11 @@ export function AddMonthlyExpenseModal({
   useEffect(() => {
     if (!isOpen) {
       setFormState(createInitialFormState());
+      setCards([]);
+      setIsLoadingCards(false);
+      setCardsErrorMessage(null);
+      setErrorMessage(null);
+      setIsSubmitting(false);
       return;
     }
 
@@ -121,6 +225,51 @@ export function AddMonthlyExpenseModal({
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen, onClose]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    let isMounted = true;
+    setIsLoadingCards(true);
+    setCardsErrorMessage(null);
+
+    getCardsByUserId(userId)
+      .then((response) => {
+        if (!isMounted) {
+          return;
+        }
+
+        const nextCards = response.data ?? [];
+        setCards(nextCards);
+        setFormState((current) => ({
+          ...current,
+          cardId: current.cardId || nextCards[0]?.id || "",
+        }));
+      })
+      .catch((error) => {
+        if (!isMounted) {
+          return;
+        }
+
+        setCards([]);
+        setCardsErrorMessage(
+          error instanceof Error
+            ? error.message
+            : "Nao foi possivel carregar os cartoes.",
+        );
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoadingCards(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isOpen, userId]);
 
   if (!isOpen) {
     return null;
@@ -158,9 +307,62 @@ export function AddMonthlyExpenseModal({
 
         <form
           className="space-y-7 px-7 py-8 sm:px-8 sm:py-9"
-          onSubmit={(event) => {
+          onSubmit={async (event) => {
             event.preventDefault();
-            onClose();
+
+            const amount = normalizeAmountInput(formState.amount);
+            const name = formState.name.trim();
+            const paymentMethod = mapExpenseMethodToApi(formState.method);
+            const installments =
+              paymentMethod === "CREDIT_CARD"
+                ? parseInstallments(formState.installments)
+                : 1;
+
+            if (!name) {
+              setErrorMessage("Informe o nome do lancamento.");
+              return;
+            }
+
+            if (!amount) {
+              setErrorMessage("Informe um valor valido maior que zero.");
+              return;
+            }
+
+            if (paymentMethod === "CREDIT_CARD" && !formState.cardId) {
+              setErrorMessage("Selecione o cartao da compra no credito.");
+              return;
+            }
+
+            setIsSubmitting(true);
+            setErrorMessage(null);
+
+            try {
+              await createTransation({
+                userId,
+                name,
+                type: "EXPENSE",
+                amount,
+                category: mapExpenseCategoryToApi(formState.category),
+                paymentMethod,
+                installments,
+                ...(paymentMethod === "CREDIT_CARD"
+                  ? { cardId: formState.cardId }
+                  : {}),
+                Date: resolveDate(formState.date, fallbackMonthId),
+                withdrawal: "DEPOSIT",
+              });
+
+              onCreated();
+              onClose();
+            } catch (error) {
+              setErrorMessage(
+                error instanceof Error
+                  ? error.message
+                  : "Nao foi possivel salvar o lancamento.",
+              );
+            } finally {
+              setIsSubmitting(false);
+            }
           }}
         >
           <div>
@@ -264,6 +466,49 @@ export function AddMonthlyExpenseModal({
               </FieldShell>
             </div>
 
+            {isCreditCard ? (
+              <div className="sm:col-span-2">
+                <FieldLabel>Cartao</FieldLabel>
+                <FieldShell>
+                  <select
+                    value={formState.cardId}
+                    onChange={(event) =>
+                      setFormState((current) => ({
+                        ...current,
+                        cardId: event.target.value,
+                      }))
+                    }
+                    disabled={isLoadingCards || cards.length === 0}
+                    className="h-14 w-full appearance-none rounded-[0.55rem] border-0 bg-transparent px-4 pr-12 text-[1rem] text-foreground outline-none disabled:text-[#8b8b98] sm:text-[1.05rem]"
+                  >
+                    {isLoadingCards ? (
+                      <option value="">Carregando cartoes...</option>
+                    ) : cards.length === 0 ? (
+                      <option value="">Nenhum cartao cadastrado</option>
+                    ) : null}
+                    {cards.map((card) => (
+                      <option key={card.id} value={card.id}>
+                        {card.name}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown
+                    aria-hidden
+                    size={20}
+                    className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-muted"
+                  />
+                </FieldShell>
+                {cardsErrorMessage ? (
+                  <p className="mt-2 text-sm text-[#9a3b65]">{cardsErrorMessage}</p>
+                ) : null}
+                {!isLoadingCards && !cardsErrorMessage && cards.length === 0 ? (
+                  <p className="mt-2 text-sm text-[#9a3b65]">
+                    Cadastre um cartao para salvar compras no credito com vinculacao.
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+
             <div>
               <FieldLabel>Valor</FieldLabel>
               <FieldShell className="flex items-center">
@@ -321,19 +566,27 @@ export function AddMonthlyExpenseModal({
             </div>
           </div>
 
+          {errorMessage ? (
+            <div className="rounded-[0.5rem] border border-[#efc2d4] bg-[#fff5f8] px-4 py-3 text-sm text-[#9a3b65]">
+              {errorMessage}
+            </div>
+          ) : null}
+
           <div className="grid gap-4 pt-2 sm:grid-cols-2">
             <button
               type="button"
               onClick={onClose}
+              disabled={isSubmitting}
               className="h-14 rounded-[0.5rem] border border-[#da4f8a] bg-white px-4 text-[1rem] font-semibold text-primary transition hover:bg-[#fff3f7]"
             >
               Cancelar
             </button>
             <button
               type="submit"
+              disabled={isSubmitting}
               className="h-14 rounded-[0.5rem] bg-primary px-4 text-[1rem] font-semibold text-white transition hover:bg-primary-strong"
             >
-              Salvar Lancamento
+              {isSubmitting ? "Salvando..." : "Salvar Lancamento"}
             </button>
           </div>
         </form>

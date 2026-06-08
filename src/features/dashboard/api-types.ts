@@ -70,6 +70,21 @@ export type ApiCardAggregateResponse = {
   }>;
 };
 
+export type ApiCardItem = {
+  id: string;
+  name: string;
+  invoiceDate: string;
+  limitBalance: ApiNumericValue;
+  invoicePayment: string;
+  userId: string;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type ApiCardsResponse = {
+  data?: ApiCardItem[];
+};
+
 export type ApiDashboardMonthlyResponse = {
   summary: ApiSummaryResponse;
   fixedCosts: ApiFixedCostsResponse;

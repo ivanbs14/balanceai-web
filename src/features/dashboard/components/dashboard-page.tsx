@@ -452,6 +452,13 @@ export function DashboardPage({ userId }: DashboardPageProps) {
             <AddMonthlyExpenseModal
               isOpen={isAddMonthlyExpenseModalOpen}
               onClose={() => setIsAddMonthlyExpenseModalOpen(false)}
+              userId={userId}
+              fallbackMonthId={activeMonthId}
+              onCreated={() => {
+                setIsLoading(true);
+                setErrorMessage(null);
+                setReloadToken((current) => current + 1);
+              }}
             />
             <AccordionCard
               title="Gastos do Mês"
@@ -492,10 +499,24 @@ export function DashboardPage({ userId }: DashboardPageProps) {
           <AddIncomeModal
             isOpen={isAddIncomeModalOpen}
             onClose={() => setIsAddIncomeModalOpen(false)}
+            userId={userId}
+            fallbackMonthId={activeMonthId}
+            onCreated={() => {
+              setIsLoading(true);
+              setErrorMessage(null);
+              setReloadToken((current) => current + 1);
+            }}
           />
           <AddInvestmentModal
             isOpen={isAddInvestmentModalOpen}
             onClose={() => setIsAddInvestmentModalOpen(false)}
+            userId={userId}
+            fallbackMonthId={activeMonthId}
+            onCreated={() => {
+              setIsLoading(true);
+              setErrorMessage(null);
+              setReloadToken((current) => current + 1);
+            }}
           />
           <BreakdownListCard
             title="Entradas"

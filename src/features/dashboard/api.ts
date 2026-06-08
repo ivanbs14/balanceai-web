@@ -1,5 +1,6 @@
 import type {
   ApiCardAggregateResponse,
+  ApiCardsResponse,
   ApiDashboardMonthlyResponse,
   ApiFixedCostsResponse,
   ApiSummaryResponse,
@@ -40,6 +41,40 @@ export type DashboardApiPayload = {
 
 export type ApiFixedCostMonthlyStatus = "PAID" | "PENDING";
 export type ApiTransationPaymentStatus = "PAID" | "PENDING";
+export type ApiTransationType = "DEPOSIT" | "EXPENSE" | "INVESTMENT";
+export type ApiTransationCategory =
+  | "HOUSING"
+  | "TRANSPORTION"
+  | "FOOD"
+  | "ENTERTAINMENT"
+  | "HEALTH"
+  | "UTILITY"
+  | "SALARY"
+  | "EDUCATION"
+  | "OTHER";
+export type ApiTransationPaymentMethod =
+  | "CREDIT_CARD"
+  | "DEBIT_CARD"
+  | "Bank_Transfer"
+  | "BANK_SLIP"
+  | "CASH"
+  | "PIX"
+  | "OTHER";
+
+export type CreateTransationPayload = {
+  userId: string;
+  name: string;
+  type: ApiTransationType;
+  amount: string;
+  category: ApiTransationCategory;
+  paymentMethod: ApiTransationPaymentMethod;
+  installments?: number;
+  nameCard?: string;
+  cardId?: string;
+  Date: string;
+  isFixed?: boolean;
+  withdrawal?: "DEPOSIT" | "INVESTMENT";
+};
 
 export async function getDashboardApiPayload(
   userId: string,
@@ -50,6 +85,12 @@ export async function getDashboardApiPayload(
   );
 
   return payload;
+}
+
+export async function getCardsByUserId(userId: string): Promise<ApiCardsResponse> {
+  return fetchDashboardResource<ApiCardsResponse>(
+    `/cards/user/${encodeURIComponent(userId)}`,
+  );
 }
 
 export async function updateFixedCostMonthlyStatus(params: {
@@ -95,4 +136,17 @@ export async function updateTransationPaymentStatus(params: {
   );
 
   await parseJsonResponse<unknown>(response);
+}
+
+export async function createTransation(payload: CreateTransationPayload) {
+  const response = await fetch(`${API_BASE_URL}/transations`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  return parseJsonResponse<ApiTransaction | ApiTransaction[]>(response);
 }
