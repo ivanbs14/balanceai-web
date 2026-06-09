@@ -20,16 +20,9 @@ async function parseJsonResponse<T>(response: Response): Promise<T> {
 }
 
 export async function waitForAuthApiReady() {
-  const response = await fetch(`${API_BASE_URL}/auth/me`, {
+  await fetch(API_BASE_URL, {
     cache: "no-store",
-    credentials: "include",
   });
-
-  if (response.ok || response.status === 401) {
-    return;
-  }
-
-  throw new Error("Nao foi possivel acordar a API para o login");
 }
 
 export async function getSession() {
