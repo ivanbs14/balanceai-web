@@ -58,6 +58,7 @@ export function AuthenticatedHome() {
           }
 
           setUser(session?.user ?? null);
+          setIsApiReady(true);
           setErrorMessage(null);
         })
         .catch(() => {
