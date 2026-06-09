@@ -13,8 +13,8 @@ const jetBrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Controle Financeiro",
-  description: "Dashboard mensal com dados mockados para controle financeiro.",
+  title: "Balance-AI",
+  description: "Balance-AI: dashboard mensal para controle financeiro.",
 };
 
 export default function RootLayout({

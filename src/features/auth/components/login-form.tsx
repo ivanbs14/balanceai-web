@@ -88,7 +88,7 @@ export function LoginForm({
             <Banknote size={34} strokeWidth={2.2} />
           </div>
           <h1 className="text-[40px] font-bold leading-12 tracking-[-0.02em] text-primary">
-            Petal Ledger
+            Balance-AI
           </h1>
           <p className="mt-2 text-sm leading-5 text-foreground">
             Sua vida financeira como um ritual de cuidado.
