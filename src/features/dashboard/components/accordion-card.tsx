@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Plus } from "lucide-react";
+import { CreditCard, Plus } from "lucide-react";
 
 type AccordionCardProps = {
   title: string;
@@ -36,7 +36,7 @@ export function AccordionCard({
     <details
       className={[
         "group min-w-0 bg-surface",
-        borderless ? "" : "border border-border",
+        borderless ? "border-0 sm:border sm:border-border" : "border border-border",
       ].join(" ")}
       open={defaultOpen}
     >
@@ -63,7 +63,12 @@ export function AccordionCard({
           >
             ▾
           </span>
-          <div className={["flex min-w-0 flex-wrap items-center", compact ? "gap-2" : "gap-3"].join(" ")}>
+          <div
+            className={[
+              "flex min-w-0 flex-wrap items-center",
+              compact ? "gap-x-2 gap-y-0.5 sm:gap-2" : "gap-3",
+            ].join(" ")}
+          >
             <h2
               className={[
                 "font-semibold tracking-tight text-primary",
@@ -92,12 +97,23 @@ export function AccordionCard({
                   event.stopPropagation();
                   onTitleActionClick?.();
                 }}
+                aria-label={titleActionLabel}
                 className={[
-                  "inline-flex items-center border-b border-transparent pt-0.5 font-medium text-[#d61b72] transition hover:border-[#d61b72] hover:text-[#b31660]",
-                  compact ? "text-[0.78rem] sm:text-sm" : "text-sm",
+                  "inline-flex items-center justify-center rounded-full text-[#d61b72] transition hover:bg-[#ffd8e6] hover:text-[#b31660]",
+                  compact ? "h-6 w-6 sm:h-auto sm:w-auto" : "h-7 w-7",
                 ].join(" ")}
               >
-                {titleActionLabel}
+                <span className="sm:hidden">
+                  <CreditCard size={compact ? 16 : 18} strokeWidth={2.2} />
+                </span>
+                <span
+                  className={[
+                    "hidden sm:inline-flex sm:items-center sm:border-b sm:border-transparent sm:pt-0.5 sm:font-medium sm:hover:border-[#d61b72]",
+                    compact ? "sm:text-sm sm:leading-none" : "sm:text-sm",
+                  ].join(" ")}
+                >
+                  {titleActionLabel}
+                </span>
               </button>
             ) : null}
           </div>

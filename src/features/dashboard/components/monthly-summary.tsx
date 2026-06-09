@@ -16,7 +16,7 @@ export function MonthlySummary({ summary }: MonthlySummaryProps) {
   return (
     <>
       <SummaryCard
-        label="Total de Gastos"
+        label="Total Gastos"
         value={formatCurrency(summary.totalExpenses)}
       />
       <SummaryCard

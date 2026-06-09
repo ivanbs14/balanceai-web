@@ -1,7 +1,18 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Bolt, FunnelPlus, LocateFixed, Trash2 } from "lucide-react";
+import {
+  BadgeDollarSign,
+  Bolt,
+  CreditCard,
+  FunnelPlus,
+  Landmark,
+  LocateFixed,
+  QrCode,
+  Ticket,
+  Trash2,
+  Wallet,
+} from "lucide-react";
 import {
   deleteTransation,
   getDashboardApiPayload,
@@ -35,6 +46,13 @@ function formatCurrency(value: number) {
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
     currency: "BRL",
+  }).format(value);
+}
+
+function formatCurrencyWithoutSymbol(value: number) {
+  return new Intl.NumberFormat("pt-BR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   }).format(value);
 }
 
@@ -297,11 +315,33 @@ export function DashboardPage({ userId }: DashboardPageProps) {
       <FunnelPlus size={14} strokeWidth={2.2} aria-hidden />
     );
 
+  function renderMobilePaymentTypeIcon(paymentType: string) {
+    const iconProps = { size: 15, strokeWidth: 2.1, "aria-hidden": true as const };
+
+    switch (paymentType) {
+      case "Cartao de Credito":
+      case "Credito":
+        return <CreditCard {...iconProps} />;
+      case "Debito":
+        return <Wallet {...iconProps} />;
+      case "Pix":
+        return <QrCode {...iconProps} />;
+      case "Boleto":
+        return <Ticket {...iconProps} />;
+      case "Dinheiro":
+        return <BadgeDollarSign {...iconProps} />;
+      case "Transferencia":
+        return <Landmark {...iconProps} />;
+      default:
+        return <Wallet {...iconProps} />;
+    }
+  }
+
   const monthlyExpensesColumns = [
     {
       key: "name",
       header: "Nome",
-      width: isMobileViewport ? "minmax(110px, 1.7fr)" : undefined,
+      width: isMobileViewport ? "minmax(96px, 1.65fr)" : undefined,
       render: (row: MonthlyExpenseItem) => row.name,
     },
     {
@@ -313,8 +353,17 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     {
       key: "type",
       header: "Tipo",
-      width: isMobileViewport ? "minmax(64px, 0.8fr)" : undefined,
-      render: (row: MonthlyExpenseItem) => row.paymentType,
+      width: isMobileViewport ? "40px" : undefined,
+      render: (row: MonthlyExpenseItem) =>
+        isMobileViewport ? (
+          <span
+            className="inline-flex items-center justify-center"
+            aria-label={row.paymentType}
+            title={row.paymentType}
+          >
+            {renderMobilePaymentTypeIcon(row.paymentType)}
+          </span>
+        ) : row.paymentType,
     },
     {
       key: "fixed",
@@ -322,30 +371,48 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         <button
           type="button"
           onClick={handleFixedFilterToggle}
-          className="inline-flex items-center gap-1.5"
+          className="inline-flex items-center justify-center gap-1.5"
           aria-label="Alternar filtro da coluna Fixos"
           title="Clique para alternar: Fixos, Nao fixos e Todos"
         >
-          <span>Fixos</span>
+          <span className="hidden sm:inline">Fixos</span>
           {fixedHeaderIcon}
         </button>
       ),
       align: "center" as const,
-      width: "92px",
-      render: (row: MonthlyExpenseItem) => (row.isFixed ? "Sim" : "Nao"),
+      width: isMobileViewport ? "40px" : "92px",
+      render: (row: MonthlyExpenseItem) =>
+        isMobileViewport ? (
+          <span
+            className="inline-flex items-center justify-center"
+            aria-label={row.isFixed ? "Fixo" : "Nao fixo"}
+            title={row.isFixed ? "Fixo" : "Nao fixo"}
+          >
+            {row.isFixed ? (
+              <LocateFixed size={15} strokeWidth={2.1} aria-hidden />
+            ) : (
+              <Bolt size={15} strokeWidth={2.1} aria-hidden />
+            )}
+          </span>
+        ) : (
+          (row.isFixed ? "Sim" : "Nao")
+        ),
     },
     {
       key: "amount",
       header: "Valor",
       align: "right" as const,
-      width: isMobileViewport ? "minmax(86px, 0.9fr)" : undefined,
-      render: (row: MonthlyExpenseItem) => formatCurrency(row.amount),
+      width: isMobileViewport ? "minmax(78px, 0.9fr)" : undefined,
+      render: (row: MonthlyExpenseItem) =>
+        isMobileViewport
+          ? formatCurrencyWithoutSymbol(row.amount)
+          : formatCurrency(row.amount),
     },
     {
       key: "paid",
       header: "Pago",
       align: "center" as const,
-      width: "76px",
+      width: isMobileViewport ? "48px" : "76px",
       render: (row: MonthlyExpenseItem) => {
         const isUpdating = updatingTransactionIds.includes(row.id);
 
@@ -369,7 +436,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
       key: "actions",
       header: "Acoes",
       align: "center" as const,
-      width: isMobileViewport ? "56px" : "84px",
+      width: isMobileViewport ? "40px" : "84px",
       render: (row: MonthlyExpenseItem) => {
         const isDeleting = deletingTransactionIds.includes(row.id);
 
@@ -430,7 +497,10 @@ export function DashboardPage({ userId }: DashboardPageProps) {
       key: "amount",
       header: "Valor",
       align: "right" as const,
-      render: (row: CreditCardItem) => formatCurrency(row.amount),
+      render: (row: CreditCardItem) =>
+        isMobileViewport
+          ? formatCurrencyWithoutSymbol(row.amount)
+          : formatCurrency(row.amount),
     },
     {
       key: "actions",
@@ -636,6 +706,10 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         setIsAddCardModalOpen(true);
       }}
       total={formatCurrency(sumAmounts(dashboardData.creditCard))}
+      compact
+      flushHorizontalPadding
+      borderless
+      minimalHorizontalPaddingOnMobile
     >
       <LedgerTableCard<CreditCardItem>
         title="Cartão de Crédito"
@@ -644,6 +718,9 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         columns={creditCardColumns}
         hideHeader
         embedded
+        compact
+        flushHorizontalPadding
+        borderlessOnMobile
       />
     </AccordionCard>
   );
