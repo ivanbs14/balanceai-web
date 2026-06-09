@@ -679,7 +679,6 @@ export function DashboardPage({ userId }: DashboardPageProps) {
       defaultOpen
       compact
       flushHorizontalPadding
-      borderless
       minimalHorizontalPaddingOnMobile
     >
       <LedgerTableCard<MonthlyExpenseItem>
@@ -708,7 +707,6 @@ export function DashboardPage({ userId }: DashboardPageProps) {
       total={formatCurrency(sumAmounts(dashboardData.creditCard))}
       compact
       flushHorizontalPadding
-      borderless
       minimalHorizontalPaddingOnMobile
     >
       <LedgerTableCard<CreditCardItem>

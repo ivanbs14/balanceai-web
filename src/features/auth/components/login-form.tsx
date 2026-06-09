@@ -5,7 +5,6 @@ import {
   Banknote,
   Eye,
   EyeOff,
-  LogIn,
   Lock,
   Mail,
   ShieldCheck,
@@ -17,6 +16,34 @@ type LoginFormProps = {
   onGoogleLogin: () => void;
   onSubmit: (email: string, password: string) => Promise<void>;
 };
+
+function GoogleMark() {
+  return (
+    <svg
+      aria-hidden
+      viewBox="0 0 48 48"
+      className="h-7 w-7 shrink-0"
+      role="img"
+    >
+      <path
+        fill="#FFC107"
+        d="M43.61 20.08H42V20H24v8h11.3C33.65 32.66 29.2 36 24 36c-6.62 0-12-5.38-12-12S17.38 12 24 12c3.06 0 5.84 1.15 7.96 3.04l5.66-5.66C34.05 6.05 29.27 4 24 4 12.95 4 4 12.95 4 24s8.95 20 20 20 20-8.95 20-20c0-1.34-.14-2.65-.39-3.92Z"
+      />
+      <path
+        fill="#FF3D00"
+        d="M6.31 14.69 12.88 19.5C14.66 15.09 18.98 12 24 12c3.06 0 5.84 1.15 7.96 3.04l5.66-5.66C34.05 6.05 29.27 4 24 4 16.32 4 9.66 8.34 6.31 14.69Z"
+      />
+      <path
+        fill="#4CAF50"
+        d="M24 44c5.17 0 9.86-1.98 13.41-5.2l-6.19-5.24C29.15 35.15 26.68 36 24 36c-5.18 0-9.62-3.32-11.28-7.95l-6.52 5.02C9.51 39.56 16.22 44 24 44Z"
+      />
+      <path
+        fill="#1976D2"
+        d="M43.61 20.08H42V20H24v8h11.3a12.02 12.02 0 0 1-4.09 5.56l.01-.01 6.19 5.24C36.97 39.17 44 34 44 24c0-1.34-.14-2.65-.39-3.92Z"
+      />
+    </svg>
+  );
+}
 
 export function LoginForm({
   errorMessage,
@@ -163,10 +190,10 @@ export function LoginForm({
               type="button"
               onClick={onGoogleLogin}
               disabled={isSubmitting}
-              className="flex w-full items-center justify-center gap-2 border border-[#f3bfd0] bg-white px-4 py-3 text-[13px] font-semibold text-[#5f0f2c] transition hover:border-primary disabled:cursor-not-allowed disabled:opacity-70"
+              className="flex w-full items-center justify-center gap-4 border border-[#f3bfd0] bg-white px-4 py-3.5 text-[22px] font-medium tracking-[-0.02em] text-[#5f0f2c] transition hover:border-primary disabled:cursor-not-allowed disabled:opacity-70"
             >
-              <LogIn size={16} />
-              Entrar com Google
+              <GoogleMark />
+              Google
             </button>
           </form>
 
