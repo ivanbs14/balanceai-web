@@ -184,13 +184,13 @@ export function AddInvestmentModal({
       role="presentation"
     >
       <div
-        className="w-full max-w-[650px] overflow-hidden rounded-[1rem] border-2 border-border-strong bg-surface shadow-[0_30px_80px_rgba(0,0,0,0.38)]"
+        className="w-full max-w-[650px] overflow-hidden rounded-[1rem] border-2 border-ring bg-surface shadow-[0_30px_80px_rgba(0,0,0,0.38)]"
         onClick={(event) => event.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="add-investment-modal-title"
       >
-        <div className="flex items-center justify-between bg-primary px-3 py-3 text-white sm:px-6 sm:py-5">
+        <div className="flex items-center justify-between bg-ring px-3 py-3 text-white sm:px-6 sm:py-5">
           <h2
             id="add-investment-modal-title"
             className="text-[1.25rem] font-semibold tracking-tight sm:text-[2.1rem]"
@@ -401,7 +401,7 @@ export function AddInvestmentModal({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="h-10 rounded-[0.5rem] bg-primary px-2.5 text-[0.88rem] font-semibold text-white transition hover:bg-primary-strong sm:h-14 sm:px-4 sm:text-[1rem]"
+              className="h-10 rounded-[0.5rem] bg-ring px-2.5 text-[0.88rem] font-semibold text-white transition hover:bg-primary-strong sm:h-14 sm:px-4 sm:text-[1rem]"
             >
               {isSubmitting ? "Salvando..." : "Salvar Lancamento"}
             </button>

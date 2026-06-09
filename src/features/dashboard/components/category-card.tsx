@@ -25,7 +25,7 @@ export function CategoryCard({ items }: CategoryCardProps) {
 
   return (
     <article className="border border-border bg-surface p-3.5 sm:p-5">
-      <h2 className="text-[0.98rem] font-semibold tracking-tight text-primary sm:text-[1.25rem]">
+      <h2 className="text-[0.98rem] font-semibold tracking-tight text-white sm:text-[1.25rem]">
         Gastos por Categoria
       </h2>
 

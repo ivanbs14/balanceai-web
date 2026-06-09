@@ -53,13 +53,13 @@ export function DeleteTransactionModal({
       role="presentation"
     >
       <div
-        className="w-full max-w-[560px] overflow-hidden rounded-[1rem] border-2 border-border-strong bg-surface shadow-[0_30px_80px_rgba(0,0,0,0.38)]"
+        className="w-full max-w-[560px] overflow-hidden rounded-[1rem] border-2 border-ring bg-surface shadow-[0_30px_80px_rgba(0,0,0,0.38)]"
         onClick={(event) => event.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="delete-transaction-modal-title"
       >
-        <div className="flex items-center justify-between bg-primary px-3 py-3 text-white sm:px-6 sm:py-5">
+        <div className="flex items-center justify-between bg-ring px-3 py-3 text-white sm:px-6 sm:py-5">
           <div className="flex items-center gap-1.5 sm:gap-3">
             <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/12 sm:h-11 sm:w-11">
               <AlertTriangle size={18} strokeWidth={2.2} aria-hidden />
@@ -105,7 +105,7 @@ export function DeleteTransactionModal({
               type="button"
               onClick={onConfirm}
               disabled={isSubmitting}
-              className="inline-flex items-center justify-center gap-1 rounded-[0.7rem] bg-primary px-3 py-2 text-[0.74rem] font-semibold uppercase tracking-[0.1em] text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 sm:gap-2 sm:px-5 sm:py-3 sm:text-sm sm:tracking-[0.16em]"
+              className="inline-flex items-center justify-center gap-1 rounded-[0.7rem] bg-ring px-3 py-2 text-[0.74rem] font-semibold uppercase tracking-[0.1em] text-white transition hover:bg-primary-strong disabled:cursor-not-allowed disabled:opacity-60 sm:gap-2 sm:px-5 sm:py-3 sm:text-sm sm:tracking-[0.16em]"
             >
               <Trash2 size={14} strokeWidth={2.1} aria-hidden />
               <span>{isSubmitting ? "Deletando..." : "Deletar"}</span>

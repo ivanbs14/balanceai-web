@@ -18,16 +18,19 @@ const toneStyles = {
     title: "text-primary",
     accent: "text-primary",
     chip: "bg-primary-soft text-primary",
+    icon: "text-primary",
   },
   expense: {
-    title: "text-chart-1",
-    accent: "text-chart-1",
-    chip: "bg-chart-1/15 text-chart-1",
+    title: "text-danger-foreground",
+    accent: "text-danger-foreground",
+    chip: "bg-danger-soft text-danger-foreground",
+    icon: "text-danger-foreground",
   },
   investment: {
-    title: "text-chart-3",
-    accent: "text-chart-3",
-    chip: "bg-chart-3/12 text-chart-3",
+    title: "text-chart-2",
+    accent: "text-chart-2",
+    chip: "bg-chart-2/15 text-chart-2",
+    icon: "text-chart-2",
   },
 } as const;
 
@@ -71,7 +74,8 @@ export function BreakdownListCard({
               onClick={onAddClick}
               aria-label={addButtonLabel ?? `Adicionar item em ${title}`}
               className={[
-                "inline-flex h-7 w-7 items-center justify-center rounded-full text-primary transition sm:h-9 sm:w-9",
+                "inline-flex h-7 w-7 items-center justify-center rounded-full transition sm:h-9 sm:w-9",
+                styles.icon,
                 addButtonVariant === "ghost"
                   ? "border border-transparent bg-transparent hover:bg-primary-soft hover:text-primary-strong"
                   : "border border-border bg-surface-soft hover:border-border-strong hover:bg-primary hover:text-white",
