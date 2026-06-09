@@ -160,6 +160,22 @@ export function DashboardPage({ userId }: DashboardPageProps) {
   const [isAddIncomeModalOpen, setIsAddIncomeModalOpen] = useState(false);
   const [isAddInvestmentModalOpen, setIsAddInvestmentModalOpen] = useState(false);
   const [isAddMonthlyExpenseModalOpen, setIsAddMonthlyExpenseModalOpen] = useState(false);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 639px)");
+
+    const syncViewport = () => {
+      setIsMobileViewport(mediaQuery.matches);
+    };
+
+    syncViewport();
+    mediaQuery.addEventListener("change", syncViewport);
+
+    return () => {
+      mediaQuery.removeEventListener("change", syncViewport);
+    };
+  }, []);
 
   useEffect(() => {
     if (!activeMonthId) {
@@ -282,15 +298,22 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     );
 
   const monthlyExpensesColumns = [
-    { key: "name", header: "Nome", render: (row: MonthlyExpenseItem) => row.name },
+    {
+      key: "name",
+      header: "Nome",
+      width: isMobileViewport ? "minmax(110px, 1.7fr)" : undefined,
+      render: (row: MonthlyExpenseItem) => row.name,
+    },
     {
       key: "category",
       header: "Categoria",
+      width: isMobileViewport ? "minmax(72px, 0.85fr)" : undefined,
       render: (row: MonthlyExpenseItem) => row.category,
     },
     {
       key: "type",
       header: "Tipo",
+      width: isMobileViewport ? "minmax(64px, 0.8fr)" : undefined,
       render: (row: MonthlyExpenseItem) => row.paymentType,
     },
     {
@@ -315,6 +338,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
       key: "amount",
       header: "Valor",
       align: "right" as const,
+      width: isMobileViewport ? "minmax(86px, 0.9fr)" : undefined,
       render: (row: MonthlyExpenseItem) => formatCurrency(row.amount),
     },
     {
@@ -345,7 +369,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
       key: "actions",
       header: "Acoes",
       align: "center" as const,
-      width: "84px",
+      width: isMobileViewport ? "56px" : "84px",
       render: (row: MonthlyExpenseItem) => {
         const isDeleting = deletingTransactionIds.includes(row.id);
 
@@ -366,6 +390,9 @@ export function DashboardPage({ userId }: DashboardPageProps) {
       },
     },
   ];
+  const visibleMonthlyExpensesColumns = isMobileViewport
+    ? monthlyExpensesColumns.filter((column) => column.key !== "category")
+    : monthlyExpensesColumns;
 
   const creditCardColumns = [
     {
@@ -409,7 +436,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
       key: "actions",
       header: "Acoes",
       align: "center" as const,
-      width: "84px",
+      width: isMobileViewport ? "56px" : "84px",
       render: (row: CreditCardItem) => {
         const isDeleting = deletingTransactionIds.includes(row.id);
 
@@ -580,14 +607,21 @@ export function DashboardPage({ userId }: DashboardPageProps) {
       showPlusBeforeTotal
       onPlusClick={() => setIsAddMonthlyExpenseModalOpen(true)}
       defaultOpen
+      compact
+      flushHorizontalPadding
+      borderless
+      minimalHorizontalPaddingOnMobile
     >
       <LedgerTableCard<MonthlyExpenseItem>
         title="Gastos do Mês"
         total={formatCurrency(sumAmounts(filteredMonthlyExpenses))}
         rows={filteredMonthlyExpenses}
-        columns={monthlyExpensesColumns}
+        columns={visibleMonthlyExpensesColumns}
         hideHeader
         embedded
+        compact
+        flushHorizontalPadding
+        borderlessOnMobile
       />
     </AccordionCard>
   );
@@ -711,7 +745,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         summaryCards={summaryCards}
         primaryTable={null}
         secondaryTables={
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-2 sm:gap-6">
             {dashboardFeedback}
             {monthlyExpensesSection}
             {creditCardSection}

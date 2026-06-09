@@ -20,10 +20,11 @@ export function MonthSelector({
   const sortedMonths = [...months].sort((left, right) =>
     left.id.localeCompare(right.id, "pt-BR", { numeric: true }),
   );
+  const selectedMonthId = activeMonthId ?? sortedMonths[0]?.id ?? "";
 
   return (
-    <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:gap-4">
-      <div className="flex items-center gap-2 lg:flex-shrink-0">
+    <div className="flex flex-row flex-wrap items-start gap-x-4 gap-y-1 sm:flex-col sm:gap-3 lg:flex-row lg:items-start lg:gap-4">
+      <div className="flex items-center gap-0.5 sm:gap-2 lg:flex-shrink-0">
         <label htmlFor="dashboard-year-select" className="text-xs font-semibold uppercase tracking-[0.12em] text-primary">
           Ano: 
         </label>
@@ -31,7 +32,7 @@ export function MonthSelector({
           id="dashboard-year-select"
           value={activeYear}
           onChange={(event) => onYearChange(Number(event.target.value))}
-          className="min-w-24 rounded-xl border border-border bg-surface px-3 py-2 text-sm font-semibold text-primary outline-none transition focus:border-primary"
+          className="min-w-20 rounded-xl border border-border bg-surface px-2 py-1.5 text-sm font-semibold text-primary outline-none transition focus:border-primary sm:min-w-24 sm:px-3 sm:py-2"
         >
           {years.map((year) => (
             <option key={year} value={year}>
@@ -40,31 +41,22 @@ export function MonthSelector({
           ))}
         </select>
       </div>
-      <div className="flex flex-wrap gap-2">
-        {sortedMonths.map((month) => {
-          const isActive = month.id === activeMonthId;
-          const isDisabled = month.disabled;
-
-          return (
-            <button
-              key={month.id}
-              type="button"
-              onClick={() => onMonthChange(month.id)}
-              disabled={isDisabled}
-              aria-pressed={isActive}
-              className={[
-                "min-w-20 rounded-xl border px-3 py-1.5 text-xs font-semibold transition-colors sm:text-sm",
-                isActive
-                  ? "border-primary bg-primary text-white"
-                  : isDisabled
-                    ? "cursor-not-allowed border-border/70 bg-surface/60 text-muted"
-                    : "border-border bg-surface text-primary hover:border-primary/70",
-              ].join(" ")}
-            >
+      <div className="flex items-center gap-0.5 sm:gap-2 lg:flex-shrink-0">
+        <label htmlFor="dashboard-month-select" className="text-xs font-semibold uppercase tracking-[0.12em] text-primary">
+          Mes:
+        </label>
+        <select
+          id="dashboard-month-select"
+          value={selectedMonthId}
+          onChange={(event) => onMonthChange(event.target.value as MonthId)}
+          className="min-w-28 rounded-xl border border-border bg-surface px-2 py-1.5 text-sm font-semibold text-primary outline-none transition focus:border-primary sm:min-w-32 sm:px-3 sm:py-2"
+        >
+          {sortedMonths.map((month) => (
+            <option key={month.id} value={month.id} disabled={month.disabled}>
               {month.label}
-            </button>
-          );
-        })}
+            </option>
+          ))}
+        </select>
       </div>
     </div>
   );

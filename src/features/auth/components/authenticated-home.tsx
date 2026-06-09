@@ -126,7 +126,7 @@ export function AuthenticatedHome() {
 
   return (
     <div className="relative">
-      <div className="absolute top-4 left-1/2 z-20 w-full max-w-[1440px] -translate-x-1/2 px-6 lg:px-10">
+      <div className="absolute top-4 left-1/2 z-20 w-full max-w-none -translate-x-1/2 px-1 sm:max-w-[1440px] sm:px-6 lg:px-10">
         <div className="flex justify-end gap-3">
           <div className="hidden h-10 items-center border border-border bg-surface px-5 text-sm text-primary sm:inline-flex">
             {user.name}
@@ -135,7 +135,7 @@ export function AuthenticatedHome() {
             type="button"
             onClick={handleLogout}
             disabled={isSubmitting}
-            className="inline-flex h-10 items-center justify-center border border-primary bg-surface px-5 text-sm font-semibold text-primary transition hover:bg-primary hover:text-white disabled:cursor-not-allowed disabled:opacity-70"
+            className="inline-flex h-8 items-center justify-center border border-primary bg-surface px-3 text-[0.8rem] font-semibold text-primary transition hover:bg-primary hover:text-white disabled:cursor-not-allowed disabled:opacity-70 sm:h-10 sm:px-5 sm:text-sm"
           >
             {isSubmitting ? "Saindo..." : "Sair"}
           </button>

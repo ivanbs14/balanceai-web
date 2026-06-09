@@ -16,6 +16,9 @@ type LedgerTableCardProps<T> = {
   addLabel?: string;
   hideHeader?: boolean;
   embedded?: boolean;
+  compact?: boolean;
+  flushHorizontalPadding?: boolean;
+  borderlessOnMobile?: boolean;
 };
 
 export function LedgerTableCard<T>({
@@ -26,19 +29,32 @@ export function LedgerTableCard<T>({
   addLabel,
   hideHeader = false,
   embedded = false,
+  compact = false,
+  flushHorizontalPadding = false,
+  borderlessOnMobile = false,
 }: LedgerTableCardProps<T>) {
   const gridTemplateColumns = columns
     .map((column) => column.width ?? "minmax(0, 1fr)")
     .join(" ");
 
   return (
-    <article className={embedded ? "" : "border border-border bg-surface p-5"}>
+    <article className={embedded ? "min-w-0" : "min-w-0 border border-border bg-surface p-5"}>
       {!hideHeader ? (
         <div className="flex items-start justify-between gap-4">
-          <h2 className="text-[1.35rem] font-semibold tracking-tight text-primary sm:text-[1.45rem]">
+          <h2
+            className={[
+              "font-semibold tracking-tight text-primary",
+              compact ? "text-[1rem] sm:text-[1.05rem]" : "text-[1.35rem] sm:text-[1.45rem]",
+            ].join(" ")}
+          >
             {title}
           </h2>
-          <p className="pt-2 text-[1.3rem] font-semibold text-foreground sm:text-[1.45rem]">
+          <p
+            className={[
+              "font-semibold text-foreground",
+              compact ? "pt-1 text-[1rem] sm:text-[1.05rem]" : "pt-2 text-[1.3rem] sm:text-[1.45rem]",
+            ].join(" ")}
+          >
             {total}
           </p>
         </div>
@@ -46,12 +62,13 @@ export function LedgerTableCard<T>({
 
       <div
         className={[
-          "overflow-hidden border border-border",
+          "min-w-0 w-full max-w-full overflow-x-auto sm:overflow-hidden",
+          borderlessOnMobile ? "border-0 sm:border sm:border-border" : "border border-border",
           hideHeader ? "mt-0" : "mt-5",
         ].join(" ")}
       >
         <div
-          className="grid bg-surface-soft"
+          className="grid min-w-max bg-surface-soft sm:min-w-0"
           style={{
             gridTemplateColumns,
           }}
@@ -60,7 +77,12 @@ export function LedgerTableCard<T>({
             <div
               key={column.key}
               className={[
-                "border-b border-border px-4 py-2 font-mono text-[0.65rem] uppercase tracking-[0.18em] text-primary sm:text-[0.7rem]",
+                "font-mono uppercase text-primary",
+                borderlessOnMobile ? "border-b-0 sm:border-b sm:border-border" : "border-b border-border",
+                flushHorizontalPadding ? "px-1 sm:px-4" : "px-4",
+                compact
+                  ? "py-1.5 text-[0.58rem] tracking-[0.12em] sm:py-2 sm:text-[0.7rem] sm:tracking-[0.18em]"
+                  : "py-2 text-[0.65rem] tracking-[0.18em] sm:text-[0.7rem]",
                 column.align === "right"
                   ? "text-right"
                   : column.align === "center"
@@ -76,7 +98,10 @@ export function LedgerTableCard<T>({
         {rows.map((row, rowIndex) => (
           <div
             key={rowIndex}
-            className="grid border-b border-border last:border-b-0"
+            className={[
+              "grid min-w-max last:border-b-0 sm:min-w-0",
+              borderlessOnMobile ? "border-b-0 sm:border-b sm:border-border" : "border-b border-border",
+            ].join(" ")}
             style={{
               gridTemplateColumns,
             }}
@@ -85,7 +110,9 @@ export function LedgerTableCard<T>({
               <div
                 key={column.key}
                 className={[
-                  "px-4 py-2.5 text-sm text-foreground sm:text-[0.95rem]",
+                  "text-foreground",
+                  flushHorizontalPadding ? "px-1 sm:px-4" : "px-4",
+                  compact ? "py-2 text-[0.8rem] sm:py-2.5 sm:text-[0.95rem]" : "py-2.5 text-sm sm:text-[0.95rem]",
                   column.align === "right"
                     ? "text-right"
                     : column.align === "center"
