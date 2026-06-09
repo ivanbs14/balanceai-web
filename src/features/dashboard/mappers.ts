@@ -15,10 +15,10 @@ import type {
 } from "./types";
 
 const categoryColorClasses = [
-  "bg-[#cf0b74]",
-  "bg-[#8d4d76]",
-  "bg-[#9e7b88]",
-  "bg-[#c796ad]",
+  "bg-chart-1",
+  "bg-chart-2",
+  "bg-chart-3",
+  "bg-chart-4",
 ] as const;
 
 const paymentMethodLabels: Record<string, string> = {

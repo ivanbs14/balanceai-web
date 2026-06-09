@@ -1,7 +1,5 @@
 import { AuthSessionResponse } from "./types";
-
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "http://localhost:4000";
+import { API_BASE_URL } from "../../shared/api-config";
 
 export function getGoogleLoginUrl() {
   return `${API_BASE_URL}/auth/google`;

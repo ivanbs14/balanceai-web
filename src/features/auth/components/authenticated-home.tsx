@@ -105,7 +105,7 @@ export function AuthenticatedHome() {
 
   if (isLoading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[linear-gradient(180deg,#fff7f8_0%,#f6e5ec_100%)] px-6 text-primary">
+      <main className="flex min-h-screen items-center justify-center bg-[linear-gradient(180deg,var(--color-background)_0%,var(--color-canvas)_100%)] px-6 text-primary">
         <p className="font-mono text-sm uppercase tracking-[0.2em]">
           Carregando sessao...
         </p>

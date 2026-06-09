@@ -640,7 +640,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         </div>
       ) : null}
       {errorMessage ? (
-        <div className="flex flex-col gap-3 border border-border bg-surface p-4 text-sm text-[#8a486f] sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 border border-border bg-danger-soft p-4 text-sm text-danger-foreground sm:flex-row sm:items-center sm:justify-between">
           <p>Nao foi possivel atualizar o dashboard: {errorMessage}</p>
           <button
             type="button"
@@ -652,7 +652,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         </div>
       ) : null}
       {cardSuccessMessage ? (
-        <div className="border border-[#efc2d4] bg-[#fff5f8] p-4 text-sm text-[#8a486f]">
+        <div className="border border-border bg-primary-soft p-4 text-sm text-primary-strong">
           {cardSuccessMessage}
         </div>
       ) : null}

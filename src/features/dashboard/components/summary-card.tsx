@@ -18,7 +18,7 @@ export function SummaryCard({
         <p
           className={[
             "text-[0.96rem] font-semibold tracking-tight sm:text-[1.15rem]",
-            tone === "negative" ? "text-[#c11b16]" : "text-primary",
+            tone === "negative" ? "text-danger-foreground" : "text-primary",
           ].join(" ")}
         >
           {value}

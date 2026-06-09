@@ -20,14 +20,14 @@ const toneStyles = {
     chip: "bg-primary-soft text-primary",
   },
   expense: {
-    title: "text-[#8a486f]",
-    accent: "text-[#8a486f]",
-    chip: "bg-[#ffe4ef] text-[#8a486f]",
+    title: "text-chart-1",
+    accent: "text-chart-1",
+    chip: "bg-chart-1/15 text-chart-1",
   },
   investment: {
-    title: "text-[#625b60]",
-    accent: "text-[#625b60]",
-    chip: "bg-[#efe7ec] text-[#625b60]",
+    title: "text-chart-3",
+    accent: "text-chart-3",
+    chip: "bg-chart-3/12 text-chart-3",
   },
 } as const;
 
@@ -73,7 +73,7 @@ export function BreakdownListCard({
               className={[
                 "inline-flex h-7 w-7 items-center justify-center rounded-full text-primary transition sm:h-9 sm:w-9",
                 addButtonVariant === "ghost"
-                  ? "border border-transparent bg-transparent hover:bg-green-100 hover:text-green-700"
+                  ? "border border-transparent bg-transparent hover:bg-primary-soft hover:text-primary-strong"
                   : "border border-border bg-surface-soft hover:border-border-strong hover:bg-primary hover:text-white",
               ].join(" ")}
             >

@@ -80,7 +80,7 @@ export function AccordionCard({
             {titleBadge ? (
               <span
                 className={[
-                  "inline-flex items-center rounded-full bg-[#ffd8e6] font-mono uppercase text-[#d61b72]",
+                  "inline-flex items-center rounded-full bg-primary-soft font-mono uppercase text-primary",
                   compact
                     ? "px-2 py-0.5 text-[0.58rem] tracking-[0.18em] sm:px-3 sm:py-1 sm:text-[0.68rem] sm:tracking-[0.24em]"
                     : "px-3 py-1 text-[0.68rem] tracking-[0.24em]",
@@ -99,7 +99,7 @@ export function AccordionCard({
                 }}
                 aria-label={titleActionLabel}
                 className={[
-                  "inline-flex items-center justify-center rounded-full text-[#d61b72] transition hover:bg-[#ffd8e6] hover:text-[#b31660]",
+                  "inline-flex items-center justify-center rounded-full text-primary transition hover:bg-primary-soft hover:text-primary-strong",
                   compact ? "h-6 w-6 sm:h-auto sm:w-auto" : "h-7 w-7",
                 ].join(" ")}
               >
@@ -108,7 +108,7 @@ export function AccordionCard({
                 </span>
                 <span
                   className={[
-                    "hidden sm:inline-flex sm:items-center sm:border-b sm:border-transparent sm:pt-0.5 sm:font-medium sm:hover:border-[#d61b72]",
+                    "hidden sm:inline-flex sm:items-center sm:border-b sm:border-transparent sm:pt-0.5 sm:font-medium sm:hover:border-primary",
                     compact ? "sm:text-sm sm:leading-none" : "sm:text-sm",
                   ].join(" ")}
                 >
@@ -129,7 +129,7 @@ export function AccordionCard({
               }}
               aria-label={`Adicionar item em ${title}`}
               className={[
-                "inline-flex items-center justify-center rounded-full text-primary transition hover:bg-green-100 hover:text-green-700",
+                "inline-flex items-center justify-center rounded-full text-primary transition hover:bg-primary-soft hover:text-primary-strong",
                 compact ? "h-7 w-7 sm:h-9 sm:w-9" : "h-9 w-9",
               ].join(" ")}
             >

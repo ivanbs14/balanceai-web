@@ -47,7 +47,7 @@ type FieldLabelProps = {
 
 function FieldLabel({ children }: FieldLabelProps) {
   return (
-    <label className="mb-1.5 block font-mono text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#d4417f] sm:mb-2 sm:text-[0.78rem] sm:tracking-[0.24em]">
+    <label className="mb-1.5 block font-mono text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-primary sm:mb-2 sm:text-[0.78rem] sm:tracking-[0.24em]">
       {children}
     </label>
   );
@@ -62,7 +62,7 @@ function FieldShell({ children, className }: FieldShellProps) {
   return (
     <div
       className={[
-        "relative rounded-[0.55rem] border border-[#f0cade] bg-white shadow-[0_0_0_1px_rgba(183,0,94,0.02)]",
+        "relative rounded-[0.55rem] border border-border bg-surface-soft shadow-[0_0_0_1px_rgba(250,204,21,0.08)]",
         className ?? "",
       ].join(" ")}
     >
@@ -179,12 +179,12 @@ export function AddIncomeModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#79435d]/24 px-4 py-8 backdrop-blur-[3px]"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-overlay px-4 py-8 backdrop-blur-[3px]"
       onClick={onClose}
       role="presentation"
     >
       <div
-        className="w-full max-w-[650px] overflow-hidden rounded-[1rem] border-2 border-[#d42f7a] bg-white shadow-[0_30px_80px_rgba(93,23,54,0.18)]"
+        className="w-full max-w-[650px] overflow-hidden rounded-[1rem] border-2 border-border-strong bg-surface shadow-[0_30px_80px_rgba(0,0,0,0.38)]"
         onClick={(event) => event.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -265,7 +265,7 @@ export function AddIncomeModal({
                   }))
                 }
                 placeholder="Ex: Salario, Freela..."
-                className="h-9 w-full rounded-[0.55rem] border-0 bg-transparent px-2 text-[0.74rem] text-foreground outline-none placeholder:text-[#8b8b98] sm:h-14 sm:px-4 sm:text-[1.05rem]"
+                className="h-9 w-full rounded-[0.55rem] border-0 bg-transparent px-2 text-[0.74rem] text-foreground outline-none placeholder:text-muted/70 sm:h-14 sm:px-4 sm:text-[1.05rem]"
               />
             </FieldShell>
           </div>
@@ -370,7 +370,7 @@ export function AddIncomeModal({
                   }
                   placeholder="0,00"
                   inputMode="decimal"
-                  className="h-9 w-full rounded-[0.55rem] border-0 bg-transparent px-1.5 pr-2 text-[0.74rem] text-foreground outline-none placeholder:text-[#8b8b98] sm:h-14 sm:pr-4 sm:text-[1.05rem]"
+                  className="h-9 w-full rounded-[0.55rem] border-0 bg-transparent px-1.5 pr-2 text-[0.74rem] text-foreground outline-none placeholder:text-muted/70 sm:h-14 sm:pr-4 sm:text-[1.05rem]"
                 />
               </FieldShell>
             </div>
@@ -397,7 +397,7 @@ export function AddIncomeModal({
                   readOnly
                   value={formState.date ? formState.date.split("-").reverse().join("/") : ""}
                   placeholder="dd/mm/aaaa"
-                  className="h-9 w-full rounded-[0.55rem] border-0 bg-transparent px-2 pr-7 text-[0.74rem] text-foreground outline-none placeholder:text-[#8b8b98] sm:h-14 sm:px-4 sm:pr-11 sm:text-[1.05rem]"
+                  className="h-9 w-full rounded-[0.55rem] border-0 bg-transparent px-2 pr-7 text-[0.74rem] text-foreground outline-none placeholder:text-muted/70 sm:h-14 sm:px-4 sm:pr-11 sm:text-[1.05rem]"
                 />
                 <button
                   type="button"
@@ -412,7 +412,7 @@ export function AddIncomeModal({
           </div>
 
           {errorMessage ? (
-            <div className="rounded-[0.5rem] border border-[#efc2d4] bg-[#fff5f8] px-2.5 py-2 text-[0.78rem] text-[#9a3b65] sm:px-4 sm:py-3 sm:text-sm">
+            <div className="rounded-[0.5rem] border border-border bg-danger-soft px-2.5 py-2 text-[0.78rem] text-danger-foreground sm:px-4 sm:py-3 sm:text-sm">
               {errorMessage}
             </div>
           ) : null}
@@ -422,7 +422,7 @@ export function AddIncomeModal({
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="h-10 rounded-[0.5rem] border border-[#da4f8a] bg-white px-2.5 text-[0.88rem] font-semibold text-primary transition hover:bg-[#fff3f7] sm:h-14 sm:px-4 sm:text-[1rem]"
+              className="h-10 rounded-[0.5rem] border border-border-strong bg-surface-soft px-2.5 text-[0.88rem] font-semibold text-primary transition hover:bg-primary-soft sm:h-14 sm:px-4 sm:text-[1rem]"
             >
               Cancelar
             </button>

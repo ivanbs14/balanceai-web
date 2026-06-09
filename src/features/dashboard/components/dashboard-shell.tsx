@@ -22,15 +22,16 @@ export function DashboardShell({
 }: DashboardShellProps) {
   return (
     <main className="min-h-screen">
-      <header className="border-b border-border bg-[#fff7f8]/95">
+      <header className="border-b border-border bg-background/95">
         <div className="mx-auto w-full max-w-none px-1 py-2.5 sm:max-w-[1440px] sm:px-6 sm:py-4 lg:relative lg:px-10">
           <div className="flex items-center">
             <Image
               src="/logonameai.svg"
-              alt="Balance-AI"
+              alt="Balance-ai"
               width={220}
               height={48}
-              className="h-9 w-auto sm:h-12"
+              className="h-9 sm:h-12"
+              style={{ width: "auto" }}
               priority
             />
           </div>

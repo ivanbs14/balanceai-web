@@ -61,25 +61,25 @@ export function LoginForm({
   }
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#fff8f7] px-4 py-8 text-foreground sm:px-6">
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4 py-8 text-foreground sm:px-6">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 opacity-60"
         style={{
-          backgroundImage: "radial-gradient(#f3bfd0 0.8px, transparent 0.8px)",
+          backgroundImage: "radial-gradient(rgba(217,119,6,0.22) 0.8px, transparent 0.8px)",
           backgroundSize: "24px 24px",
         }}
       />
 
       <div
         aria-hidden
-        className="pointer-events-none absolute left-6 top-6 hidden h-40 w-40 rounded-sm border border-[#f0d2db] bg-[linear-gradient(160deg,#fbe8ef_0%,#f7dbe6_100%)] opacity-80 lg:block"
+        className="pointer-events-none absolute left-6 top-6 hidden h-40 w-40 rounded-sm border border-border bg-[linear-gradient(160deg,var(--color-canvas)_0%,var(--color-primary-soft)_100%)] opacity-80 lg:block"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute bottom-6 right-6 hidden h-44 w-44 border border-[#f0d2db] bg-[linear-gradient(180deg,#f4d6e0_0%,#f9ebf0_100%)] lg:block"
+        className="pointer-events-none absolute bottom-6 right-6 hidden h-44 w-44 border border-border bg-[linear-gradient(180deg,var(--color-primary-soft)_0%,var(--color-canvas)_100%)] lg:block"
       >
-        <div className="absolute bottom-8 left-1/2 h-40 w-28 -translate-x-1/2 rounded-md border border-[#edd3dc] bg-[#f8e8ee]" />
+        <div className="absolute bottom-8 left-1/2 h-40 w-28 -translate-x-1/2 rounded-md border border-border bg-canvas" />
       </div>
 
       <div className="relative z-10 w-full max-w-110">
@@ -87,22 +87,23 @@ export function LoginForm({
           <div className="mb-5 flex justify-center">
             <Image
               src="/logoai.svg"
-              alt="Balance-AI"
+              alt="Balance-ai"
               width={96}
               height={96}
-              className="h-24 w-auto"
+              className="h-24"
+              style={{ width: "auto" }}
               priority
             />
           </div>
           <h1 className="text-[40px] font-bold leading-12 tracking-[-0.02em] text-primary">
-            Balance-AI
+            Balance-ai
           </h1>
           <p className="mt-2 text-sm leading-5 text-foreground">
-            Sua vida financeira como um ritual de cuidado.
+            Sua vida financeira como um cuidado a mais.
           </p>
         </header>
 
-        <section className="rounded-md border border-[#f3bfd0] bg-[#fffdfd]/95 p-6 sm:p-10">
+        <section className="rounded-md border border-border bg-surface/95 p-6 sm:p-10">
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-2">
               <label
@@ -111,9 +112,9 @@ export function LoginForm({
               >
                 E-mail
               </label>
-              <div className="relative border border-[#f3bfd0] bg-white transition focus-within:border-primary">
+              <div className="relative border border-border bg-surface-soft transition focus-within:border-primary">
                 <Mail
-                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#8d6f77]"
+                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted"
                   size={18}
                 />
                 <input
@@ -122,7 +123,7 @@ export function LoginForm({
                   autoComplete="email"
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
-                  className="w-full border-none bg-transparent py-3 pl-12 pr-4 text-[13px] font-medium leading-4.5 text-foreground outline-none placeholder:text-[#d8b5c2]"
+                  className="w-full border-none bg-transparent py-3 pl-12 pr-4 text-[13px] font-medium leading-4.5 text-foreground outline-none placeholder:text-muted/60"
                   placeholder="seu@email.com"
                   required
                 />
@@ -139,15 +140,15 @@ export function LoginForm({
                 </label>
                 <button
                   type="button"
-                  className="font-mono text-xs tracking-wider text-[#6f3157] transition hover:text-primary"
+                  className="font-mono text-xs tracking-wider text-muted transition hover:text-primary"
                 >
                   Esqueci minha senha
                 </button>
               </div>
 
-              <div className="relative border border-[#f3bfd0] bg-white transition focus-within:border-primary">
+              <div className="relative border border-border bg-surface-soft transition focus-within:border-primary">
                 <Lock
-                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#8d6f77]"
+                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted"
                   size={18}
                 />
                 <input
@@ -156,14 +157,14 @@ export function LoginForm({
                   autoComplete="current-password"
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
-                  className="w-full border-none bg-transparent py-3 pl-12 pr-14 text-[13px] font-medium leading-4.5 text-foreground outline-none placeholder:text-[#d8b5c2]"
+                  className="w-full border-none bg-transparent py-3 pl-12 pr-14 text-[13px] font-medium leading-4.5 text-foreground outline-none placeholder:text-muted/60"
                   placeholder="••••••••"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((current) => !current)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8d6f77] transition hover:text-primary"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted transition hover:text-primary"
                   aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -174,13 +175,13 @@ export function LoginForm({
             <label className="flex items-center gap-3 text-[13px] text-foreground">
               <input
                 type="checkbox"
-                className="h-5 w-5 rounded-xs border border-[#e1bec6] text-primary focus:ring-primary"
+                className="h-5 w-5 rounded-xs border border-border text-primary focus:ring-primary"
               />
               <span>Lembrar deste dispositivo</span>
             </label>
 
             {errorMessage ? (
-              <p className="border border-[#d5a4b8] bg-[#fff2f6] px-4 py-3 text-sm text-primary">
+              <p className="border border-destructive/20 bg-danger-soft px-4 py-3 text-sm text-danger-foreground">
                 {errorMessage}
               </p>
             ) : null}
@@ -188,7 +189,7 @@ export function LoginForm({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full border-b-4 border-black/10 bg-[#db2777] px-4 py-3.5 text-[20px] font-semibold leading-7 text-white transition hover:bg-primary disabled:cursor-not-allowed disabled:opacity-70"
+              className="w-full border-b-4 border-black/10 bg-primary px-4 py-3.5 text-[20px] font-semibold leading-7 text-white transition hover:bg-primary-strong disabled:cursor-not-allowed disabled:opacity-70"
             >
               {isSubmitting ? "Entrando..." : "Entrar"}
             </button>
@@ -197,7 +198,7 @@ export function LoginForm({
               type="button"
               onClick={onGoogleLogin}
               disabled={isSubmitting}
-              className="flex w-full items-center justify-center gap-4 border border-[#f3bfd0] bg-white px-4 py-3.5 text-[22px] font-medium tracking-[-0.02em] text-[#5f0f2c] transition hover:border-primary disabled:cursor-not-allowed disabled:opacity-70"
+              className="flex w-full items-center justify-center gap-4 border border-border bg-surface-soft px-4 py-3.5 text-[22px] font-medium tracking-[-0.02em] text-foreground transition hover:border-primary disabled:cursor-not-allowed disabled:opacity-70"
             >
               <GoogleMark />
               Google
@@ -205,11 +206,11 @@ export function LoginForm({
           </form>
 
           <div className="my-10 flex items-center">
-            <div className="h-px flex-1 bg-[#f3bfd0]" />
-            <span className="px-4 font-mono text-xs uppercase tracking-[0.2em] text-[#d3a7b6]">
+            <div className="h-px flex-1 bg-border" />
+            <span className="px-4 font-mono text-xs uppercase tracking-[0.2em] text-muted/60">
               OU
             </span>
-            <div className="h-px flex-1 bg-[#f3bfd0]" />
+            <div className="h-px flex-1 bg-border" />
           </div>
 
           <footer className="text-center text-foreground">
@@ -225,7 +226,7 @@ export function LoginForm({
           </footer>
         </section>
 
-        <p className="mt-8 flex items-center justify-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-[#8d6f77]">
+        <p className="mt-8 flex items-center justify-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-muted">
           <ShieldCheck size={16} />
           Ambiente seguro e criptografado
         </p>

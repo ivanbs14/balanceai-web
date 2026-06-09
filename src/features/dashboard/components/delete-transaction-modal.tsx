@@ -44,7 +44,7 @@ export function DeleteTransactionModal({
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-[#79435d]/24 px-4 py-8 backdrop-blur-[3px]"
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-overlay px-4 py-8 backdrop-blur-[3px]"
       onClick={() => {
         if (!isSubmitting) {
           onClose();
@@ -53,7 +53,7 @@ export function DeleteTransactionModal({
       role="presentation"
     >
       <div
-        className="w-full max-w-[560px] overflow-hidden rounded-[1rem] border-2 border-[#d42f7a] bg-white shadow-[0_30px_80px_rgba(93,23,54,0.18)]"
+        className="w-full max-w-[560px] overflow-hidden rounded-[1rem] border-2 border-border-strong bg-surface shadow-[0_30px_80px_rgba(0,0,0,0.38)]"
         onClick={(event) => event.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -83,8 +83,8 @@ export function DeleteTransactionModal({
         </div>
 
         <div className="space-y-3 px-3 py-3.5 sm:space-y-5 sm:px-8 sm:py-9">
-          <div className="rounded-[0.8rem] border border-[#f0cade] bg-[#fff7fb] px-2.5 py-2.5 text-[0.8rem] leading-4.5 text-[#6f4256] sm:px-4 sm:py-4 sm:text-[0.98rem] sm:leading-6">
-            <p className="font-semibold text-[#7f1f4d]">{transactionLabel}</p>
+          <div className="rounded-[0.8rem] border border-border bg-surface-soft px-2.5 py-2.5 text-[0.8rem] leading-4.5 text-muted sm:px-4 sm:py-4 sm:text-[0.98rem] sm:leading-6">
+            <p className="font-semibold text-foreground">{transactionLabel}</p>
             <p className="mt-1 sm:mt-2">
               {isInstallmentPurchase
                 ? "As parcelas ja pagas serao mantidas no historico. Apenas as parcelas em aberto serao deletadas."
@@ -97,7 +97,7 @@ export function DeleteTransactionModal({
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="inline-flex items-center justify-center rounded-[0.7rem] border border-[#e8bfd4] px-3 py-2 text-[0.74rem] font-semibold uppercase tracking-[0.1em] text-[#8a486f] transition hover:bg-[#fff5fa] disabled:cursor-not-allowed disabled:opacity-50 sm:px-5 sm:py-3 sm:text-sm sm:tracking-[0.16em]"
+              className="inline-flex items-center justify-center rounded-[0.7rem] border border-border px-3 py-2 text-[0.74rem] font-semibold uppercase tracking-[0.1em] text-muted transition hover:bg-surface-soft disabled:cursor-not-allowed disabled:opacity-50 sm:px-5 sm:py-3 sm:text-sm sm:tracking-[0.16em]"
             >
               Cancelar
             </button>
