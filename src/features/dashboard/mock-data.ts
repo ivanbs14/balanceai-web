@@ -1,0 +1,300 @@
+import type { DashboardMonthData } from "./types";
+
+export const dashboardMonths: DashboardMonthData[] = [
+  {
+    id: "2026-01",
+    label: "Janeiro",
+    summary: {
+      totalExpenses: 6968.54,
+      balance: -23.54,
+    },
+    fixedCosts: [
+      {
+        id: "rent",
+        name: "Aluguel",
+        paymentType: "Debito",
+        category: "Aluguel",
+        dueDay: 5,
+        status: "paid",
+        amount: 3200,
+      },
+      {
+        id: "condo",
+        name: "Condominio",
+        paymentType: "Debito",
+        category: "Contas",
+        dueDay: 8,
+        status: "paid",
+        amount: 850,
+      },
+      {
+        id: "energy",
+        name: "Energia",
+        paymentType: "Debito",
+        category: "Contas",
+        dueDay: 12,
+        status: "pending",
+        amount: 245.68,
+      },
+      {
+        id: "phone",
+        name: "Celular",
+        paymentType: "Pix",
+        category: "Contas",
+        dueDay: 18,
+        status: "pending",
+        amount: 74.9,
+      },
+    ],
+    creditCard: [
+      {
+        id: "market",
+        cardName: "Nubank",
+        description: "Supermercado Extra",
+        statementMonthLabel: "Janeiro",
+        installmentCurrent: 1,
+        installmentTotal: 1,
+        canDeletePendingInstallments: false,
+        amount: 840.3,
+      },
+      {
+        id: "prime",
+        cardName: "Inter",
+        description: "Amazon Prime",
+        statementMonthLabel: "Janeiro",
+        installmentCurrent: 1,
+        installmentTotal: 1,
+        canDeletePendingInstallments: false,
+        amount: 14.9,
+      },
+      {
+        id: "chair",
+        cardName: "Nubank",
+        description: "Cadeira de Escritorio",
+        statementMonthLabel: "Janeiro",
+        installmentCurrent: 3,
+        installmentTotal: 10,
+        canDeletePendingInstallments: true,
+        amount: 189.9,
+      },
+    ],
+    income: [
+      {
+        id: "salary",
+        label: "Salario Mensal",
+        amount: 6500,
+      },
+      {
+        id: "extra",
+        label: "Renda Extra",
+        amount: 445,
+      },
+    ],
+    expenses: [
+      {
+        id: "debit",
+        label: "Debito",
+        amount: 4504.51,
+      },
+      {
+        id: "nubank",
+        label: "Nubank",
+        amount: 770.3,
+      },
+      {
+        id: "inter",
+        label: "Inter",
+        amount: 1093.73,
+      },
+      {
+        id: "travel",
+        label: "Viagem",
+        amount: 600,
+      },
+    ],
+    investments: [
+      {
+        id: "emergency",
+        label: "Reserva de Emergencia",
+        amount: 500,
+      },
+      {
+        id: "ipca",
+        label: "Renda Fixa IPCA+",
+        amount: 200,
+      },
+    ],
+    categories: [
+      {
+        id: "food",
+        label: "Alimentacao",
+        amount: 2030.48,
+        colorClassName: "bg-chart-1",
+      },
+      {
+        id: "housing",
+        label: "Moradia",
+        amount: 1353.22,
+        colorClassName: "bg-chart-2",
+      },
+      {
+        id: "other",
+        label: "Outros",
+        amount: 1128.06,
+        colorClassName: "bg-chart-3",
+      },
+    ],
+  },
+  {
+    id: "2026-02",
+    label: "Fevereiro",
+    summary: {
+      totalExpenses: 5824.2,
+      balance: 1120.8,
+    },
+    fixedCosts: [
+      {
+        id: "rent",
+        name: "Aluguel",
+        paymentType: "Debito",
+        category: "Aluguel",
+        dueDay: 5,
+        status: "paid",
+        amount: 3200,
+      },
+      {
+        id: "condo",
+        name: "Condominio",
+        paymentType: "Debito",
+        category: "Contas",
+        dueDay: 8,
+        status: "paid",
+        amount: 850,
+      },
+      {
+        id: "internet",
+        name: "Internet",
+        paymentType: "Debito",
+        category: "Contas",
+        dueDay: 10,
+        status: "paid",
+        amount: 139.9,
+      },
+      {
+        id: "school",
+        name: "Curso de Ingles",
+        paymentType: "Boleto",
+        category: "Educacao",
+        dueDay: 22,
+        status: "pending",
+        amount: 189.9,
+      },
+    ],
+    creditCard: [
+      {
+        id: "course",
+        cardName: "Nubank",
+        description: "Curso UX",
+        statementMonthLabel: "Fevereiro",
+        installmentCurrent: 2,
+        installmentTotal: 6,
+        canDeletePendingInstallments: true,
+        amount: 199.9,
+      },
+      {
+        id: "pharmacy",
+        cardName: "Inter",
+        description: "Farmacia",
+        statementMonthLabel: "Fevereiro",
+        installmentCurrent: 1,
+        installmentTotal: 1,
+        canDeletePendingInstallments: false,
+        amount: 84.4,
+      },
+      {
+        id: "streaming",
+        cardName: "Nubank",
+        description: "Streaming",
+        statementMonthLabel: "Fevereiro",
+        installmentCurrent: 1,
+        installmentTotal: 1,
+        canDeletePendingInstallments: false,
+        amount: 39.9,
+      },
+    ],
+    income: [
+      {
+        id: "salary",
+        label: "Salario Mensal",
+        amount: 6500,
+      },
+      {
+        id: "bonus",
+        label: "Bonus",
+        amount: 445,
+      },
+    ],
+    expenses: [
+      {
+        id: "debit",
+        label: "Debito",
+        amount: 3610.2,
+      },
+      {
+        id: "card",
+        label: "Cartao",
+        amount: 1240.6,
+      },
+      {
+        id: "health",
+        label: "Saude",
+        amount: 350,
+      },
+      {
+        id: "transport",
+        label: "Transporte",
+        amount: 623.4,
+      },
+    ],
+    investments: [
+      {
+        id: "emergency",
+        label: "Reserva de Emergencia",
+        amount: 700,
+      },
+      {
+        id: "cdb",
+        label: "CDB Pos-fixado",
+        amount: 600,
+      },
+    ],
+    categories: [
+      {
+        id: "housing",
+        label: "Moradia",
+        amount: 2213.2,
+        colorClassName: "bg-chart-1",
+      },
+      {
+        id: "mobility",
+        label: "Transporte",
+        amount: 1281.32,
+        colorClassName: "bg-chart-2",
+      },
+      {
+        id: "health",
+        label: "Saude",
+        amount: 1048.36,
+        colorClassName: "bg-chart-3",
+      },
+      {
+        id: "other",
+        label: "Outros",
+        amount: 1281.32,
+        colorClassName: "bg-chart-4",
+      },
+    ],
+  },
+];
+
+export const defaultDashboardMonthId = dashboardMonths[0]?.id ?? "";

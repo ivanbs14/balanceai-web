@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Balance Web
 
-## Getting Started
+Frontend web app for the Balance personal finance product. This repository currently contains:
 
-First, run the development server:
+- a login flow that talks to the Balance backend;
+- a monthly dashboard shell rendered from local typed mock data;
+- UI foundations built with Next.js 16, React 19, TypeScript, and Tailwind CSS 4.
+
+## Current Scope
+
+The dashboard is intentionally in a transitional state:
+
+- authentication is real from the frontend perspective and calls the backend API;
+- dashboard data is still local and mock-driven;
+- create, edit, delete, and persistence flows are not implemented yet.
+
+## Stack
+
+- Next.js 16 App Router
+- React 19
+- TypeScript
+- Tailwind CSS 4
+- ESLint 9
+
+## Requirements
+
+- Node.js 20 or newer
+- npm
+- Balance backend running locally if you want to exercise login/session flows
+
+## Local Setup
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Create a `.env.local` file if you need to point the frontend at a non-default backend:
+
+```bash
+NEXT_PUBLIC_API_URL=http://localhost:4000
+```
+
+If `NEXT_PUBLIC_API_URL` is omitted, the app defaults to `http://localhost:4000`.
+
+Start the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Available Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run dev
+npm run build
+npm run start
+npm run lint
+```
 
-## Learn More
+## Authentication Contract
 
-To learn more about Next.js, take a look at the following resources:
+The homepage loads `AuthenticatedHome`, which:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- checks the current session with `GET /auth/me`;
+- performs email/password login with `POST /auth`;
+- starts Google auth via `GET /auth/google`;
+- logs out with `POST /auth/logout`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Requests are made with `credentials: "include"`, so the backend must be configured for cookie-based auth and local CORS accordingly.
 
-## Deploy on Vercel
+## Dashboard Structure
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The root route currently resolves to:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `src/app/page.tsx`: app entrypoint
+- `src/features/auth/components/authenticated-home.tsx`: auth gate
+- `src/features/dashboard/components/`: dashboard UI building blocks
+- `src/features/dashboard/mock-data.ts`: single local source of truth for dashboard mocks
+- `src/features/dashboard/types.ts`: shared dashboard contracts
+
+The dashboard supports switching between mocked months and recomputes visible sections from the selected month data.
+
+## Notes
+
+- Text in the current UI is primarily Portuguese.
+- README scope reflects the repository state as of June 6, 2026.
