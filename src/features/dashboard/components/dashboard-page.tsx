@@ -725,7 +725,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
 
   const sidebar = (
     <>
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-1 sm:gap-0">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-1 sm:gap-0 xl:gap-6">
         <BreakdownListCard
           title="Entradas"
           rows={toBreakdownRows(dashboardData.income)}
@@ -744,7 +744,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
           tone="expense"
         />
       </div>
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-1 sm:gap-0">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-1 sm:gap-0 xl:gap-6">
         <BreakdownListCard
           title="Investimentos"
           rows={toBreakdownRows(dashboardData.investments)}
