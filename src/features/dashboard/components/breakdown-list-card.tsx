@@ -4,11 +4,13 @@ type BreakdownListCardProps = {
   title: string;
   rows: Array<{ id: string; label: string; amount: string }>;
   totalLabel: string;
+  mobileTotalLabel?: string;
   totalValue: string;
   tone: "income" | "expense" | "investment";
   onAddClick?: () => void;
   addButtonLabel?: string;
   addButtonVariant?: "default" | "ghost";
+  hideItemsSuffixOnMobile?: boolean;
 };
 
 const toneStyles = {
@@ -29,63 +31,81 @@ const toneStyles = {
   },
 } as const;
 
+function truncateForMobile(value: string, maxLength = 12) {
+  if (value.length <= maxLength) {
+    return value;
+  }
+
+  return `${value.slice(0, maxLength)}...`;
+}
+
 export function BreakdownListCard({
   title,
   rows,
   totalLabel,
+  mobileTotalLabel,
   totalValue,
   tone,
   onAddClick,
   addButtonLabel,
   addButtonVariant = "default",
+  hideItemsSuffixOnMobile = false,
 }: BreakdownListCardProps) {
   const styles = toneStyles[tone];
 
   return (
-    <article className="border border-border bg-surface p-5">
-      <div className="flex items-center justify-between gap-4">
+    <article className="border border-border bg-surface p-3.5 sm:p-5">
+      <div className="flex items-center justify-between gap-3 sm:gap-4">
         <h2
           className={[
-            "text-[1.15rem] font-semibold tracking-tight sm:text-[1.25rem]",
+            "text-[0.98rem] font-semibold tracking-tight sm:text-[1.25rem]",
             styles.title,
           ].join(" ")}
         >
           {title}
         </h2>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           {onAddClick ? (
             <button
               type="button"
               onClick={onAddClick}
               aria-label={addButtonLabel ?? `Adicionar item em ${title}`}
               className={[
-                "inline-flex h-9 w-9 items-center justify-center rounded-full text-primary transition",
+                "inline-flex h-7 w-7 items-center justify-center rounded-full text-primary transition sm:h-9 sm:w-9",
                 addButtonVariant === "ghost"
                   ? "border border-transparent bg-transparent hover:bg-green-100 hover:text-green-700"
                   : "border border-border bg-surface-soft hover:border-border-strong hover:bg-primary hover:text-white",
               ].join(" ")}
             >
-              <Plus size={18} strokeWidth={2.4} />
+              <Plus size={15} strokeWidth={2.4} />
             </button>
           ) : null}
           <span
             className={[
-              "rounded-full px-3 py-1 font-mono text-[0.6rem] uppercase tracking-[0.16em]",
+              "rounded-full px-2 py-0.5 font-mono text-[0.5rem] uppercase tracking-[0.12em] sm:px-3 sm:py-1 sm:text-[0.6rem] sm:tracking-[0.16em]",
               styles.chip,
             ].join(" ")}
           >
-            {rows.length} itens
+            <span className="sm:hidden">
+              {hideItemsSuffixOnMobile ? rows.length : `${rows.length} itens`}
+            </span>
+            <span className="hidden sm:inline">{rows.length} itens</span>
           </span>
         </div>
       </div>
 
-      <div className="mt-4 space-y-0">
+      <div className="mt-2.5 space-y-0 sm:mt-4">
         {rows.map((row) => (
           <div
             key={row.id}
-            className="flex items-center justify-between gap-4 border-b border-border py-3 text-[0.9rem] sm:text-[0.92rem]"
+            className="flex items-center justify-between gap-3 border-b border-border py-2 text-[0.8rem] sm:gap-4 sm:py-3 sm:text-[0.92rem]"
           >
-            <span>{row.label}</span>
+            <span>
+              <span className="sm:hidden" title={row.label}>
+                {truncateForMobile(row.label)}
+              </span>
+              <span className="hidden sm:inline">{row.label}</span>
+            </span>
             <span className={["font-medium", styles.accent].join(" ")}>
               {row.amount}
             </span>
@@ -93,9 +113,10 @@ export function BreakdownListCard({
         ))}
       </div>
 
-      <div className="mt-5 flex items-center justify-between gap-4 text-[0.88rem] font-semibold sm:text-[0.95rem]">
+      <div className="mt-3.5 flex items-center justify-between gap-3 text-[0.8rem] font-semibold sm:mt-5 sm:gap-4 sm:text-[0.95rem]">
         <span className={["uppercase", styles.accent].join(" ")}>
-          {totalLabel}
+          <span className="sm:hidden">{mobileTotalLabel ?? totalLabel}</span>
+          <span className="hidden sm:inline">{totalLabel}</span>
         </span>
         <span className={styles.accent}>{totalValue}</span>
       </div>

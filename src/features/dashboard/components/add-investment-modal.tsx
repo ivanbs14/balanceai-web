@@ -44,7 +44,7 @@ type FieldLabelProps = {
 
 function FieldLabel({ children }: FieldLabelProps) {
   return (
-    <label className="mb-2 block font-mono text-[0.78rem] font-semibold uppercase tracking-[0.24em] text-[#d4417f]">
+    <label className="mb-1.5 block font-mono text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#d4417f] sm:mb-2 sm:text-[0.78rem] sm:tracking-[0.24em]">
       {children}
     </label>
   );
@@ -190,10 +190,10 @@ export function AddInvestmentModal({
         aria-modal="true"
         aria-labelledby="add-investment-modal-title"
       >
-        <div className="flex items-center justify-between bg-primary px-5 py-5 text-white sm:px-6">
+        <div className="flex items-center justify-between bg-primary px-3 py-3 text-white sm:px-6 sm:py-5">
           <h2
             id="add-investment-modal-title"
-            className="text-[1.95rem] font-semibold tracking-tight sm:text-[2.1rem]"
+            className="text-[1.25rem] font-semibold tracking-tight sm:text-[2.1rem]"
           >
             Novo Lancamento
           </h2>
@@ -201,14 +201,14 @@ export function AddInvestmentModal({
             type="button"
             onClick={onClose}
             aria-label="Fechar modal"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full text-white transition hover:bg-white/12"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-full text-white transition hover:bg-white/12 sm:h-10 sm:w-10"
           >
-            <X size={28} strokeWidth={2.2} />
+            <X size={22} strokeWidth={2.2} />
           </button>
         </div>
 
         <form
-          className="space-y-7 px-7 py-8 sm:px-8 sm:py-9"
+          className="space-y-3.5 px-3 py-3.5 sm:space-y-7 sm:px-8 sm:py-9"
           onSubmit={async (event) => {
             event.preventDefault();
 
@@ -264,12 +264,12 @@ export function AddInvestmentModal({
                   }))
                 }
                 placeholder="Ex: Tesouro Selic, ETF..."
-                className="h-14 w-full rounded-[0.55rem] border-0 bg-transparent px-4 text-[1rem] text-foreground outline-none placeholder:text-[#8b8b98] sm:text-[1.05rem]"
+                className="h-9 w-full rounded-[0.55rem] border-0 bg-transparent px-2 text-[0.74rem] text-foreground outline-none placeholder:text-[#8b8b98] sm:h-14 sm:px-4 sm:text-[1.05rem]"
               />
             </FieldShell>
           </div>
 
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid gap-2.5 sm:grid-cols-2 sm:gap-5">
             <div>
               <FieldLabel>Metodo de aporte</FieldLabel>
               <FieldShell>
@@ -281,7 +281,7 @@ export function AddInvestmentModal({
                       method: event.target.value,
                     }))
                   }
-                  className="h-14 w-full appearance-none rounded-[0.55rem] border-0 bg-transparent px-4 pr-12 text-[1rem] text-foreground outline-none sm:text-[1.05rem]"
+                  className="h-9 w-full appearance-none rounded-[0.55rem] border-0 bg-transparent px-2 pr-7 text-[0.74rem] text-foreground outline-none sm:h-14 sm:px-4 sm:pr-12 sm:text-[1.05rem]"
                 >
                   {investmentMethodOptions.map((option) => (
                     <option key={option} value={option}>
@@ -291,8 +291,8 @@ export function AddInvestmentModal({
                 </select>
                 <ChevronDown
                   aria-hidden
-                  size={20}
-                  className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-muted"
+                  size={18}
+                  className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-muted sm:right-4"
                 />
               </FieldShell>
             </div>
@@ -308,7 +308,7 @@ export function AddInvestmentModal({
                       category: event.target.value,
                     }))
                   }
-                  className="h-14 w-full appearance-none rounded-[0.55rem] border-0 bg-transparent px-4 pr-12 text-[1rem] text-foreground outline-none sm:text-[1.05rem]"
+                  className="h-9 w-full appearance-none rounded-[0.55rem] border-0 bg-transparent px-2 pr-7 text-[0.74rem] text-foreground outline-none sm:h-14 sm:px-4 sm:pr-12 sm:text-[1.05rem]"
                 >
                   {investmentCategoryOptions.map((option) => (
                     <option key={option} value={option}>
@@ -318,18 +318,18 @@ export function AddInvestmentModal({
                 </select>
                 <ChevronDown
                   aria-hidden
-                  size={20}
-                  className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 text-muted"
+                  size={18}
+                  className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-muted sm:right-4"
                 />
               </FieldShell>
             </div>
           </div>
 
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid gap-2.5 sm:grid-cols-2 sm:gap-5">
             <div>
               <FieldLabel>Valor</FieldLabel>
               <FieldShell className="flex items-center">
-                <span className="pl-4 text-[1rem] font-medium text-muted sm:text-[1.05rem]">
+                <span className="pl-2 text-[0.74rem] font-medium text-muted sm:pl-4 sm:text-[1.05rem]">
                   R$
                 </span>
                 <input
@@ -342,7 +342,7 @@ export function AddInvestmentModal({
                   }
                   placeholder="0,00"
                   inputMode="decimal"
-                  className="h-14 w-full rounded-[0.55rem] border-0 bg-transparent px-2 pr-4 text-[1rem] text-foreground outline-none placeholder:text-[#8b8b98] sm:text-[1.05rem]"
+                  className="h-9 w-full rounded-[0.55rem] border-0 bg-transparent px-1.5 pr-2 text-[0.74rem] text-foreground outline-none placeholder:text-[#8b8b98] sm:h-14 sm:pr-4 sm:text-[1.05rem]"
                 />
               </FieldShell>
             </div>
@@ -369,39 +369,39 @@ export function AddInvestmentModal({
                   readOnly
                   value={formState.date ? formState.date.split("-").reverse().join("/") : ""}
                   placeholder="dd/mm/aaaa"
-                  className="h-14 w-full rounded-[0.55rem] border-0 bg-transparent px-4 pr-11 text-[1rem] text-foreground outline-none placeholder:text-[#8b8b98] sm:text-[1.05rem]"
+                  className="h-9 w-full rounded-[0.55rem] border-0 bg-transparent px-2 pr-7 text-[0.74rem] text-foreground outline-none placeholder:text-[#8b8b98] sm:h-14 sm:px-4 sm:pr-11 sm:text-[1.05rem]"
                 />
                 <button
                   type="button"
                   onClick={handleDateIconClick}
                   aria-label="Abrir calendario"
-                  className="absolute top-1/2 right-3 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-foreground transition hover:bg-surface-soft"
+                  className="absolute top-1/2 right-2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-foreground transition hover:bg-surface-soft sm:right-3 sm:h-8 sm:w-8"
                 >
-                  <CalendarDays aria-hidden size={18} />
+                  <CalendarDays aria-hidden size={16} />
                 </button>
               </FieldShell>
             </div>
           </div>
 
           {errorMessage ? (
-            <div className="rounded-[0.5rem] border border-[#efc2d4] bg-[#fff5f8] px-4 py-3 text-sm text-[#9a3b65]">
+            <div className="rounded-[0.5rem] border border-[#efc2d4] bg-[#fff5f8] px-2.5 py-2 text-[0.78rem] text-[#9a3b65] sm:px-4 sm:py-3 sm:text-sm">
               {errorMessage}
             </div>
           ) : null}
 
-          <div className="grid gap-4 pt-2 sm:grid-cols-2">
+          <div className="grid gap-2 pt-0.5 sm:grid-cols-2 sm:gap-4 sm:pt-2">
             <button
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="h-14 rounded-[0.5rem] border border-[#da4f8a] bg-white px-4 text-[1rem] font-semibold text-primary transition hover:bg-[#fff3f7]"
+              className="h-10 rounded-[0.5rem] border border-[#da4f8a] bg-white px-2.5 text-[0.88rem] font-semibold text-primary transition hover:bg-[#fff3f7] sm:h-14 sm:px-4 sm:text-[1rem]"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="h-14 rounded-[0.5rem] bg-primary px-4 text-[1rem] font-semibold text-white transition hover:bg-primary-strong"
+              className="h-10 rounded-[0.5rem] bg-primary px-2.5 text-[0.88rem] font-semibold text-white transition hover:bg-primary-strong sm:h-14 sm:px-4 sm:text-[1rem]"
             >
               {isSubmitting ? "Salvando..." : "Salvar Lancamento"}
             </button>

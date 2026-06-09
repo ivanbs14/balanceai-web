@@ -34,7 +34,7 @@ type FieldLabelProps = {
 
 function FieldLabel({ children }: FieldLabelProps) {
   return (
-    <label className="mb-2 block font-mono text-[0.78rem] font-semibold uppercase tracking-[0.24em] text-[#d4417f]">
+    <label className="mb-1.5 block font-mono text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-[#d4417f] sm:mb-2 sm:text-[0.78rem] sm:tracking-[0.24em]">
       {children}
     </label>
   );
@@ -125,10 +125,10 @@ export function AddCardModal({
         aria-modal="true"
         aria-labelledby="add-card-modal-title"
       >
-        <div className="flex items-center justify-between bg-primary px-5 py-5 text-white sm:px-6">
+        <div className="flex items-center justify-between bg-primary px-3 py-3 text-white sm:px-6 sm:py-5">
           <h2
             id="add-card-modal-title"
-            className="text-[1.95rem] font-semibold tracking-tight sm:text-[2.1rem]"
+            className="text-[1.25rem] font-semibold tracking-tight sm:text-[2.1rem]"
           >
             Novo Cartao
           </h2>
@@ -136,14 +136,14 @@ export function AddCardModal({
             type="button"
             onClick={onClose}
             aria-label="Fechar modal"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full text-white transition hover:bg-white/12"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-full text-white transition hover:bg-white/12 sm:h-10 sm:w-10"
           >
-            <X size={28} strokeWidth={2.2} />
+            <X size={22} strokeWidth={2.2} />
           </button>
         </div>
 
         <form
-          className="space-y-7 px-7 py-8 sm:px-8 sm:py-9"
+          className="space-y-3.5 px-3 py-3.5 sm:space-y-7 sm:px-8 sm:py-9"
           onSubmit={async (event) => {
             event.preventDefault();
 
@@ -207,12 +207,12 @@ export function AddCardModal({
                   }))
                 }
                 placeholder="Ex: Nubank, Inter..."
-                className="h-14 w-full rounded-[0.55rem] border-0 bg-transparent px-4 text-[1rem] text-foreground outline-none placeholder:text-[#8b8b98] sm:text-[1.05rem]"
+                className="h-9 w-full rounded-[0.55rem] border-0 bg-transparent px-2 text-[0.74rem] text-foreground outline-none placeholder:text-[#8b8b98] sm:h-14 sm:px-4 sm:text-[1.05rem]"
               />
             </FieldShell>
           </div>
 
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid gap-2.5 sm:grid-cols-2 sm:gap-5">
             <div>
               <FieldLabel>Fechamento da fatura</FieldLabel>
               <FieldShell>
@@ -226,7 +226,7 @@ export function AddCardModal({
                   }
                   type="date"
                   lang="pt-BR"
-                  className="h-14 w-full rounded-[0.55rem] border-0 bg-transparent px-4 text-[1rem] text-foreground outline-none sm:text-[1.05rem]"
+                  className="h-9 w-full rounded-[0.55rem] border-0 bg-transparent px-2 text-[0.74rem] text-foreground outline-none sm:h-14 sm:px-4 sm:text-[1.05rem]"
                 />
               </FieldShell>
             </div>
@@ -244,7 +244,7 @@ export function AddCardModal({
                   }
                   type="date"
                   lang="pt-BR"
-                  className="h-14 w-full rounded-[0.55rem] border-0 bg-transparent px-4 text-[1rem] text-foreground outline-none sm:text-[1.05rem]"
+                  className="h-9 w-full rounded-[0.55rem] border-0 bg-transparent px-2 text-[0.74rem] text-foreground outline-none sm:h-14 sm:px-4 sm:text-[1.05rem]"
                 />
               </FieldShell>
             </div>
@@ -253,7 +253,7 @@ export function AddCardModal({
           <div>
             <FieldLabel>Limite</FieldLabel>
             <FieldShell className="flex items-center">
-              <span className="pl-4 text-[1rem] font-medium text-muted sm:text-[1.05rem]">
+              <span className="pl-2 text-[0.74rem] font-medium text-muted sm:pl-4 sm:text-[1.05rem]">
                 R$
               </span>
               <input
@@ -266,30 +266,30 @@ export function AddCardModal({
                 }
                 placeholder="0,00"
                 inputMode="decimal"
-                className="h-14 w-full rounded-[0.55rem] border-0 bg-transparent px-2 pr-4 text-[1rem] text-foreground outline-none placeholder:text-[#8b8b98] sm:text-[1.05rem]"
+                className="h-9 w-full rounded-[0.55rem] border-0 bg-transparent px-1.5 pr-2 text-[0.74rem] text-foreground outline-none placeholder:text-[#8b8b98] sm:h-14 sm:pr-4 sm:text-[1.05rem]"
               />
             </FieldShell>
           </div>
 
           {errorMessage ? (
-            <div className="rounded-[0.5rem] border border-[#efc2d4] bg-[#fff5f8] px-4 py-3 text-sm text-[#9a3b65]">
+            <div className="rounded-[0.5rem] border border-[#efc2d4] bg-[#fff5f8] px-2.5 py-2 text-[0.78rem] text-[#9a3b65] sm:px-4 sm:py-3 sm:text-sm">
               {errorMessage}
             </div>
           ) : null}
 
-          <div className="grid gap-4 pt-2 sm:grid-cols-2">
+          <div className="grid gap-2 pt-0.5 sm:grid-cols-2 sm:gap-4 sm:pt-2">
             <button
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="h-14 rounded-[0.5rem] border border-[#da4f8a] bg-white px-4 text-[1rem] font-semibold text-primary transition hover:bg-[#fff3f7]"
+              className="h-10 rounded-[0.5rem] border border-[#da4f8a] bg-white px-2.5 text-[0.88rem] font-semibold text-primary transition hover:bg-[#fff3f7] sm:h-14 sm:px-4 sm:text-[1rem]"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="h-14 rounded-[0.5rem] bg-primary px-4 text-[1rem] font-semibold text-white transition hover:bg-primary-strong"
+              className="h-10 rounded-[0.5rem] bg-primary px-2.5 text-[0.88rem] font-semibold text-white transition hover:bg-primary-strong sm:h-14 sm:px-4 sm:text-[1rem]"
             >
               {isSubmitting ? "Salvando..." : "Salvar Cartao"}
             </button>

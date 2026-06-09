@@ -727,34 +727,40 @@ export function DashboardPage({ userId }: DashboardPageProps) {
 
   const sidebar = (
     <>
-      <BreakdownListCard
-        title="Entradas"
-        rows={toBreakdownRows(dashboardData.income)}
-        totalLabel="Total"
-        totalValue={formatCurrency(sumAmounts(dashboardData.income))}
-        tone="income"
-        onAddClick={() => setIsAddIncomeModalOpen(true)}
-        addButtonLabel="Adicionar entrada"
-        addButtonVariant="ghost"
-      />
-      <BreakdownListCard
-        title="Saidas"
-        rows={toBreakdownRows(dashboardData.expenses)}
-        totalLabel="Total"
-        totalValue={formatCurrency(sumAmounts(dashboardData.expenses))}
-        tone="expense"
-      />
-      <BreakdownListCard
-        title="Investimentos"
-        rows={toBreakdownRows(dashboardData.investments)}
-        totalLabel="Total Aplicado"
-        totalValue={formatCurrency(sumAmounts(dashboardData.investments))}
-        tone="investment"
-        onAddClick={() => setIsAddInvestmentModalOpen(true)}
-        addButtonLabel="Adicionar investimento"
-        addButtonVariant="ghost"
-      />
-      <CategoryCard items={dashboardData.categories} />
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-1 sm:gap-0">
+        <BreakdownListCard
+          title="Entradas"
+          rows={toBreakdownRows(dashboardData.income)}
+          totalLabel="Total"
+          totalValue={formatCurrency(sumAmounts(dashboardData.income))}
+          tone="income"
+          onAddClick={() => setIsAddIncomeModalOpen(true)}
+          addButtonLabel="Adicionar entrada"
+          addButtonVariant="ghost"
+        />
+        <BreakdownListCard
+          title="Saidas"
+          rows={toBreakdownRows(dashboardData.expenses)}
+          totalLabel="Total"
+          totalValue={formatCurrency(sumAmounts(dashboardData.expenses))}
+          tone="expense"
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-1 sm:gap-0">
+        <BreakdownListCard
+          title="Investimentos"
+          rows={toBreakdownRows(dashboardData.investments)}
+          totalLabel="Total Aplicado"
+          mobileTotalLabel="Total"
+          totalValue={formatCurrency(sumAmounts(dashboardData.investments))}
+          tone="investment"
+          onAddClick={() => setIsAddInvestmentModalOpen(true)}
+          addButtonLabel="Adicionar investimento"
+          addButtonVariant="ghost"
+          hideItemsSuffixOnMobile
+        />
+        <CategoryCard items={dashboardData.categories} />
+      </div>
     </>
   );
 
