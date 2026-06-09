@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { ReactNode } from "react";
 
 type DashboardShellProps = {
@@ -23,8 +24,15 @@ export function DashboardShell({
     <main className="min-h-screen">
       <header className="border-b border-border bg-[#fff7f8]/95">
         <div className="mx-auto w-full max-w-none px-1 py-2.5 sm:max-w-[1440px] sm:px-6 sm:py-4 lg:relative lg:px-10">
-          <div className="text-[1.35rem] font-semibold tracking-tight text-primary sm:text-[2rem]">
-            Balance-AI
+          <div className="flex items-center">
+            <Image
+              src="/logonameai.svg"
+              alt="Balance-AI"
+              width={220}
+              height={48}
+              className="h-9 w-auto sm:h-12"
+              priority
+            />
           </div>
 
           <nav className="mt-2 flex flex-wrap items-center justify-center gap-2 text-[0.88rem] text-foreground sm:mt-4 sm:gap-3 sm:text-[1.1rem] lg:absolute lg:top-1/2 lg:left-1/2 lg:mt-0 lg:w-max lg:-translate-x-1/2 lg:-translate-y-1/2">

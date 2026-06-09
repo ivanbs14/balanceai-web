@@ -1,8 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import { FormEvent, useState } from "react";
 import {
-  Banknote,
   Eye,
   EyeOff,
   Lock,
@@ -84,8 +84,15 @@ export function LoginForm({
 
       <div className="relative z-10 w-full max-w-110">
         <header className="mb-10 text-center">
-          <div className="mb-5 inline-flex h-20 w-20 items-center justify-center rounded-2xl bg-[#db2777] text-white">
-            <Banknote size={34} strokeWidth={2.2} />
+          <div className="mb-5 flex justify-center">
+            <Image
+              src="/logoai.svg"
+              alt="Balance-AI"
+              width={96}
+              height={96}
+              className="h-24 w-auto"
+              priority
+            />
           </div>
           <h1 className="text-[40px] font-bold leading-12 tracking-[-0.02em] text-primary">
             Balance-AI
