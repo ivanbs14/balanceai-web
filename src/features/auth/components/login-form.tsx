@@ -1,5 +1,6 @@
 "use client";
 
+import LinearProgress from "@mui/material/LinearProgress";
 import Image from "next/image";
 import { FormEvent, useState } from "react";
 import {
@@ -11,9 +12,13 @@ import {
 } from "lucide-react";
 
 type LoginFormProps = {
+  apiWakeErrorMessage: string | null;
   errorMessage: string | null;
+  isApiReady: boolean;
+  isApiWaking: boolean;
   isSubmitting: boolean;
   onGoogleLogin: () => void;
+  onRetryApiWake: () => void;
   onSubmit: (email: string, password: string) => Promise<void>;
 };
 
@@ -46,14 +51,19 @@ function GoogleMark() {
 }
 
 export function LoginForm({
+  apiWakeErrorMessage,
   errorMessage,
+  isApiReady,
+  isApiWaking,
   isSubmitting,
   onGoogleLogin,
+  onRetryApiWake,
   onSubmit,
 }: LoginFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const areLoginActionsDisabled = isSubmitting || isApiWaking || !isApiReady;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -61,7 +71,7 @@ export function LoginForm({
   }
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4 py-8 text-foreground sm:px-6">
+    <main className="relative flex min-h-screen items-start justify-center overflow-hidden bg-background px-4 pb-4 pt-8 text-foreground sm:items-center sm:px-6 sm:py-6">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 opacity-60"
@@ -83,8 +93,8 @@ export function LoginForm({
       </div>
 
       <div className="relative z-10 w-full max-w-110">
-        <header className="mb-10 text-center">
-          <div className="mb-5 flex justify-center">
+        <header className="mb-6 text-center">
+          <div className="mb-3 flex justify-center">
             <Image
               src="/logoai.svg"
               alt="Balance-ai"
@@ -98,13 +108,41 @@ export function LoginForm({
           <h1 className="text-[40px] font-bold leading-12 tracking-[-0.02em] text-primary">
             Balance-ai
           </h1>
-          <p className="mt-2 text-sm leading-5 text-foreground">
+          <p className="mt-1 text-sm leading-5 text-foreground">
             Sua vida financeira como um cuidado a mais.
           </p>
         </header>
 
-        <section className="rounded-md border border-border bg-surface/95 p-6 sm:p-10">
-          <form className="space-y-6" onSubmit={handleSubmit}>
+        <section className="rounded-md border border-border bg-surface/95 px-6 py-5 sm:px-8 sm:py-6">
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            {isApiWaking ? (
+              <div className="space-y-3 border border-border bg-surface-soft px-4 py-4">
+                <div className="space-y-2">
+                  <p className="font-mono text-xs uppercase tracking-[0.2em] text-primary">
+                    Acordando API
+                  </p>
+                  <p className="text-sm leading-5 text-foreground">
+                    Servidores gratuitos tendem a hibernar com inatividade. Aguarde
+                    enquanto estamos acordando a API para liberar o login.
+                  </p>
+                </div>
+                <LinearProgress color="inherit" />
+              </div>
+            ) : null}
+
+            {apiWakeErrorMessage ? (
+              <div className="space-y-3 border border-destructive/20 bg-danger-soft px-4 py-4 text-danger-foreground">
+                <p className="text-sm">{apiWakeErrorMessage}</p>
+                <button
+                  type="button"
+                  onClick={onRetryApiWake}
+                  className="inline-flex items-center justify-center border border-current px-3 py-2 text-sm font-semibold transition hover:bg-black/5"
+                >
+                  Tentar novamente
+                </button>
+              </div>
+            ) : null}
+
             <div className="space-y-2">
               <label
                 className="block font-mono text-xs uppercase tracking-[0.2em] text-primary"
@@ -188,16 +226,20 @@ export function LoginForm({
 
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={areLoginActionsDisabled}
               className="w-full border-b-4 border-black/10 bg-primary px-4 py-3.5 text-[20px] font-semibold leading-7 text-white transition hover:bg-primary-strong disabled:cursor-not-allowed disabled:opacity-70"
             >
-              {isSubmitting ? "Entrando..." : "Entrar"}
+              {isSubmitting
+                ? "Entrando..."
+                : isApiWaking
+                  ? "Aguardando API..."
+                  : "Entrar"}
             </button>
 
             <button
               type="button"
               onClick={onGoogleLogin}
-              disabled={isSubmitting}
+              disabled={areLoginActionsDisabled}
               className="flex w-full items-center justify-center gap-4 border border-border bg-surface-soft px-4 py-3.5 text-[22px] font-medium tracking-[-0.02em] text-foreground transition hover:border-primary disabled:cursor-not-allowed disabled:opacity-70"
             >
               <GoogleMark />
@@ -205,7 +247,7 @@ export function LoginForm({
             </button>
           </form>
 
-          <div className="my-10 flex items-center">
+          <div className="my-6 flex items-center">
             <div className="h-px flex-1 bg-border" />
             <span className="px-4 font-mono text-xs uppercase tracking-[0.2em] text-muted/60">
               OU
@@ -226,7 +268,7 @@ export function LoginForm({
           </footer>
         </section>
 
-        <p className="mt-8 flex items-center justify-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-muted">
+        <p className="mt-5 flex items-center justify-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-muted">
           <ShieldCheck size={16} />
           Ambiente seguro e criptografado
         </p>

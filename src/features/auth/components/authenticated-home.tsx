@@ -2,7 +2,13 @@
 
 import { startTransition, useEffect, useState } from "react";
 import { DashboardPage } from "@/features/dashboard/components/dashboard-page";
-import { getGoogleLoginUrl, getSession, login, logout } from "../api";
+import {
+  getGoogleLoginUrl,
+  getSession,
+  login,
+  logout,
+  waitForAuthApiReady,
+} from "../api";
 import { AuthUser } from "../types";
 import { LoginForm } from "./login-form";
 
@@ -16,6 +22,12 @@ export function AuthenticatedHome() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isApiReady, setIsApiReady] = useState(false);
+  const [isApiWaking, setIsApiWaking] = useState(false);
+  const [apiWakeAttempt, setApiWakeAttempt] = useState(0);
+  const [apiWakeErrorMessage, setApiWakeErrorMessage] = useState<string | null>(
+    null,
+  );
   const authErrorMessage =
     typeof window === "undefined"
       ? null
@@ -67,7 +79,55 @@ export function AuthenticatedHome() {
     };
   }, []);
 
+  useEffect(() => {
+    if (isLoading || user || isApiReady || isApiWaking) {
+      return;
+    }
+
+    let isMounted = true;
+
+    setIsApiWaking(true);
+    setApiWakeErrorMessage(null);
+
+    waitForAuthApiReady()
+      .then(() => {
+        if (!isMounted) {
+          return;
+        }
+
+        setIsApiReady(true);
+      })
+      .catch(() => {
+        if (!isMounted) {
+          return;
+        }
+
+        setApiWakeErrorMessage(
+          "Nao foi possivel acordar a API. Tente novamente para liberar o login.",
+        );
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsApiWaking(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [apiWakeAttempt, isApiReady, isApiWaking, isLoading, user]);
+
+  function handleRetryApiWake() {
+    setIsApiReady(false);
+    setApiWakeErrorMessage(null);
+    setApiWakeAttempt((current) => current + 1);
+  }
+
   async function handleLogin(email: string, password: string) {
+    if (!isApiReady || isApiWaking) {
+      return;
+    }
+
     setIsSubmitting(true);
     setErrorMessage(null);
 
@@ -100,6 +160,10 @@ export function AuthenticatedHome() {
   }
 
   function handleGoogleLogin() {
+    if (!isApiReady || isApiWaking) {
+      return;
+    }
+
     window.location.assign(getGoogleLoginUrl());
   }
 
@@ -116,9 +180,13 @@ export function AuthenticatedHome() {
   if (!user) {
     return (
       <LoginForm
+        apiWakeErrorMessage={apiWakeErrorMessage}
         errorMessage={errorMessage ?? authErrorMessage}
+        isApiReady={isApiReady}
+        isApiWaking={isApiWaking}
         isSubmitting={isSubmitting}
         onGoogleLogin={handleGoogleLogin}
+        onRetryApiWake={handleRetryApiWake}
         onSubmit={handleLogin}
       />
     );
