@@ -124,6 +124,22 @@ export const dashboardMonths: DashboardMonthData[] = [
         amount: 200,
       },
     ],
+    cardSpending: [
+      {
+        id: "nubank",
+        label: "Nubank",
+        monthAmount: 1030.2,
+        totalAmount: 2360.5,
+        colorClassName: "bg-chart-1",
+      },
+      {
+        id: "inter",
+        label: "Inter",
+        monthAmount: 14.9,
+        totalAmount: 14.9,
+        colorClassName: "bg-chart-2",
+      },
+    ],
     categories: [
       {
         id: "food",
@@ -266,6 +282,22 @@ export const dashboardMonths: DashboardMonthData[] = [
         id: "cdb",
         label: "CDB Pos-fixado",
         amount: 600,
+      },
+    ],
+    cardSpending: [
+      {
+        id: "nubank",
+        label: "Nubank",
+        monthAmount: 239.8,
+        totalAmount: 1039.4,
+        colorClassName: "bg-chart-1",
+      },
+      {
+        id: "inter",
+        label: "Inter",
+        monthAmount: 84.4,
+        totalAmount: 84.4,
+        colorClassName: "bg-chart-2",
       },
     ],
     categories: [

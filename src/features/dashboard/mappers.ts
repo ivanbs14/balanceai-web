@@ -7,6 +7,7 @@ import type {
 } from "./api-types";
 import type {
   BreakdownItem,
+  CardSpendItem,
   CategorySpendItem,
   CreditCardItem,
   DashboardViewModel,
@@ -240,6 +241,17 @@ function mapInvestmentBreakdown(transactions: ApiTransaction[]): BreakdownItem[]
   );
 }
 
+function mapCardSpending(creditCardResponse: ApiCardAggregateResponse): CardSpendItem[] {
+  return (creditCardResponse.topCredcards ?? []).map((card, index) => ({
+    id: `${card.card ?? "cartao"}-${index}`,
+    label: card.card?.trim() || "Cartao",
+    monthAmount: toNumber(card.valorTotalMes),
+    totalAmount:
+      toNumber(card.valorTotalMes) + toNumber(card.valorTotalTodosMesesRestantes),
+    colorClassName: categoryColorClasses[index % categoryColorClasses.length],
+  }));
+}
+
 function mapCategories(summary: ApiSummaryResponse): CategorySpendItem[] {
   return (summary.topCategories ?? []).map((category, index) => ({
     id: `${category.category ?? "categoria"}-${index}`,
@@ -278,6 +290,7 @@ export function createEmptyDashboardViewModel(monthId: string): DashboardViewMod
     income: [],
     expenses: [],
     investments: [],
+    cardSpending: [],
     categories: [],
   };
 }
@@ -305,6 +318,7 @@ export function mapDashboardViewModel(params: {
     income: mapIncomeBreakdown(transactions),
     expenses: mapExpenseBreakdown(transactions),
     investments: mapInvestmentBreakdown(transactions),
+    cardSpending: mapCardSpending(creditCard),
     categories: mapCategories(summary),
   };
 }

@@ -35,6 +35,7 @@ import { AddCardModal } from "./add-card-modal";
 import { AddIncomeModal } from "./add-income-modal";
 import { AddInvestmentModal } from "./add-investment-modal";
 import { AddMonthlyExpenseModal } from "./add-monthly-expense-modal";
+import { CardSpendCard } from "./card-spend-card";
 import { CategoryCard } from "./category-card";
 import { DeleteTransactionModal } from "./delete-transaction-modal";
 import { DashboardShell } from "./dashboard-shell";
@@ -757,7 +758,10 @@ export function DashboardPage({ userId }: DashboardPageProps) {
           addButtonVariant="ghost"
           hideItemsSuffixOnMobile
         />
-        <CategoryCard items={dashboardData.categories} />
+        <div className="grid grid-cols-1 gap-2 sm:gap-0 xl:gap-6">
+          <CardSpendCard items={dashboardData.cardSpending} />
+          <CategoryCard items={dashboardData.categories} />
+        </div>
       </div>
     </>
   );
