@@ -54,6 +54,14 @@ export type CategorySpendItem = {
   colorClassName: string;
 };
 
+export type CardSpendItem = {
+  id: string;
+  label: string;
+  monthAmount: CurrencyAmount;
+  totalAmount: CurrencyAmount;
+  colorClassName: string;
+};
+
 export type DashboardMonthData = {
   id: MonthId;
   label: string;
@@ -63,6 +71,7 @@ export type DashboardMonthData = {
   income: BreakdownItem[];
   expenses: BreakdownItem[];
   investments: BreakdownItem[];
+  cardSpending: CardSpendItem[];
   categories: CategorySpendItem[];
 };
 
@@ -76,5 +85,6 @@ export type DashboardViewModel = {
   income: BreakdownItem[];
   expenses: BreakdownItem[];
   investments: BreakdownItem[];
+  cardSpending: CardSpendItem[];
   categories: CategorySpendItem[];
 };
