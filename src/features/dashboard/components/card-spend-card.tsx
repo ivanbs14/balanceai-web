@@ -6,6 +6,7 @@ import type { CardSpendItem } from "../types";
 
 type CardSpendCardProps = {
   items: CardSpendItem[];
+  onItemClick?: (item: CardSpendItem) => void;
 };
 
 type CardSpendMode = "total" | "month";
@@ -25,7 +26,7 @@ function truncateForMobile(value: string, maxLength = 12) {
   return `${value.slice(0, maxLength)}...`;
 }
 
-export function CardSpendCard({ items }: CardSpendCardProps) {
+export function CardSpendCard({ items, onItemClick }: CardSpendCardProps) {
   const [mode, setMode] = useState<CardSpendMode>("month");
   const isTotalMode = mode === "total";
   const itemsWithDisplayAmount = items.map((item) => ({
@@ -78,7 +79,12 @@ export function CardSpendCard({ items }: CardSpendCardProps) {
               : Math.round((item.displayAmount / totalAmount) * 100);
 
           return (
-            <div key={item.id} className="block w-full">
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => onItemClick?.(item)}
+              className="block w-full rounded-[0.8rem] px-2 py-2 text-left transition hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+            >
               <div className="flex items-center justify-between gap-3 text-[0.8rem] sm:gap-4 sm:text-[0.92rem]">
                 <span className="uppercase tracking-[0.05em] text-white/88">
                   <span className="sm:hidden" title={item.label}>
@@ -102,7 +108,7 @@ export function CardSpendCard({ items }: CardSpendCardProps) {
                   {percentage}%
                 </span>
               </div>
-            </div>
+            </button>
           );
         })}
       </div>

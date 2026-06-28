@@ -16,8 +16,10 @@ import {
 import {
   deleteTransation,
   getDashboardApiPayload,
+  getOpenTransactionsByCard,
   updateTransationPaymentStatus,
 } from "../api";
+import type { ApiTransaction } from "../api-types";
 import {
   createEmptyDashboardViewModel,
   mapDashboardViewModel,
@@ -35,6 +37,7 @@ import { AddCardModal } from "./add-card-modal";
 import { AddIncomeModal } from "./add-income-modal";
 import { AddInvestmentModal } from "./add-investment-modal";
 import { AddMonthlyExpenseModal } from "./add-monthly-expense-modal";
+import { CardOpenTransactionsModal } from "./card-open-transactions-modal";
 import { CardSpendCard } from "./card-spend-card";
 import { CategoryCard } from "./category-card";
 import { DeleteTransactionModal } from "./delete-transaction-modal";
@@ -153,6 +156,13 @@ type PendingDeleteTransaction = {
   isInstallmentPurchase: boolean;
 };
 
+type OpenCardTransactionsState = {
+  cardName: string;
+  transactions: ApiTransaction[];
+  isLoading: boolean;
+  errorMessage: string | null;
+};
+
 export function DashboardPage({ userId }: DashboardPageProps) {
   const currentMonthId = useMemo(() => getCurrentMonthId(), []);
   const currentYear = useMemo(() => getCurrentYear(), []);
@@ -180,6 +190,8 @@ export function DashboardPage({ userId }: DashboardPageProps) {
   const [isAddInvestmentModalOpen, setIsAddInvestmentModalOpen] = useState(false);
   const [isAddMonthlyExpenseModalOpen, setIsAddMonthlyExpenseModalOpen] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
+  const [openCardTransactionsState, setOpenCardTransactionsState] =
+    useState<OpenCardTransactionsState | null>(null);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(max-width: 639px)");
@@ -600,6 +612,47 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     }
   }
 
+  async function handleOpenCardTransactions(cardName: string) {
+    setOpenCardTransactionsState({
+      cardName,
+      transactions: [],
+      isLoading: true,
+      errorMessage: null,
+    });
+
+    try {
+      const transactions = await getOpenTransactionsByCard(cardName);
+
+      setOpenCardTransactionsState((current) => {
+        if (!current || current.cardName !== cardName) {
+          return current;
+        }
+
+        return {
+          ...current,
+          transactions,
+          isLoading: false,
+        };
+      });
+    } catch (error) {
+      setOpenCardTransactionsState((current) => {
+        if (!current || current.cardName !== cardName) {
+          return current;
+        }
+
+        return {
+          ...current,
+          transactions: [],
+          isLoading: false,
+          errorMessage:
+            error instanceof Error
+              ? error.message
+              : "Nao foi possivel carregar as transacoes do cartao.",
+        };
+      });
+    }
+  }
+
   async function handleDeleteMonthlyExpense(row: MonthlyExpenseItem) {
     await deleteTransactionWithConfirmation({
       transactionId: row.id,
@@ -759,7 +812,12 @@ export function DashboardPage({ userId }: DashboardPageProps) {
           hideItemsSuffixOnMobile
         />
         <div className="grid grid-cols-1 gap-2 sm:gap-0 xl:gap-6">
-          <CardSpendCard items={dashboardData.cardSpending} />
+          <CardSpendCard
+            items={dashboardData.cardSpending}
+            onItemClick={(item) => {
+              void handleOpenCardTransactions(item.label);
+            }}
+          />
           <CategoryCard items={dashboardData.categories} />
         </div>
       </div>
@@ -768,6 +826,14 @@ export function DashboardPage({ userId }: DashboardPageProps) {
 
   return (
     <>
+      <CardOpenTransactionsModal
+        isOpen={openCardTransactionsState !== null}
+        cardName={openCardTransactionsState?.cardName ?? ""}
+        transactions={openCardTransactionsState?.transactions ?? []}
+        isLoading={openCardTransactionsState?.isLoading ?? false}
+        errorMessage={openCardTransactionsState?.errorMessage ?? null}
+        onClose={() => setOpenCardTransactionsState(null)}
+      />
       <DeleteTransactionModal
         isOpen={pendingDeleteTransaction !== null}
         isSubmitting={
