@@ -92,6 +92,14 @@ export async function getCardsByUserId(userId: string): Promise<ApiCardsResponse
   );
 }
 
+export async function getOpenTransactionsByCard(
+  cardName: string,
+): Promise<ApiTransaction[]> {
+  return fetchDashboardResource<ApiTransaction[]>(
+    `/transations/open-by-card/${encodeURIComponent(cardName)}`,
+  );
+}
+
 export async function createCard(payload: CreateCardPayload) {
   const response = await fetch(`${API_BASE_URL}/cards`, {
     method: "POST",
