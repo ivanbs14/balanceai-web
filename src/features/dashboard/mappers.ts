@@ -12,6 +12,7 @@ import type {
   CreditCardItem,
   DashboardViewModel,
   FixedCostItem,
+  InstallmentGroupEditSeed,
   MonthlyExpenseItem,
 } from "./types";
 
@@ -123,6 +124,52 @@ function parseInstallmentInfo(
   };
 }
 
+function formatDateInputValue(value: Date) {
+  const year = value.getFullYear();
+  const month = `${value.getMonth() + 1}`.padStart(2, "0");
+  const day = `${value.getDate()}`.padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function buildInstallmentGroupEditSeed(
+  transaction: ApiTransaction,
+): InstallmentGroupEditSeed | null {
+  const installments = Number(transaction.installments ?? 0);
+
+  if (
+    !transaction.installmentGroupId ||
+    installments <= 1 ||
+    (transaction.paymentMethod !== "CREDIT_CARD" && transaction.paymentMethod !== "PIX")
+  ) {
+    return null;
+  }
+
+  const installment = parseInstallmentInfo(
+    transaction.installmentInfo,
+    transaction.installments,
+  );
+  const parsedDate = new Date(transaction.Date);
+  const startDate = new Date(parsedDate);
+
+  if (!Number.isNaN(startDate.getTime())) {
+    startDate.setMonth(startDate.getMonth() - (installment.installmentCurrent - 1));
+  }
+
+  return {
+    transactionId: transaction.id,
+    name: transaction.name,
+    totalAmount: Number((toNumber(transaction.amount) * installment.installmentTotal).toFixed(2)),
+    startDate: Number.isNaN(startDate.getTime())
+      ? transaction.Date.slice(0, 10)
+      : formatDateInputValue(startDate),
+    installments: installment.installmentTotal,
+    paymentMethod: transaction.paymentMethod as InstallmentGroupEditSeed["paymentMethod"],
+    cardId: transaction.cardId ?? null,
+    cardName: transaction.nameCard ?? null,
+  };
+}
+
 function mapFixedCosts(fixedCostsResponse: ApiFixedCostsResponse): FixedCostItem[] {
   return (fixedCostsResponse.data ?? []).map((fixedCost) => ({
     id: fixedCost.id,
@@ -140,22 +187,26 @@ function mapFixedCosts(fixedCostsResponse: ApiFixedCostsResponse): FixedCostItem
 function mapMonthlyExpenses(transactions: ApiTransaction[]): MonthlyExpenseItem[] {
   return transactions
     .filter((transaction) => transaction.type === "EXPENSE")
-    .map((transaction) => ({
-      id: transaction.id,
-      name: transaction.name,
-      category: toCategoryLabel(transaction.category),
-      isFixed: Boolean(transaction.isFixed),
-      paymentType: toPaymentMethodLabel(transaction.paymentMethod),
-      paymentStatus:
-        transaction.paymentStatus === "PAID"
-          ? ("paid" as const)
-          : ("pending" as const),
-      isCreditCardInstallmentPurchase: Number(transaction.installments ?? 0) > 1,
-      canEdit:
-        Number(transaction.installments ?? 0) <= 1 &&
-        transaction.paymentStatus !== "PAID",
-      amount: toNumber(transaction.amount),
-    }))
+    .map((transaction) => {
+      const installmentGroupEdit = buildInstallmentGroupEditSeed(transaction);
+
+      return {
+        id: transaction.id,
+        name: transaction.name,
+        category: toCategoryLabel(transaction.category),
+        isFixed: Boolean(transaction.isFixed),
+        paymentType: toPaymentMethodLabel(transaction.paymentMethod),
+        paymentStatus:
+          transaction.paymentStatus === "PAID"
+            ? ("paid" as const)
+            : ("pending" as const),
+        isInstallmentGroupTransaction: installmentGroupEdit !== null,
+        canEditSimpleTransaction:
+          installmentGroupEdit === null && transaction.paymentStatus !== "PAID",
+        installmentGroupEdit,
+        amount: toNumber(transaction.amount),
+      };
+    })
     .sort((left, right) => right.amount - left.amount);
 }
 
@@ -174,6 +225,7 @@ function mapCreditCardItems(
         transaction.installmentInfo,
         transaction.installments,
       );
+      const installmentGroupEdit = buildInstallmentGroupEditSeed(transaction);
 
       return {
         id: transaction.id,
@@ -185,6 +237,7 @@ function mapCreditCardItems(
         canDeletePendingInstallments:
           transaction.paymentMethod === "CREDIT_CARD" &&
           Number(transaction.installments ?? 0) > 1,
+        installmentGroupEdit,
         amount: toNumber(transaction.amount),
       };
     })
@@ -202,6 +255,7 @@ function mapCreditCardItems(
     installmentCurrent: 1,
     installmentTotal: 1,
     canDeletePendingInstallments: false,
+    installmentGroupEdit: null,
     amount: toNumber(card.valorTotalMes),
   }));
 }

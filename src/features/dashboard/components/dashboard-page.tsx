@@ -18,6 +18,7 @@ import {
   deleteTransation,
   getDashboardApiPayload,
   getOpenTransactionsByCard,
+  updateInstallmentGroup,
   updateTransation,
   updateTransationPaymentStatus,
 } from "../api";
@@ -30,6 +31,7 @@ import type {
   BreakdownItem,
   CreditCardItem,
   DashboardViewModel,
+  InstallmentGroupEditSeed,
   MonthlyExpenseItem,
   MonthId,
 } from "../types";
@@ -44,6 +46,7 @@ import { CardSpendCard } from "./card-spend-card";
 import { CategoryCard } from "./category-card";
 import { DeleteTransactionModal } from "./delete-transaction-modal";
 import { DashboardShell } from "./dashboard-shell";
+import { EditInstallmentGroupModal } from "./edit-installment-group-modal";
 import { EditTransactionModal } from "./edit-transaction-modal";
 import { LedgerTableCard } from "./ledger-table-card";
 import { MonthlySummary } from "./monthly-summary";
@@ -168,7 +171,7 @@ type FixedFilter = "all" | "fixed" | "not-fixed";
 type PendingDeleteTransaction = {
   id: string;
   label: string;
-  isInstallmentPurchase: boolean;
+  isInstallmentGroupTransaction: boolean;
 };
 
 type PendingEditTransaction = {
@@ -176,6 +179,8 @@ type PendingEditTransaction = {
   name: string;
   amount: number;
 };
+
+type PendingEditInstallmentGroup = InstallmentGroupEditSeed;
 
 type OpenCardTransactionsState = {
   cardName: string;
@@ -208,6 +213,8 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     useState<PendingDeleteTransaction | null>(null);
   const [pendingEditTransaction, setPendingEditTransaction] =
     useState<PendingEditTransaction | null>(null);
+  const [pendingEditInstallmentGroup, setPendingEditInstallmentGroup] =
+    useState<PendingEditInstallmentGroup | null>(null);
   const [cardSuccessMessage, setCardSuccessMessage] = useState<string | null>(null);
   const [isAddCardModalOpen, setIsAddCardModalOpen] = useState(false);
   const [isAddIncomeModalOpen, setIsAddIncomeModalOpen] = useState(false);
@@ -477,10 +484,26 @@ export function DashboardPage({ userId }: DashboardPageProps) {
       render: (row: MonthlyExpenseItem) => {
         const isDeleting = deletingTransactionIds.includes(row.id);
         const isEditing = editingTransactionIds.includes(row.id);
+        const canEditInstallmentGroup = row.installmentGroupEdit !== null;
+        const canEditSimpleTransaction = row.canEditSimpleTransaction;
 
         return (
           <div className="inline-flex items-center justify-center gap-2">
-            {row.canEdit ? (
+            {canEditInstallmentGroup ? (
+              <button
+                type="button"
+                onClick={() => {
+                  handleOpenEditInstallmentGroup(row.installmentGroupEdit);
+                }}
+                disabled={isEditing}
+                aria-label={`Editar grupo parcelado de ${row.name}`}
+                title="Editar grupo parcelado"
+                className="inline-flex items-center justify-center text-primary transition hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <Pencil size={16} strokeWidth={2} aria-hidden />
+              </button>
+            ) : null}
+            {canEditSimpleTransaction ? (
               <button
                 type="button"
                 onClick={() => {
@@ -560,23 +583,40 @@ export function DashboardPage({ userId }: DashboardPageProps) {
       key: "actions",
       header: "Acoes",
       align: "center" as const,
-      width: isMobileViewport ? "56px" : "84px",
+      width: isMobileViewport ? "72px" : "112px",
       render: (row: CreditCardItem) => {
         const isDeleting = deletingTransactionIds.includes(row.id);
+        const isEditing = editingTransactionIds.includes(row.id);
 
         return (
-          <button
-            type="button"
-            onClick={() => {
-              void handleDeleteCreditCardExpense(row);
-            }}
-            disabled={isDeleting}
-            aria-label={`Deletar ${row.description}`}
-            title="Deletar transacao"
-            className="inline-flex items-center justify-center text-primary transition hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <Trash2 size={16} strokeWidth={2} aria-hidden />
-          </button>
+          <div className="inline-flex items-center justify-center gap-2">
+            {row.installmentGroupEdit ? (
+              <button
+                type="button"
+                onClick={() => {
+                  handleOpenEditInstallmentGroup(row.installmentGroupEdit);
+                }}
+                disabled={isEditing}
+                aria-label={`Editar grupo parcelado de ${row.description}`}
+                title="Editar grupo parcelado"
+                className="inline-flex items-center justify-center text-primary transition hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <Pencil size={16} strokeWidth={2} aria-hidden />
+              </button>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => {
+                void handleDeleteCreditCardExpense(row);
+              }}
+              disabled={isDeleting}
+              aria-label={`Deletar ${row.description}`}
+              title="Deletar transacao"
+              className="inline-flex items-center justify-center text-primary transition hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <Trash2 size={16} strokeWidth={2} aria-hidden />
+            </button>
+          </div>
         );
       },
     },
@@ -618,17 +658,17 @@ export function DashboardPage({ userId }: DashboardPageProps) {
   async function deleteTransactionWithConfirmation(params: {
     transactionId: string;
     label: string;
-    isInstallmentPurchase: boolean;
+    isInstallmentGroupTransaction: boolean;
   }) {
     setPendingDeleteTransaction({
       id: params.transactionId,
       label: params.label,
-      isInstallmentPurchase: params.isInstallmentPurchase,
+      isInstallmentGroupTransaction: params.isInstallmentGroupTransaction,
     });
   }
 
   function handleOpenEditMonthlyExpense(row: MonthlyExpenseItem) {
-    if (!row.canEdit) {
+    if (!row.canEditSimpleTransaction) {
       return;
     }
 
@@ -637,6 +677,14 @@ export function DashboardPage({ userId }: DashboardPageProps) {
       name: row.name,
       amount: row.amount,
     });
+  }
+
+  function handleOpenEditInstallmentGroup(group: InstallmentGroupEditSeed | null) {
+    if (!group) {
+      return;
+    }
+
+    setPendingEditInstallmentGroup(group);
   }
 
   async function handleConfirmEditTransaction(payload: {
@@ -668,6 +716,36 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     } finally {
       setEditingTransactionIds((current) =>
         current.filter((id) => id !== pendingEditTransaction.id),
+      );
+    }
+  }
+
+  async function handleConfirmEditInstallmentGroup(payload: {
+    transationId: string;
+    name: string;
+    amount: string;
+    Date: string;
+    installments: number;
+    paymentMethod: "CREDIT_CARD" | "PIX";
+    cardId?: string;
+  }) {
+    setEditingTransactionIds((current) => [...current, payload.transationId]);
+    setErrorMessage(null);
+
+    try {
+      await updateInstallmentGroup(payload);
+      setPendingEditInstallmentGroup(null);
+      setIsLoading(true);
+      setReloadToken((current) => current + 1);
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Nao foi possivel editar o grupo parcelado.",
+      );
+    } finally {
+      setEditingTransactionIds((current) =>
+        current.filter((id) => id !== payload.transationId),
       );
     }
   }
@@ -744,11 +822,24 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     }
   }
 
+  function handleOpenEditInstallmentGroupFromCard(transaction: ApiTransaction) {
+    setOpenCardTransactionsState(null);
+    handleOpenEditInstallmentGroup(
+      mapDashboardViewModel({
+        monthId: activeMonthId ?? currentMonthId,
+        summary: {},
+        fixedCosts: { data: [] },
+        transactions: [transaction],
+        creditCard: {},
+      }).creditCard[0]?.installmentGroupEdit ?? null,
+    );
+  }
+
   async function handleDeleteMonthlyExpense(row: MonthlyExpenseItem) {
     await deleteTransactionWithConfirmation({
       transactionId: row.id,
       label: row.name,
-      isInstallmentPurchase: row.isCreditCardInstallmentPurchase,
+      isInstallmentGroupTransaction: row.isInstallmentGroupTransaction,
     });
   }
 
@@ -756,7 +847,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     await deleteTransactionWithConfirmation({
       transactionId: row.id,
       label: row.description,
-      isInstallmentPurchase: row.canDeletePendingInstallments,
+      isInstallmentGroupTransaction: row.canDeletePendingInstallments,
     });
   }
 
@@ -923,6 +1014,8 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         transactions={openCardTransactionsState?.transactions ?? []}
         isLoading={openCardTransactionsState?.isLoading ?? false}
         errorMessage={openCardTransactionsState?.errorMessage ?? null}
+        editingTransactionIds={editingTransactionIds}
+        onEditInstallmentGroup={handleOpenEditInstallmentGroupFromCard}
         onClose={() => setOpenCardTransactionsState(null)}
       />
       <DeleteTransactionModal
@@ -934,7 +1027,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         }
         transactionLabel={pendingDeleteTransaction?.label ?? ""}
         isInstallmentPurchase={
-          pendingDeleteTransaction?.isInstallmentPurchase ?? false
+          pendingDeleteTransaction?.isInstallmentGroupTransaction ?? false
         }
         onClose={() => setPendingDeleteTransaction(null)}
         onConfirm={() => {
@@ -952,6 +1045,20 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         onClose={() => setPendingEditTransaction(null)}
         onConfirm={(payload) => {
           void handleConfirmEditTransaction(payload);
+        }}
+      />
+      <EditInstallmentGroupModal
+        isOpen={pendingEditInstallmentGroup !== null}
+        isSubmitting={
+          pendingEditInstallmentGroup
+            ? editingTransactionIds.includes(pendingEditInstallmentGroup.transactionId)
+            : false
+        }
+        userId={userId}
+        group={pendingEditInstallmentGroup}
+        onClose={() => setPendingEditInstallmentGroup(null)}
+        onConfirm={(payload) => {
+          void handleConfirmEditInstallmentGroup(payload);
         }}
       />
       <AddCardModal

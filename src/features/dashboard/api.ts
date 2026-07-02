@@ -59,6 +59,10 @@ export type ApiTransationPaymentMethod =
   | "CASH"
   | "PIX"
   | "OTHER";
+export type ApiInstallmentGroupPaymentMethod = Extract<
+  ApiTransationPaymentMethod,
+  "CREDIT_CARD" | "PIX"
+>;
 
 export type CreateTransationPayload = {
   userId: string;
@@ -174,6 +178,37 @@ export async function updateTransation(params: {
       body: JSON.stringify({
         name: params.name,
         amount: params.amount,
+      }),
+    },
+  );
+
+  await parseJsonResponse<unknown>(response);
+}
+
+export async function updateInstallmentGroup(params: {
+  transationId: string;
+  name: string;
+  amount: string;
+  Date: string;
+  installments: number;
+  paymentMethod: ApiInstallmentGroupPaymentMethod;
+  cardId?: string;
+}) {
+  const response = await fetch(
+    `${API_BASE_URL}/transations/${encodeURIComponent(params.transationId)}/installment-group`,
+    {
+      method: "PATCH",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: params.name,
+        amount: params.amount,
+        Date: params.Date,
+        installments: params.installments,
+        paymentMethod: params.paymentMethod,
+        ...(params.cardId ? { cardId: params.cardId } : {}),
       }),
     },
   );
