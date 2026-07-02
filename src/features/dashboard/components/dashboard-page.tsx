@@ -119,6 +119,18 @@ function getMonthNumberFromMonthId(monthId: MonthId) {
   return Number.parseInt(monthId.slice(5, 7), 10);
 }
 
+function isTransactionInMonthId(transactionDate: string, monthId: MonthId) {
+  const parsedDate = new Date(transactionDate);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return false;
+  }
+
+  const transactionMonthId = `${parsedDate.getFullYear()}-${`${parsedDate.getMonth() + 1}`.padStart(2, "0")}`;
+
+  return transactionMonthId === monthId;
+}
+
 function resolveMonthIdForYear(params: {
   year: number;
   preferredMonthId: MonthId | null;
@@ -622,6 +634,11 @@ export function DashboardPage({ userId }: DashboardPageProps) {
 
     try {
       const transactions = await getOpenTransactionsByCard(cardName);
+      const filteredTransactions = activeMonthId
+        ? transactions.filter((transaction) =>
+            isTransactionInMonthId(transaction.Date, activeMonthId),
+          )
+        : transactions;
 
       setOpenCardTransactionsState((current) => {
         if (!current || current.cardName !== cardName) {
@@ -630,7 +647,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
 
         return {
           ...current,
-          transactions,
+          transactions: filteredTransactions,
           isLoading: false,
         };
       });
