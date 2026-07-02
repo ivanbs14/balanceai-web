@@ -3,6 +3,18 @@ export type MonthId = string;
 export type CurrencyAmount = number;
 
 export type FixedCostStatus = "paid" | "pending";
+export type InstallmentGroupPaymentMethod = "CREDIT_CARD" | "PIX";
+
+export type InstallmentGroupEditSeed = {
+  transactionId: string;
+  name: string;
+  totalAmount: CurrencyAmount;
+  startDate: string;
+  installments: number;
+  paymentMethod: InstallmentGroupPaymentMethod;
+  cardId: string | null;
+  cardName: string | null;
+};
 
 export type SummaryMetrics = {
   totalExpenses: CurrencyAmount;
@@ -27,6 +39,7 @@ export type CreditCardItem = {
   installmentCurrent: number;
   installmentTotal: number;
   canDeletePendingInstallments: boolean;
+  installmentGroupEdit: InstallmentGroupEditSeed | null;
   amount: CurrencyAmount;
 };
 
@@ -37,8 +50,9 @@ export type MonthlyExpenseItem = {
   isFixed: boolean;
   paymentType: string;
   paymentStatus: FixedCostStatus;
-  isCreditCardInstallmentPurchase: boolean;
-  canEdit: boolean;
+  isInstallmentGroupTransaction: boolean;
+  canEditSimpleTransaction: boolean;
+  installmentGroupEdit: InstallmentGroupEditSeed | null;
   amount: CurrencyAmount;
 };
 

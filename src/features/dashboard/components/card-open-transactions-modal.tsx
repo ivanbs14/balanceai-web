@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { ReceiptText, X } from "lucide-react";
+import { Pencil, ReceiptText, X } from "lucide-react";
 import type { ApiTransaction } from "../api-types";
 
 type CardOpenTransactionsModalProps = {
@@ -10,6 +10,8 @@ type CardOpenTransactionsModalProps = {
   transactions: ApiTransaction[];
   isLoading: boolean;
   errorMessage: string | null;
+  editingTransactionIds: string[];
+  onEditInstallmentGroup: (transaction: ApiTransaction) => void;
   onClose: () => void;
 };
 
@@ -51,6 +53,8 @@ export function CardOpenTransactionsModal({
   transactions,
   isLoading,
   errorMessage,
+  editingTransactionIds,
+  onEditInstallmentGroup,
   onClose,
 }: CardOpenTransactionsModalProps) {
   useEffect(() => {
@@ -151,6 +155,10 @@ export function CardOpenTransactionsModal({
                     const installmentLabel = transaction.installmentInfo
                       ? `Parcela ${transaction.installmentInfo}`
                       : "Compra avulsa";
+                    const canEditInstallmentGroup =
+                      Boolean(transaction.installmentGroupId) &&
+                      Number(transaction.installments ?? 0) > 1;
+                    const isEditing = editingTransactionIds.includes(transaction.id);
 
                     return (
                       <div
@@ -158,12 +166,28 @@ export function CardOpenTransactionsModal({
                         className="border-b border-dashed border-[#3c332b]/18 pb-3 last:border-b-0 last:pb-0"
                       >
                         <div className="flex items-start justify-between gap-4 text-[0.92rem] sm:text-[1.02rem]">
-                          <p className="max-w-[72%] font-bold uppercase leading-5 tracking-[0.04em]">
+                          <p className="max-w-[60%] font-bold uppercase leading-5 tracking-[0.04em]">
                             {transaction.name}
                           </p>
-                          <p className="shrink-0 font-bold tabular-nums">
-                            {formatCurrency(amount)}
-                          </p>
+                          <div className="flex items-center gap-3">
+                            {canEditInstallmentGroup ? (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  onEditInstallmentGroup(transaction);
+                                }}
+                                disabled={isEditing}
+                                aria-label={`Editar grupo parcelado de ${transaction.name}`}
+                                title="Editar grupo parcelado"
+                                className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[#2e241d] transition hover:bg-[#e8dcc2] disabled:cursor-not-allowed disabled:opacity-40"
+                              >
+                                <Pencil size={16} strokeWidth={2} aria-hidden />
+                              </button>
+                            ) : null}
+                            <p className="shrink-0 font-bold tabular-nums">
+                              {formatCurrency(amount)}
+                            </p>
+                          </div>
                         </div>
                         <div className="mt-1.5 flex items-center justify-between gap-4 text-[0.69rem] uppercase tracking-[0.12em] text-[#6a5648] sm:text-[0.76rem]">
                           <span>{installmentLabel}</span>
