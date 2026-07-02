@@ -8,6 +8,7 @@ import {
   FunnelPlus,
   Landmark,
   LocateFixed,
+  Pencil,
   QrCode,
   Ticket,
   Trash2,
@@ -17,6 +18,7 @@ import {
   deleteTransation,
   getDashboardApiPayload,
   getOpenTransactionsByCard,
+  updateTransation,
   updateTransationPaymentStatus,
 } from "../api";
 import type { ApiTransaction } from "../api-types";
@@ -42,6 +44,7 @@ import { CardSpendCard } from "./card-spend-card";
 import { CategoryCard } from "./category-card";
 import { DeleteTransactionModal } from "./delete-transaction-modal";
 import { DashboardShell } from "./dashboard-shell";
+import { EditTransactionModal } from "./edit-transaction-modal";
 import { LedgerTableCard } from "./ledger-table-card";
 import { MonthlySummary } from "./monthly-summary";
 import { MonthSelector } from "./month-selector";
@@ -168,6 +171,12 @@ type PendingDeleteTransaction = {
   isInstallmentPurchase: boolean;
 };
 
+type PendingEditTransaction = {
+  id: string;
+  name: string;
+  amount: number;
+};
+
 type OpenCardTransactionsState = {
   cardName: string;
   transactions: ApiTransaction[];
@@ -193,9 +202,12 @@ export function DashboardPage({ userId }: DashboardPageProps) {
   const [reloadToken, setReloadToken] = useState(0);
   const [fixedFilter, setFixedFilter] = useState<FixedFilter>("all");
   const [updatingTransactionIds, setUpdatingTransactionIds] = useState<string[]>([]);
+  const [editingTransactionIds, setEditingTransactionIds] = useState<string[]>([]);
   const [deletingTransactionIds, setDeletingTransactionIds] = useState<string[]>([]);
   const [pendingDeleteTransaction, setPendingDeleteTransaction] =
     useState<PendingDeleteTransaction | null>(null);
+  const [pendingEditTransaction, setPendingEditTransaction] =
+    useState<PendingEditTransaction | null>(null);
   const [cardSuccessMessage, setCardSuccessMessage] = useState<string | null>(null);
   const [isAddCardModalOpen, setIsAddCardModalOpen] = useState(false);
   const [isAddIncomeModalOpen, setIsAddIncomeModalOpen] = useState(false);
@@ -461,23 +473,40 @@ export function DashboardPage({ userId }: DashboardPageProps) {
       key: "actions",
       header: "Acoes",
       align: "center" as const,
-      width: isMobileViewport ? "40px" : "84px",
+      width: isMobileViewport ? "72px" : "112px",
       render: (row: MonthlyExpenseItem) => {
         const isDeleting = deletingTransactionIds.includes(row.id);
+        const isEditing = editingTransactionIds.includes(row.id);
 
         return (
-          <button
-            type="button"
-            onClick={() => {
-              void handleDeleteMonthlyExpense(row);
-            }}
-            disabled={isDeleting}
-            aria-label={`Deletar ${row.name}`}
-            title="Deletar transacao"
-            className="inline-flex items-center justify-center text-primary transition hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <Trash2 size={16} strokeWidth={2} aria-hidden />
-          </button>
+          <div className="inline-flex items-center justify-center gap-2">
+            {row.canEdit ? (
+              <button
+                type="button"
+                onClick={() => {
+                  handleOpenEditMonthlyExpense(row);
+                }}
+                disabled={isEditing}
+                aria-label={`Editar ${row.name}`}
+                title="Editar transacao"
+                className="inline-flex items-center justify-center text-primary transition hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <Pencil size={16} strokeWidth={2} aria-hidden />
+              </button>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => {
+                void handleDeleteMonthlyExpense(row);
+              }}
+              disabled={isDeleting}
+              aria-label={`Deletar ${row.name}`}
+              title="Deletar transacao"
+              className="inline-flex items-center justify-center text-primary transition hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <Trash2 size={16} strokeWidth={2} aria-hidden />
+            </button>
+          </div>
         );
       },
     },
@@ -596,6 +625,51 @@ export function DashboardPage({ userId }: DashboardPageProps) {
       label: params.label,
       isInstallmentPurchase: params.isInstallmentPurchase,
     });
+  }
+
+  function handleOpenEditMonthlyExpense(row: MonthlyExpenseItem) {
+    if (!row.canEdit) {
+      return;
+    }
+
+    setPendingEditTransaction({
+      id: row.id,
+      name: row.name,
+      amount: row.amount,
+    });
+  }
+
+  async function handleConfirmEditTransaction(payload: {
+    name: string;
+    amount: string;
+  }) {
+    if (!pendingEditTransaction) {
+      return;
+    }
+
+    setEditingTransactionIds((current) => [...current, pendingEditTransaction.id]);
+    setErrorMessage(null);
+
+    try {
+      await updateTransation({
+        transationId: pendingEditTransaction.id,
+        name: payload.name,
+        amount: payload.amount,
+      });
+      setPendingEditTransaction(null);
+      setIsLoading(true);
+      setReloadToken((current) => current + 1);
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Nao foi possivel editar a transacao.",
+      );
+    } finally {
+      setEditingTransactionIds((current) =>
+        current.filter((id) => id !== pendingEditTransaction.id),
+      );
+    }
   }
 
   async function handleConfirmDeleteTransaction() {
@@ -865,6 +939,19 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         onClose={() => setPendingDeleteTransaction(null)}
         onConfirm={() => {
           void handleConfirmDeleteTransaction();
+        }}
+      />
+      <EditTransactionModal
+        isOpen={pendingEditTransaction !== null}
+        isSubmitting={
+          pendingEditTransaction
+            ? editingTransactionIds.includes(pendingEditTransaction.id)
+            : false
+        }
+        transaction={pendingEditTransaction}
+        onClose={() => setPendingEditTransaction(null)}
+        onConfirm={(payload) => {
+          void handleConfirmEditTransaction(payload);
         }}
       />
       <AddCardModal
