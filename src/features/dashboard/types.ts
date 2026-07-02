@@ -38,6 +38,7 @@ export type MonthlyExpenseItem = {
   paymentType: string;
   paymentStatus: FixedCostStatus;
   isCreditCardInstallmentPurchase: boolean;
+  canEdit: boolean;
   amount: CurrencyAmount;
 };
 

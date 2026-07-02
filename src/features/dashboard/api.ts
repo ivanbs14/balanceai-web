@@ -158,6 +158,29 @@ export async function updateTransationPaymentStatus(params: {
   await parseJsonResponse<unknown>(response);
 }
 
+export async function updateTransation(params: {
+  transationId: string;
+  name: string;
+  amount: string;
+}) {
+  const response = await fetch(
+    `${API_BASE_URL}/transations/${encodeURIComponent(params.transationId)}`,
+    {
+      method: "PUT",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: params.name,
+        amount: params.amount,
+      }),
+    },
+  );
+
+  await parseJsonResponse<unknown>(response);
+}
+
 export async function deleteTransation(params: { transationId: string }) {
   const response = await fetch(
     `${API_BASE_URL}/transations/${encodeURIComponent(params.transationId)}`,
