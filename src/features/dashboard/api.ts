@@ -96,7 +96,7 @@ export async function getCardsByUserId(userId: string): Promise<ApiCardsResponse
   );
 }
 
-export async function getOpenTransactionsByCard(
+export async function getTransactionsByCard(
   cardName: string,
 ): Promise<ApiTransaction[]> {
   return fetchDashboardResource<ApiTransaction[]>(

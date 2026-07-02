@@ -17,7 +17,7 @@ import {
 import {
   deleteTransation,
   getDashboardApiPayload,
-  getOpenTransactionsByCard,
+  getTransactionsByCard,
   updateInstallmentGroup,
   updateTransation,
   updateTransationPaymentStatus,
@@ -785,7 +785,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     });
 
     try {
-      const transactions = await getOpenTransactionsByCard(cardName);
+      const transactions = await getTransactionsByCard(cardName);
       const filteredTransactions = activeMonthId
         ? transactions.filter((transaction) =>
             isTransactionInMonthId(transaction.Date, activeMonthId),

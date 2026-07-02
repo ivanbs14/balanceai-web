@@ -47,6 +47,10 @@ function parseAmount(value: ApiTransaction["amount"]) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function getPaymentStatusLabel(status: ApiTransaction["paymentStatus"]) {
+  return status === "PAID" ? "Pago" : "Pendente";
+}
+
 export function CardOpenTransactionsModal({
   isOpen,
   cardName,
@@ -107,7 +111,7 @@ export function CardOpenTransactionsModal({
                 id="card-open-transactions-modal-title"
                 className="text-[1rem] font-semibold tracking-tight sm:text-[1.55rem]"
               >
-                Transacoes abertas
+                Transacoes do cartao
               </h2>
               <p className="mt-0.5 text-[0.74rem] uppercase tracking-[0.18em] text-white/78 sm:text-[0.8rem]">
                 {cardName}
@@ -128,7 +132,7 @@ export function CardOpenTransactionsModal({
           <div className="mx-auto max-h-[70vh] overflow-y-auto border border-[#3c332b]/16 bg-[#fffaf1] px-4 py-4 text-[#2e241d] shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] sm:px-6 sm:py-6">
             <div className="border-b border-dashed border-[#3c332b]/30 pb-3 text-center font-mono">
               <p className="text-[0.72rem] uppercase tracking-[0.28em] text-[#6a5648]">
-                Fatura em aberto
+                Lancamentos do cartao
               </p>
               <p className="mt-1 text-[1.1rem] font-bold uppercase tracking-[0.08em]">
                 {cardName}
@@ -145,7 +149,7 @@ export function CardOpenTransactionsModal({
               </div>
             ) : transactions.length === 0 ? (
               <div className="py-10 text-center font-mono text-[0.9rem] uppercase tracking-[0.14em] text-[#6a5648]">
-                Nenhuma transacao aberta neste cartao.
+                Nenhuma transacao encontrada neste cartao.
               </div>
             ) : (
               <>
@@ -190,7 +194,9 @@ export function CardOpenTransactionsModal({
                           </div>
                         </div>
                         <div className="mt-1.5 flex items-center justify-between gap-4 text-[0.69rem] uppercase tracking-[0.12em] text-[#6a5648] sm:text-[0.76rem]">
-                          <span>{installmentLabel}</span>
+                          <span>
+                            {installmentLabel} • {getPaymentStatusLabel(transaction.paymentStatus)}
+                          </span>
                           <span>{formatDate(transaction.Date)}</span>
                         </div>
                       </div>
@@ -204,7 +210,7 @@ export function CardOpenTransactionsModal({
                     <span>{formatCurrency(totalAmount)}</span>
                   </div>
                   <p className="mt-1 text-right text-[0.68rem] uppercase tracking-[0.16em] text-[#6a5648] sm:text-[0.74rem]">
-                    {transactions.length} item(ns) em aberto
+                    {transactions.length} item(ns)
                   </p>
                 </div>
               </>
