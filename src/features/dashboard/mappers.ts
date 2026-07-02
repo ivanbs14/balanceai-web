@@ -150,9 +150,7 @@ function mapMonthlyExpenses(transactions: ApiTransaction[]): MonthlyExpenseItem[
         transaction.paymentStatus === "PAID"
           ? ("paid" as const)
           : ("pending" as const),
-      isCreditCardInstallmentPurchase:
-        transaction.paymentMethod === "CREDIT_CARD" &&
-        Number(transaction.installments ?? 0) > 1,
+      isCreditCardInstallmentPurchase: Number(transaction.installments ?? 0) > 1,
       amount: toNumber(transaction.amount),
     }))
     .sort((left, right) => right.amount - left.amount);

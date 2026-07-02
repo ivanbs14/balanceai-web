@@ -314,7 +314,7 @@ export function AddMonthlyExpenseModal({
             const name = formState.name.trim();
             const paymentMethod = mapExpenseMethodToApi(formState.method);
             const installments =
-              paymentMethod === "CREDIT_CARD"
+              paymentMethod === "CREDIT_CARD" || paymentMethod === "PIX"
                 ? parseInstallments(formState.installments)
                 : 1;
 
