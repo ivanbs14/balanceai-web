@@ -29,10 +29,13 @@ function truncateForMobile(value: string, maxLength = 12) {
 export function CardSpendCard({ items, onItemClick }: CardSpendCardProps) {
   const [mode, setMode] = useState<CardSpendMode>("month");
   const isTotalMode = mode === "total";
-  const itemsWithDisplayAmount = items.map((item) => ({
-    ...item,
-    displayAmount: isTotalMode ? item.totalAmount : item.monthAmount,
-  }));
+  const itemsWithDisplayAmount = items
+    .map((item) => ({
+      ...item,
+      displayAmount: isTotalMode ? item.totalAmount : item.monthAmount,
+    }))
+    .filter((item) => item.displayAmount > 0)
+    .sort((left, right) => right.displayAmount - left.displayAmount);
   const totalAmount = itemsWithDisplayAmount.reduce(
     (total, item) => total + item.displayAmount,
     0,
