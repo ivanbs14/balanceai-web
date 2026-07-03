@@ -137,26 +137,6 @@ function isTransactionInMonthId(transactionDate: string, monthId: MonthId) {
   return transactionMonthId === monthId;
 }
 
-function isTransactionOnOrAfterMonthId(transactionDate: string, monthId: MonthId) {
-  const parsedDate = new Date(transactionDate);
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    return false;
-  }
-
-  const [year, month] = monthId.split("-");
-  const parsedYear = Number.parseInt(year, 10);
-  const parsedMonth = Number.parseInt(month, 10) - 1;
-
-  if (!Number.isFinite(parsedYear) || !Number.isFinite(parsedMonth)) {
-    return false;
-  }
-
-  const startOfMonth = new Date(parsedYear, parsedMonth, 1);
-
-  return parsedDate >= startOfMonth;
-}
-
 function resolveMonthIdForYear(params: {
   year: number;
   preferredMonthId: MonthId | null;
@@ -803,8 +783,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
   ) {
     setOpenCardTransactionsState({
       cardName,
-      scopeLabel:
-        mode === "total" ? "Total consolidado" : "Mes selecionado",
+      scopeLabel: mode === "total" ? "Total pendentes" : "Mes selecionado",
       transactions: [],
       isLoading: true,
       errorMessage: null,
@@ -816,7 +795,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         ? transactions.filter((transaction) =>
             mode === "month"
               ? isTransactionInMonthId(transaction.Date, activeMonthId)
-              : isTransactionOnOrAfterMonthId(transaction.Date, activeMonthId),
+              : true,
           )
         : transactions;
 

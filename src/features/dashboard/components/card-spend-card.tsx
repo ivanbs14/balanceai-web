@@ -46,20 +46,20 @@ export function CardSpendCard({ items, onItemClick }: CardSpendCardProps) {
             Gastos por Cartões
           </h2>
           <p className="mt-0.5 text-[0.72rem] text-white/72 sm:text-[0.8rem]">
-            {isTotalMode ? "Exibindo total restante" : "Exibindo mês selecionado"}
+            {isTotalMode ? "Exibindo total pendentes" : "Exibindo mês selecionado"}
           </p>
         </div>
         <button
           type="button"
           aria-label={
             isTotalMode
-              ? "Exibindo total consolidado por cartão. Clique para mostrar o total do mês selecionado."
-              : "Exibindo total do mês selecionado. Clique para mostrar o total consolidado por cartão."
+              ? "Exibindo total pendente por cartão. Clique para mostrar o total do mês selecionado."
+              : "Exibindo total do mês selecionado. Clique para mostrar o total pendente por cartão."
           }
           title={
             isTotalMode
               ? "Mostrar total do mês selecionado"
-              : "Mostrar total consolidado por cartão"
+              : "Mostrar total pendente por cartão"
           }
           onClick={() => {
             setMode((currentMode) =>
