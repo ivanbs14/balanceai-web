@@ -126,6 +126,12 @@ function getMonthNumberFromMonthId(monthId: MonthId) {
 }
 
 function isTransactionInMonthId(transactionDate: string, monthId: MonthId) {
+  const normalizedTransactionDate = transactionDate.trim();
+
+  if (/^\d{4}-\d{2}/.test(normalizedTransactionDate)) {
+    return normalizedTransactionDate.slice(0, 7) === monthId;
+  }
+
   const parsedDate = new Date(transactionDate);
 
   if (Number.isNaN(parsedDate.getTime())) {
