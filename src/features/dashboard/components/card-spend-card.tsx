@@ -6,7 +6,7 @@ import type { CardSpendItem } from "../types";
 
 type CardSpendCardProps = {
   items: CardSpendItem[];
-  onItemClick?: (item: CardSpendItem) => void;
+  onItemClick?: (item: CardSpendItem, mode: CardSpendMode) => void;
 };
 
 type CardSpendMode = "total" | "month";
@@ -41,9 +41,14 @@ export function CardSpendCard({ items, onItemClick }: CardSpendCardProps) {
   return (
     <article className="border border-border bg-surface p-3.5 sm:p-5">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-[0.98rem] font-semibold tracking-tight text-white sm:text-[1.25rem]">
-          Gastos por Cartões
-        </h2>
+        <div>
+          <h2 className="text-[0.98rem] font-semibold tracking-tight text-white sm:text-[1.25rem]">
+            Gastos por Cartões
+          </h2>
+          <p className="mt-0.5 text-[0.72rem] text-white/72 sm:text-[0.8rem]">
+            {isTotalMode ? "Exibindo total restante" : "Exibindo mês selecionado"}
+          </p>
+        </div>
         <button
           type="button"
           aria-label={
@@ -82,7 +87,7 @@ export function CardSpendCard({ items, onItemClick }: CardSpendCardProps) {
             <button
               key={item.id}
               type="button"
-              onClick={() => onItemClick?.(item)}
+              onClick={() => onItemClick?.(item, mode)}
               className="block w-full rounded-[0.8rem] px-2 py-2 text-left transition hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
             >
               <div className="flex items-center justify-between gap-3 text-[0.8rem] sm:gap-4 sm:text-[0.92rem]">
