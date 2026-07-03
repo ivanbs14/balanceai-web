@@ -7,6 +7,7 @@ import type { ApiTransaction } from "../api-types";
 type CardOpenTransactionsModalProps = {
   isOpen: boolean;
   cardName: string;
+  scopeLabel: string;
   transactions: ApiTransaction[];
   isLoading: boolean;
   errorMessage: string | null;
@@ -54,6 +55,7 @@ function getPaymentStatusLabel(status: ApiTransaction["paymentStatus"]) {
 export function CardOpenTransactionsModal({
   isOpen,
   cardName,
+  scopeLabel,
   transactions,
   isLoading,
   errorMessage,
@@ -114,7 +116,7 @@ export function CardOpenTransactionsModal({
                 Transacoes do cartao
               </h2>
               <p className="mt-0.5 text-[0.74rem] uppercase tracking-[0.18em] text-white/78 sm:text-[0.8rem]">
-                {cardName}
+                {cardName} • {scopeLabel}
               </p>
             </div>
           </div>
@@ -132,7 +134,7 @@ export function CardOpenTransactionsModal({
           <div className="mx-auto max-h-[70vh] overflow-y-auto border border-[#3c332b]/16 bg-[#fffaf1] px-4 py-4 text-[#2e241d] shadow-[inset_0_1px_0_rgba(255,255,255,0.65)] sm:px-6 sm:py-6">
             <div className="border-b border-dashed border-[#3c332b]/30 pb-3 text-center font-mono">
               <p className="text-[0.72rem] uppercase tracking-[0.28em] text-[#6a5648]">
-                Lancamentos do cartao
+                Lancamentos do cartao • {scopeLabel}
               </p>
               <p className="mt-1 text-[1.1rem] font-bold uppercase tracking-[0.08em]">
                 {cardName}

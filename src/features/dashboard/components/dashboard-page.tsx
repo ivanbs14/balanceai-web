@@ -137,6 +137,26 @@ function isTransactionInMonthId(transactionDate: string, monthId: MonthId) {
   return transactionMonthId === monthId;
 }
 
+function isTransactionOnOrAfterMonthId(transactionDate: string, monthId: MonthId) {
+  const parsedDate = new Date(transactionDate);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return false;
+  }
+
+  const [year, month] = monthId.split("-");
+  const parsedYear = Number.parseInt(year, 10);
+  const parsedMonth = Number.parseInt(month, 10) - 1;
+
+  if (!Number.isFinite(parsedYear) || !Number.isFinite(parsedMonth)) {
+    return false;
+  }
+
+  const startOfMonth = new Date(parsedYear, parsedMonth, 1);
+
+  return parsedDate >= startOfMonth;
+}
+
 function resolveMonthIdForYear(params: {
   year: number;
   preferredMonthId: MonthId | null;
@@ -184,6 +204,7 @@ type PendingEditInstallmentGroup = InstallmentGroupEditSeed;
 
 type OpenCardTransactionsState = {
   cardName: string;
+  scopeLabel: string;
   transactions: ApiTransaction[];
   isLoading: boolean;
   errorMessage: string | null;
@@ -776,9 +797,14 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     }
   }
 
-  async function handleOpenCardTransactions(cardName: string) {
+  async function handleOpenCardTransactions(
+    cardName: string,
+    mode: "month" | "total",
+  ) {
     setOpenCardTransactionsState({
       cardName,
+      scopeLabel:
+        mode === "total" ? "Total consolidado" : "Mes selecionado",
       transactions: [],
       isLoading: true,
       errorMessage: null,
@@ -788,7 +814,9 @@ export function DashboardPage({ userId }: DashboardPageProps) {
       const transactions = await getTransactionsByCard(cardName);
       const filteredTransactions = activeMonthId
         ? transactions.filter((transaction) =>
-            isTransactionInMonthId(transaction.Date, activeMonthId),
+            mode === "month"
+              ? isTransactionInMonthId(transaction.Date, activeMonthId)
+              : isTransactionOnOrAfterMonthId(transaction.Date, activeMonthId),
           )
         : transactions;
 
@@ -996,8 +1024,8 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         <div className="grid grid-cols-1 gap-2 sm:gap-0 xl:gap-6">
           <CardSpendCard
             items={dashboardData.cardSpending}
-            onItemClick={(item) => {
-              void handleOpenCardTransactions(item.label);
+            onItemClick={(item, mode) => {
+              void handleOpenCardTransactions(item.label, mode);
             }}
           />
           <CategoryCard items={dashboardData.categories} />
@@ -1011,6 +1039,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
       <CardOpenTransactionsModal
         isOpen={openCardTransactionsState !== null}
         cardName={openCardTransactionsState?.cardName ?? ""}
+        scopeLabel={openCardTransactionsState?.scopeLabel ?? ""}
         transactions={openCardTransactionsState?.transactions ?? []}
         isLoading={openCardTransactionsState?.isLoading ?? false}
         errorMessage={openCardTransactionsState?.errorMessage ?? null}
