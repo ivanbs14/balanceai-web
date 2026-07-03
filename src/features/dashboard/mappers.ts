@@ -301,8 +301,7 @@ function mapCardSpending(creditCardResponse: ApiCardAggregateResponse): CardSpen
     id: `${card.card ?? "cartao"}-${index}`,
     label: card.card?.trim() || "Cartao",
     monthAmount: toNumber(card.valorTotalMes),
-    totalAmount:
-      toNumber(card.valorTotalMes) + toNumber(card.valorTotalTodosMesesRestantes),
+    totalAmount: toNumber(card.valorTotalTodosMesesRestantes),
     colorClassName: categoryColorClasses[index % categoryColorClasses.length],
   }));
 }
