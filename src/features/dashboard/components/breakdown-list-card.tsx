@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Plus } from "lucide-react";
 
 type BreakdownListCardProps = {
@@ -10,6 +11,9 @@ type BreakdownListCardProps = {
   onAddClick?: () => void;
   addButtonLabel?: string;
   addButtonVariant?: "default" | "ghost";
+  onHeaderActionClick?: () => void;
+  headerActionLabel?: string;
+  headerActionIcon?: ReactNode;
   hideItemsSuffixOnMobile?: boolean;
 };
 
@@ -52,6 +56,9 @@ export function BreakdownListCard({
   onAddClick,
   addButtonLabel,
   addButtonVariant = "default",
+  onHeaderActionClick,
+  headerActionLabel,
+  headerActionIcon,
   hideItemsSuffixOnMobile = false,
 }: BreakdownListCardProps) {
   const styles = toneStyles[tone];
@@ -68,6 +75,17 @@ export function BreakdownListCard({
           {title}
         </h2>
         <div className="flex items-center gap-1.5 sm:gap-2">
+          {onHeaderActionClick ? (
+            <button
+              type="button"
+              onClick={onHeaderActionClick}
+              aria-label={headerActionLabel ?? `Ver detalhes de ${title}`}
+              title={headerActionLabel ?? `Ver detalhes de ${title}`}
+              className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-transparent bg-transparent text-primary transition hover:bg-primary-soft hover:text-primary-strong sm:h-9 sm:w-9"
+            >
+              {headerActionIcon}
+            </button>
+          ) : null}
           {onAddClick ? (
             <button
               type="button"

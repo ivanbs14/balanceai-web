@@ -7,6 +7,7 @@ import {
   CreditCard,
   FunnelPlus,
   Landmark,
+  List,
   LocateFixed,
   Pencil,
   QrCode,
@@ -31,6 +32,7 @@ import type {
   BreakdownItem,
   CreditCardItem,
   DashboardViewModel,
+  IncomeTransactionItem,
   InstallmentGroupEditSeed,
   MonthlyExpenseItem,
   MonthId,
@@ -48,6 +50,7 @@ import { DeleteTransactionModal } from "./delete-transaction-modal";
 import { DashboardShell } from "./dashboard-shell";
 import { EditInstallmentGroupModal } from "./edit-installment-group-modal";
 import { EditTransactionModal } from "./edit-transaction-modal";
+import { IncomeTransactionsModal } from "./income-transactions-modal";
 import { LedgerTableCard } from "./ledger-table-card";
 import { MonthlySummary } from "./monthly-summary";
 import { MonthSelector } from "./month-selector";
@@ -225,6 +228,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
   const [cardSuccessMessage, setCardSuccessMessage] = useState<string | null>(null);
   const [isAddCardModalOpen, setIsAddCardModalOpen] = useState(false);
   const [isAddIncomeModalOpen, setIsAddIncomeModalOpen] = useState(false);
+  const [isIncomeTransactionsModalOpen, setIsIncomeTransactionsModalOpen] = useState(false);
   const [isAddInvestmentModalOpen, setIsAddInvestmentModalOpen] = useState(false);
   const [isAddMonthlyExpenseModalOpen, setIsAddMonthlyExpenseModalOpen] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
@@ -686,6 +690,26 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     });
   }
 
+  function handleOpenIncomeTransactions() {
+    setIsIncomeTransactionsModalOpen(true);
+  }
+
+  function handleOpenEditIncomeTransaction(row: IncomeTransactionItem) {
+    setPendingEditTransaction({
+      id: row.id,
+      name: row.name,
+      amount: row.amount,
+    });
+  }
+
+  function handleOpenDeleteIncomeTransaction(row: IncomeTransactionItem) {
+    void deleteTransactionWithConfirmation({
+      transactionId: row.id,
+      label: row.name,
+      isInstallmentGroupTransaction: false,
+    });
+  }
+
   function handleOpenEditInstallmentGroup(group: InstallmentGroupEditSeed | null) {
     if (!group) {
       return;
@@ -984,6 +1008,9 @@ export function DashboardPage({ userId }: DashboardPageProps) {
           onAddClick={() => setIsAddIncomeModalOpen(true)}
           addButtonLabel="Adicionar entrada"
           addButtonVariant="ghost"
+          onHeaderActionClick={handleOpenIncomeTransactions}
+          headerActionLabel="Ver entradas do mes"
+          headerActionIcon={<List size={15} strokeWidth={2.2} />}
         />
         <BreakdownListCard
           title="Saidas"
@@ -1021,6 +1048,16 @@ export function DashboardPage({ userId }: DashboardPageProps) {
 
   return (
     <>
+      <IncomeTransactionsModal
+        isOpen={isIncomeTransactionsModalOpen}
+        monthLabel={dashboardData.monthLabel}
+        transactions={dashboardData.incomeTransactions}
+        editingTransactionIds={editingTransactionIds}
+        deletingTransactionIds={deletingTransactionIds}
+        onEdit={handleOpenEditIncomeTransaction}
+        onDelete={handleOpenDeleteIncomeTransaction}
+        onClose={() => setIsIncomeTransactionsModalOpen(false)}
+      />
       <CardOpenTransactionsModal
         isOpen={openCardTransactionsState !== null}
         cardName={openCardTransactionsState?.cardName ?? ""}

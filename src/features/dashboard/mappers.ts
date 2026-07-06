@@ -12,6 +12,7 @@ import type {
   CreditCardItem,
   DashboardViewModel,
   FixedCostItem,
+  IncomeTransactionItem,
   InstallmentGroupEditSeed,
   MonthlyExpenseItem,
 } from "./types";
@@ -272,6 +273,25 @@ function mapIncomeBreakdown(transactions: ApiTransaction[]): BreakdownItem[] {
   );
 }
 
+function mapIncomeTransactions(transactions: ApiTransaction[]): IncomeTransactionItem[] {
+  return transactions
+    .filter((transaction) => transaction.type === "DEPOSIT")
+    .map((transaction) => {
+      const parsedDate = new Date(transaction.Date);
+
+      return {
+        id: transaction.id,
+        name: transaction.name,
+        date: Number.isNaN(parsedDate.getTime())
+          ? transaction.Date.slice(0, 10)
+          : formatDateInputValue(parsedDate),
+        paymentMethod: toPaymentMethodLabel(transaction.paymentMethod),
+        amount: toNumber(transaction.amount),
+      };
+    })
+    .sort((left, right) => right.date.localeCompare(left.date));
+}
+
 function mapExpenseBreakdown(transactions: ApiTransaction[]): BreakdownItem[] {
   return groupAmounts(
     transactions
@@ -342,6 +362,7 @@ export function createEmptyDashboardViewModel(monthId: string): DashboardViewMod
     monthlyExpenses: [],
     creditCard: [],
     income: [],
+    incomeTransactions: [],
     expenses: [],
     investments: [],
     cardSpending: [],
@@ -370,6 +391,7 @@ export function mapDashboardViewModel(params: {
     monthlyExpenses: mapMonthlyExpenses(transactions),
     creditCard: mapCreditCardItems(transactions, creditCard, statementMonthLabel),
     income: mapIncomeBreakdown(transactions),
+    incomeTransactions: mapIncomeTransactions(transactions),
     expenses: mapExpenseBreakdown(transactions),
     investments: mapInvestmentBreakdown(transactions),
     cardSpending: mapCardSpending(creditCard),
