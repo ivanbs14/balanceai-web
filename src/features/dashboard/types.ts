@@ -62,6 +62,14 @@ export type BreakdownItem = {
   amount: CurrencyAmount;
 };
 
+export type IncomeTransactionItem = {
+  id: string;
+  name: string;
+  date: string;
+  paymentMethod: string;
+  amount: CurrencyAmount;
+};
+
 export type CategorySpendItem = {
   id: string;
   label: string;
@@ -98,6 +106,7 @@ export type DashboardViewModel = {
   monthlyExpenses: MonthlyExpenseItem[];
   creditCard: CreditCardItem[];
   income: BreakdownItem[];
+  incomeTransactions: IncomeTransactionItem[];
   expenses: BreakdownItem[];
   investments: BreakdownItem[];
   cardSpending: CardSpendItem[];

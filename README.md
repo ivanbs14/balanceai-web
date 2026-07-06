@@ -52,6 +52,40 @@ npm run dev
 
 Open `http://localhost:3000`.
 
+## Docker
+
+This repository now includes a Docker image definition for local development and production-style builds.
+
+Build the web image directly:
+
+```bash
+docker build -t balance-web-dev ./balance-web
+```
+
+Run the frontend through the workspace compose file:
+
+```bash
+docker compose up --build web
+```
+
+Build only the web service from compose:
+
+```bash
+docker compose build web
+```
+
+Run both apps together:
+
+```bash
+docker compose up --build
+```
+
+Notes:
+
+- The frontend container publishes `http://localhost:3000`.
+- The default API target in Docker local flow is `http://localhost:4000`.
+- `next.config.ts` uses `output: "standalone"` for leaner production images.
+
 ## Available Scripts
 
 ```bash
