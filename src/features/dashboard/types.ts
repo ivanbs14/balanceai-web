@@ -29,6 +29,8 @@ export type FixedCostItem = {
   dueDay: number;
   status: FixedCostStatus;
   amount: CurrencyAmount;
+  monthlyId: string | null;
+  competence: string;
 };
 
 export type CreditCardItem = {
