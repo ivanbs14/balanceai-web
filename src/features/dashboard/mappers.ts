@@ -40,6 +40,13 @@ const fixedCostPaymentTypeLabels: Record<string, string> = {
   YEARLY: "Recorrente anual",
 };
 
+const fixedCostRecurrenceValues = new Set([
+  "MONTHLY",
+  "BIMONTHLY",
+  "QUARTERLY",
+  "YEARLY",
+]);
+
 const categoryLabels: Record<string, string> = {
   FIXED_COST: "Custo Fixo",
   HOUSING: "Moradia",
@@ -78,6 +85,44 @@ function toFixedCostPaymentTypeLabel(paymentType: string) {
   return (
     fixedCostPaymentTypeLabels[paymentType] ?? paymentType.replaceAll("_", " ")
   );
+}
+
+function isFixedCostRecurrenceValue(value: string | null | undefined): value is keyof typeof fixedCostPaymentTypeLabels {
+  return value ? fixedCostRecurrenceValues.has(value) : false;
+}
+
+function resolveFixedCostDisplayPaymentType(params: {
+  paymentMethod?: string | null;
+  paymentType?: string | null;
+}) {
+  const { paymentMethod, paymentType } = params;
+
+  if (paymentMethod) {
+    return toPaymentMethodLabel(paymentMethod);
+  }
+
+  if (paymentType && !isFixedCostRecurrenceValue(paymentType)) {
+    return toPaymentMethodLabel(paymentType);
+  }
+
+  return "Recorrente";
+}
+
+function resolveFixedCostRecurrenceLabel(params: {
+  recurrence?: string | null;
+  paymentType?: string | null;
+}) {
+  const { recurrence, paymentType } = params;
+
+  if (isFixedCostRecurrenceValue(recurrence)) {
+    return toFixedCostPaymentTypeLabel(recurrence);
+  }
+
+  if (isFixedCostRecurrenceValue(paymentType)) {
+    return toFixedCostPaymentTypeLabel(paymentType);
+  }
+
+  return null;
 }
 
 function groupAmounts(items: Array<{ id: string; label: string; amount: number }>): BreakdownItem[] {
@@ -210,10 +255,14 @@ function mapFixedCostMonthlyExpenses(
     name: fixedCost.name,
     category: toCategoryLabel(fixedCost.category ?? "FIXED_COST"),
     isFixed: true,
-    paymentType: "Recorrente",
-    recurrenceLabel: toFixedCostPaymentTypeLabel(
-      fixedCost.paymentType ?? fixedCost.recurrence,
-    ),
+    paymentType: resolveFixedCostDisplayPaymentType({
+      paymentMethod: fixedCost.paymentMethod,
+      paymentType: fixedCost.paymentType,
+    }),
+    recurrenceLabel: resolveFixedCostRecurrenceLabel({
+      recurrence: fixedCost.recurrence,
+      paymentType: fixedCost.paymentType,
+    }),
     dueDay: fixedCost.dueDay,
     paymentStatus: fixedCost.monthly?.status === "PAID" ? "paid" : "pending",
     competence: fixedCost.monthly?.competence ?? fixedCost.startDate.slice(0, 7),
