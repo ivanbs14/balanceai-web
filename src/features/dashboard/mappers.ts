@@ -11,7 +11,6 @@ import type {
   CategorySpendItem,
   CreditCardItem,
   DashboardViewModel,
-  FixedCostItem,
   IncomeTransactionItem,
   InstallmentGroupEditSeed,
   MonthlyExpenseItem,
@@ -171,23 +170,7 @@ function buildInstallmentGroupEditSeed(
   };
 }
 
-function mapFixedCosts(fixedCostsResponse: ApiFixedCostsResponse): FixedCostItem[] {
-  return (fixedCostsResponse.data ?? []).map((fixedCost) => ({
-    id: fixedCost.id,
-    name: fixedCost.name,
-    paymentType: toFixedCostPaymentTypeLabel(
-      fixedCost.paymentType ?? fixedCost.recurrence,
-    ),
-    category: toCategoryLabel(fixedCost.category ?? "FIXED_COST"),
-    dueDay: fixedCost.dueDay,
-    status: fixedCost.monthly?.status === "PAID" ? "paid" : "pending",
-    amount: toNumber(fixedCost.monthly?.amount ?? fixedCost.defaultAmount),
-    monthlyId: fixedCost.monthly?.id ?? null,
-    competence: fixedCost.monthly?.competence ?? fixedCost.startDate.slice(0, 7),
-  }));
-}
-
-function mapMonthlyExpenses(transactions: ApiTransaction[]): MonthlyExpenseItem[] {
+function mapTransactionMonthlyExpenses(transactions: ApiTransaction[]): MonthlyExpenseItem[] {
   return transactions
     .filter((transaction) => transaction.type === "EXPENSE")
     .map((transaction) => {
@@ -195,22 +178,60 @@ function mapMonthlyExpenses(transactions: ApiTransaction[]): MonthlyExpenseItem[
 
       return {
         id: transaction.id,
+        sourceType: "transaction" as const,
+        sourceId: transaction.id,
         name: transaction.name,
         category: toCategoryLabel(transaction.category),
         isFixed: Boolean(transaction.isFixed),
         paymentType: toPaymentMethodLabel(transaction.paymentMethod),
+        recurrenceLabel: null,
+        dueDay: null,
         paymentStatus:
           transaction.paymentStatus === "PAID"
             ? ("paid" as const)
             : ("pending" as const),
+        competence: transaction.Date.slice(0, 7),
         isInstallmentGroupTransaction: installmentGroupEdit !== null,
         canEditSimpleTransaction:
           installmentGroupEdit === null && transaction.paymentStatus !== "PAID",
         installmentGroupEdit,
         amount: toNumber(transaction.amount),
-      };
-    })
-    .sort((left, right) => right.amount - left.amount);
+      } satisfies MonthlyExpenseItem;
+    });
+}
+
+function mapFixedCostMonthlyExpenses(
+  fixedCostsResponse: ApiFixedCostsResponse,
+): MonthlyExpenseItem[] {
+  return (fixedCostsResponse.data ?? []).map((fixedCost) => ({
+    id: `fixed-cost:${fixedCost.id}:${fixedCost.monthly?.competence ?? fixedCost.startDate.slice(0, 7)}`,
+    sourceType: "fixed-cost" as const,
+    sourceId: fixedCost.id,
+    name: fixedCost.name,
+    category: toCategoryLabel(fixedCost.category ?? "FIXED_COST"),
+    isFixed: true,
+    paymentType: "Recorrente",
+    recurrenceLabel: toFixedCostPaymentTypeLabel(
+      fixedCost.paymentType ?? fixedCost.recurrence,
+    ),
+    dueDay: fixedCost.dueDay,
+    paymentStatus: fixedCost.monthly?.status === "PAID" ? "paid" : "pending",
+    competence: fixedCost.monthly?.competence ?? fixedCost.startDate.slice(0, 7),
+    isInstallmentGroupTransaction: false,
+    canEditSimpleTransaction: false,
+    installmentGroupEdit: null,
+    amount: toNumber(fixedCost.monthly?.amount ?? fixedCost.defaultAmount),
+  }));
+}
+
+function mapMonthlyExpenses(
+  transactions: ApiTransaction[],
+  fixedCostsResponse: ApiFixedCostsResponse,
+): MonthlyExpenseItem[] {
+  return [
+    ...mapTransactionMonthlyExpenses(transactions),
+    ...mapFixedCostMonthlyExpenses(fixedCostsResponse),
+  ].sort((left, right) => right.amount - left.amount);
 }
 
 function mapCreditCardItems(
@@ -360,7 +381,6 @@ export function createEmptyDashboardViewModel(monthId: string): DashboardViewMod
       totalExpenses: 0,
       balance: 0,
     },
-    fixedCosts: [],
     monthlyExpenses: [],
     creditCard: [],
     income: [],
@@ -389,8 +409,7 @@ export function mapDashboardViewModel(params: {
       totalExpenses: toNumber(summary.totalValues?.totalExpenses ?? null),
       balance: toNumber(summary.totalValues?.balance ?? null),
     },
-    fixedCosts: mapFixedCosts(fixedCosts),
-    monthlyExpenses: mapMonthlyExpenses(transactions),
+    monthlyExpenses: mapMonthlyExpenses(transactions, fixedCosts),
     creditCard: mapCreditCardItems(transactions, creditCard, statementMonthLabel),
     income: mapIncomeBreakdown(transactions),
     incomeTransactions: mapIncomeTransactions(transactions),

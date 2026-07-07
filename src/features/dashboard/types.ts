@@ -47,11 +47,16 @@ export type CreditCardItem = {
 
 export type MonthlyExpenseItem = {
   id: string;
+  sourceType: "transaction" | "fixed-cost";
+  sourceId: string;
   name: string;
   category: string;
   isFixed: boolean;
   paymentType: string;
+  recurrenceLabel: string | null;
+  dueDay: number | null;
   paymentStatus: FixedCostStatus;
+  competence: string | null;
   isInstallmentGroupTransaction: boolean;
   canEditSimpleTransaction: boolean;
   installmentGroupEdit: InstallmentGroupEditSeed | null;
@@ -104,7 +109,6 @@ export type DashboardViewModel = {
   monthId: MonthId;
   monthLabel: string;
   summary: SummaryMetrics;
-  fixedCosts: FixedCostItem[];
   monthlyExpenses: MonthlyExpenseItem[];
   creditCard: CreditCardItem[];
   income: BreakdownItem[];
