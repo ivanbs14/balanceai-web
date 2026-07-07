@@ -5,6 +5,7 @@ import type {
   ApiFixedCostsResponse,
   ApiSummaryResponse,
   ApiTransaction,
+  CreateFixedCostPayload,
   CreateCardPayload,
 } from "./api-types";
 import { API_BASE_URL } from "../../shared/api-config";
@@ -106,6 +107,19 @@ export async function getTransactionsByCard(
 
 export async function createCard(payload: CreateCardPayload) {
   const response = await fetch(`${API_BASE_URL}/cards`, {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  return parseJsonResponse(response);
+}
+
+export async function createFixedCost(payload: CreateFixedCostPayload) {
+  const response = await fetch(`${API_BASE_URL}/fixed-costs`, {
     method: "POST",
     credentials: "include",
     headers: {

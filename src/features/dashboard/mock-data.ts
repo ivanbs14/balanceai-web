@@ -17,6 +17,8 @@ export const dashboardMonths: DashboardMonthData[] = [
         dueDay: 5,
         status: "paid",
         amount: 3200,
+        monthlyId: "rent-2026-01",
+        competence: "2026-01",
       },
       {
         id: "condo",
@@ -26,6 +28,8 @@ export const dashboardMonths: DashboardMonthData[] = [
         dueDay: 8,
         status: "paid",
         amount: 850,
+        monthlyId: "condo-2026-01",
+        competence: "2026-01",
       },
       {
         id: "energy",
@@ -35,6 +39,8 @@ export const dashboardMonths: DashboardMonthData[] = [
         dueDay: 12,
         status: "pending",
         amount: 245.68,
+        monthlyId: "energy-2026-01",
+        competence: "2026-01",
       },
       {
         id: "phone",
@@ -44,6 +50,8 @@ export const dashboardMonths: DashboardMonthData[] = [
         dueDay: 18,
         status: "pending",
         amount: 74.9,
+        monthlyId: "phone-2026-01",
+        competence: "2026-01",
       },
     ],
     creditCard: [
@@ -180,6 +188,8 @@ export const dashboardMonths: DashboardMonthData[] = [
         dueDay: 5,
         status: "paid",
         amount: 3200,
+        monthlyId: "rent-2026-02",
+        competence: "2026-02",
       },
       {
         id: "condo",
@@ -189,6 +199,8 @@ export const dashboardMonths: DashboardMonthData[] = [
         dueDay: 8,
         status: "paid",
         amount: 850,
+        monthlyId: "condo-2026-02",
+        competence: "2026-02",
       },
       {
         id: "internet",
@@ -198,6 +210,8 @@ export const dashboardMonths: DashboardMonthData[] = [
         dueDay: 10,
         status: "paid",
         amount: 139.9,
+        monthlyId: "internet-2026-02",
+        competence: "2026-02",
       },
       {
         id: "school",
@@ -207,6 +221,8 @@ export const dashboardMonths: DashboardMonthData[] = [
         dueDay: 22,
         status: "pending",
         amount: 189.9,
+        monthlyId: "school-2026-02",
+        competence: "2026-02",
       },
     ],
     creditCard: [

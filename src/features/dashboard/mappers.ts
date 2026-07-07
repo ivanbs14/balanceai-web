@@ -182,6 +182,8 @@ function mapFixedCosts(fixedCostsResponse: ApiFixedCostsResponse): FixedCostItem
     dueDay: fixedCost.dueDay,
     status: fixedCost.monthly?.status === "PAID" ? "paid" : "pending",
     amount: toNumber(fixedCost.monthly?.amount ?? fixedCost.defaultAmount),
+    monthlyId: fixedCost.monthly?.id ?? null,
+    competence: fixedCost.monthly?.competence ?? fixedCost.startDate.slice(0, 7),
   }));
 }
 

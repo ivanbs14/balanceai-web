@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 import { CalendarDays, ChevronDown, X } from "lucide-react";
 import {
+  createFixedCost,
   createTransation,
   getCardsByUserId,
   type ApiTransationCategory,
@@ -52,6 +53,7 @@ type MonthlyExpenseFormState = {
   cardId: string;
   amount: string;
   date: string;
+  isRecurring: boolean;
 };
 
 function createInitialFormState(): MonthlyExpenseFormState {
@@ -63,6 +65,7 @@ function createInitialFormState(): MonthlyExpenseFormState {
     cardId: "",
     amount: "",
     date: "",
+    isRecurring: false,
   };
 }
 
@@ -191,6 +194,10 @@ export function AddMonthlyExpenseModal({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isCreditCard = formState.method === "Credito";
+  const shouldShowInstallments = !formState.isRecurring;
+  const shouldUseInstallments =
+    shouldShowInstallments &&
+    (formState.method === "Credito" || formState.method === "Pix");
 
   function handleDateIconClick() {
     const input = dateInputRef.current;
@@ -318,9 +325,11 @@ export function AddMonthlyExpenseModal({
             const name = formState.name.trim();
             const paymentMethod = mapExpenseMethodToApi(formState.method);
             const installments =
-              paymentMethod === "CREDIT_CARD" || paymentMethod === "PIX"
+              shouldUseInstallments
                 ? parseInstallments(formState.installments)
                 : 1;
+            const resolvedDate = resolveDate(formState.date, fallbackMonthId);
+            const dueDay = Number.parseInt(resolvedDate.slice(8, 10), 10);
 
             if (!name) {
               setErrorMessage("Informe o nome do lancamento.");
@@ -332,8 +341,13 @@ export function AddMonthlyExpenseModal({
               return;
             }
 
-            if (paymentMethod === "CREDIT_CARD" && !formState.cardId) {
+            if (!formState.isRecurring && paymentMethod === "CREDIT_CARD" && !formState.cardId) {
               setErrorMessage("Selecione o cartao da compra no credito.");
+              return;
+            }
+
+            if (formState.isRecurring && (!Number.isFinite(dueDay) || dueDay < 1 || dueDay > 31)) {
+              setErrorMessage("Informe uma data valida para derivar o vencimento.");
               return;
             }
 
@@ -341,20 +355,32 @@ export function AddMonthlyExpenseModal({
             setErrorMessage(null);
 
             try {
-              await createTransation({
-                userId,
-                name,
-                type: "EXPENSE",
-                amount,
-                category: mapExpenseCategoryToApi(formState.category),
-                paymentMethod,
-                installments,
-                ...(paymentMethod === "CREDIT_CARD"
-                  ? { cardId: formState.cardId }
-                  : {}),
-                Date: resolveDate(formState.date, fallbackMonthId),
-                withdrawal: "DEPOSIT",
-              });
+              if (formState.isRecurring) {
+                await createFixedCost({
+                  userId,
+                  name,
+                  defaultAmount: amount,
+                  recurrence: "MONTHLY",
+                  startDate: resolvedDate,
+                  dueDay,
+                  isActive: true,
+                });
+              } else {
+                await createTransation({
+                  userId,
+                  name,
+                  type: "EXPENSE",
+                  amount,
+                  category: mapExpenseCategoryToApi(formState.category),
+                  paymentMethod,
+                  installments,
+                  ...(paymentMethod === "CREDIT_CARD"
+                    ? { cardId: formState.cardId }
+                    : {}),
+                  Date: resolvedDate,
+                  withdrawal: "DEPOSIT",
+                });
+              }
 
               onCreated();
               onClose();
@@ -443,7 +469,8 @@ export function AddMonthlyExpenseModal({
           </div>
 
           <div className="grid gap-2.5 sm:grid-cols-3 sm:gap-5">
-            <div>
+            {shouldShowInstallments ? (
+              <div>
               <FieldLabel>Parcelas</FieldLabel>
               <FieldShell>
                 <select
@@ -468,10 +495,11 @@ export function AddMonthlyExpenseModal({
                   className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-muted sm:right-4"
                 />
               </FieldShell>
-            </div>
+              </div>
+            ) : null}
 
-            {isCreditCard ? (
-              <div className="sm:col-span-2">
+            {isCreditCard && !formState.isRecurring ? (
+              <div className={shouldShowInstallments ? "sm:col-span-2" : "sm:col-span-3"}>
                 <FieldLabel>Cartao</FieldLabel>
                 <FieldShell>
                   <select
@@ -568,6 +596,30 @@ export function AddMonthlyExpenseModal({
                 </button>
               </FieldShell>
             </div>
+          </div>
+
+          <div className="rounded-[0.7rem] border border-border bg-surface-soft px-3 py-3 sm:px-4">
+            <label className="flex items-start gap-3">
+              <input
+                type="checkbox"
+                checked={formState.isRecurring}
+                onChange={(event) =>
+                  setFormState((current) => ({
+                    ...current,
+                    isRecurring: event.target.checked,
+                  }))
+                }
+                className="mt-1 h-4 w-4 cursor-pointer accent-primary"
+              />
+              <span className="space-y-0.5">
+                <span className="block font-mono text-[0.74rem] font-semibold uppercase tracking-[0.18em] text-primary sm:text-[0.8rem]">
+                  Tornar recorrente
+                </span>
+                <span className="block text-[0.78rem] text-muted sm:text-sm">
+                  Quando ativo, este lancamento passa a ser salvo em Custos Fixos e projetado para os proximos meses.
+                </span>
+              </span>
+            </label>
           </div>
 
           {errorMessage ? (
