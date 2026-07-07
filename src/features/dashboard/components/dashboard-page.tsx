@@ -33,7 +33,6 @@ import type {
   BreakdownItem,
   CreditCardItem,
   DashboardViewModel,
-  FixedCostItem,
   IncomeTransactionItem,
   InstallmentGroupEditSeed,
   MonthlyExpenseItem,
@@ -340,7 +339,6 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     return true;
   });
   const hasDashboardData =
-    dashboardData.fixedCosts.length > 0 ||
     monthlyExpenses.length > 0 ||
     dashboardData.creditCard.length > 0 ||
     dashboardData.income.length > 0 ||
@@ -424,6 +422,19 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         ) : row.paymentType,
     },
     {
+      key: "recurrence",
+      header: "Recorrencia",
+      width: isMobileViewport ? "minmax(92px, 1fr)" : undefined,
+      render: (row: MonthlyExpenseItem) => row.recurrenceLabel ?? "-",
+    },
+    {
+      key: "dueDay",
+      header: "Venc.",
+      align: "center" as const,
+      width: isMobileViewport ? "54px" : "70px",
+      render: (row: MonthlyExpenseItem) => (row.dueDay ? `${row.dueDay}` : "-"),
+    },
+    {
       key: "fixed",
       header: (
         <button
@@ -500,6 +511,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         const isEditing = editingTransactionIds.includes(row.id);
         const canEditInstallmentGroup = row.installmentGroupEdit !== null;
         const canEditSimpleTransaction = row.canEditSimpleTransaction;
+        const canDeleteTransaction = row.sourceType === "transaction";
 
         return (
           <div className="inline-flex items-center justify-center gap-2">
@@ -531,18 +543,20 @@ export function DashboardPage({ userId }: DashboardPageProps) {
                 <Pencil size={16} strokeWidth={2} aria-hidden />
               </button>
             ) : null}
-            <button
-              type="button"
-              onClick={() => {
-                void handleDeleteMonthlyExpense(row);
-              }}
-              disabled={isDeleting}
-              aria-label={`Deletar ${row.name}`}
-              title="Deletar transacao"
-              className="inline-flex items-center justify-center text-primary transition hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              <Trash2 size={16} strokeWidth={2} aria-hidden />
-            </button>
+            {canDeleteTransaction ? (
+              <button
+                type="button"
+                onClick={() => {
+                  void handleDeleteMonthlyExpense(row);
+                }}
+                disabled={isDeleting}
+                aria-label={`Deletar ${row.name}`}
+                title="Deletar transacao"
+                className="inline-flex items-center justify-center text-primary transition hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <Trash2 size={16} strokeWidth={2} aria-hidden />
+              </button>
+            ) : null}
           </div>
         );
       },
@@ -551,62 +565,6 @@ export function DashboardPage({ userId }: DashboardPageProps) {
   const visibleMonthlyExpensesColumns = isMobileViewport
     ? monthlyExpensesColumns.filter((column) => column.key !== "category")
     : monthlyExpensesColumns;
-
-  const fixedCostsColumns = [
-    {
-      key: "name",
-      header: "Nome",
-      width: isMobileViewport ? "minmax(110px, 1.6fr)" : undefined,
-      render: (row: FixedCostItem) => row.name,
-    },
-    {
-      key: "type",
-      header: "Recorrencia",
-      width: isMobileViewport ? "minmax(92px, 1fr)" : undefined,
-      render: (row: FixedCostItem) => row.paymentType,
-    },
-    {
-      key: "dueDay",
-      header: "Venc.",
-      align: "center" as const,
-      width: isMobileViewport ? "54px" : "70px",
-      render: (row: FixedCostItem) => `${row.dueDay}`,
-    },
-    {
-      key: "amount",
-      header: "Valor",
-      align: "right" as const,
-      width: isMobileViewport ? "minmax(78px, 0.9fr)" : undefined,
-      render: (row: FixedCostItem) =>
-        isMobileViewport
-          ? formatCurrencyWithoutSymbol(row.amount)
-          : formatCurrency(row.amount),
-    },
-    {
-      key: "paid",
-      header: "Pago",
-      align: "center" as const,
-      width: isMobileViewport ? "48px" : "76px",
-      render: (row: FixedCostItem) => {
-        const isUpdating = updatingTransactionIds.includes(row.id);
-
-        return (
-          <label className="inline-flex items-center justify-center">
-            <input
-              type="checkbox"
-              checked={row.status === "paid"}
-              onChange={() => {
-                void handleFixedCostPaymentToggle(row);
-              }}
-              disabled={isUpdating}
-              aria-label={`Marcar ${row.name} como pago`}
-              className="h-4 w-4 cursor-pointer accent-primary disabled:cursor-not-allowed"
-            />
-          </label>
-        );
-      },
-    },
-  ];
 
   const creditCardColumns = [
     {
@@ -708,10 +666,18 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     setUpdatingTransactionIds((current) => [...current, row.id]);
 
     try {
-      await updateTransationPaymentStatus({
-        transationId: row.id,
-        paymentStatus: nextStatus,
-      });
+      if (row.sourceType === "fixed-cost") {
+        await updateFixedCostMonthlyStatus({
+          fixedCostId: row.sourceId,
+          monthId: row.competence ?? activeMonthId ?? currentMonthId,
+          status: nextStatus,
+        });
+      } else {
+        await updateTransationPaymentStatus({
+          transationId: row.sourceId,
+          paymentStatus: nextStatus,
+        });
+      }
 
       setReloadToken((current) => current + 1);
     } catch (error) {
@@ -719,30 +685,6 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         error instanceof Error
           ? error.message
           : "Nao foi possivel atualizar o status de pagamento.",
-      );
-    } finally {
-      setUpdatingTransactionIds((current) => current.filter((id) => id !== row.id));
-    }
-  }
-
-  async function handleFixedCostPaymentToggle(row: FixedCostItem) {
-    const nextStatus = row.status === "paid" ? "PENDING" : "PAID";
-
-    setUpdatingTransactionIds((current) => [...current, row.id]);
-
-    try {
-      await updateFixedCostMonthlyStatus({
-        fixedCostId: row.id,
-        monthId: row.competence,
-        status: nextStatus,
-      });
-
-      setReloadToken((current) => current + 1);
-    } catch (error) {
-      setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Nao foi possivel atualizar o status do custo fixo.",
       );
     } finally {
       setUpdatingTransactionIds((current) => current.filter((id) => id !== row.id));
@@ -956,8 +898,12 @@ export function DashboardPage({ userId }: DashboardPageProps) {
   }
 
   async function handleDeleteMonthlyExpense(row: MonthlyExpenseItem) {
+    if (row.sourceType !== "transaction") {
+      return;
+    }
+
     await deleteTransactionWithConfirmation({
-      transactionId: row.id,
+      transactionId: row.sourceId,
       label: row.name,
       isInstallmentGroupTransaction: row.isInstallmentGroupTransaction,
     });
@@ -1042,33 +988,6 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         total={formatCurrency(sumAmounts(filteredMonthlyExpenses))}
         rows={filteredMonthlyExpenses}
         columns={visibleMonthlyExpensesColumns}
-        hideHeader
-        embedded
-        compact
-        flushHorizontalPadding
-        borderlessOnMobile
-      />
-    </AccordionCard>
-  );
-
-  const fixedCostsSection = (
-    <AccordionCard
-      title="Custos Fixos"
-      titleBadge={
-        dashboardData.fixedCosts.length === 1
-          ? "1 ITEM"
-          : `${dashboardData.fixedCosts.length} ITENS`
-      }
-      total={formatCurrency(sumAmounts(dashboardData.fixedCosts))}
-      compact
-      flushHorizontalPadding
-      minimalHorizontalPaddingOnMobile
-    >
-      <LedgerTableCard<FixedCostItem>
-        title="Custos Fixos"
-        total={formatCurrency(sumAmounts(dashboardData.fixedCosts))}
-        rows={dashboardData.fixedCosts}
-        columns={fixedCostsColumns}
         hideHeader
         embedded
         compact
@@ -1270,7 +1189,6 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         secondaryTables={
           <div className="flex flex-col gap-2 sm:gap-6">
             {dashboardFeedback}
-            {fixedCostsSection}
             {monthlyExpensesSection}
             {creditCardSection}
           </div>
