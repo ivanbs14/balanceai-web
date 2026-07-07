@@ -362,6 +362,8 @@ export function AddMonthlyExpenseModal({
                   defaultAmount: amount,
                   recurrence: "MONTHLY",
                   startDate: resolvedDate,
+                  paymentMethod,
+                  category: mapExpenseCategoryToApi(formState.category),
                   dueDay,
                   isActive: true,
                 });

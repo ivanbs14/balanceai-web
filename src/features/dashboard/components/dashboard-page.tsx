@@ -393,6 +393,14 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     }
   }
 
+  function formatFixedColumnValue(row: MonthlyExpenseItem) {
+    if (!row.isFixed) {
+      return "Nao";
+    }
+
+    return row.dueDay ? `F/${row.dueDay}` : "F";
+  }
+
   const monthlyExpensesColumns = [
     {
       key: "name",
@@ -422,19 +430,6 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         ) : row.paymentType,
     },
     {
-      key: "recurrence",
-      header: "Recorrencia",
-      width: isMobileViewport ? "minmax(92px, 1fr)" : undefined,
-      render: (row: MonthlyExpenseItem) => row.recurrenceLabel ?? "-",
-    },
-    {
-      key: "dueDay",
-      header: "Venc.",
-      align: "center" as const,
-      width: isMobileViewport ? "54px" : "70px",
-      render: (row: MonthlyExpenseItem) => (row.dueDay ? `${row.dueDay}` : "-"),
-    },
-    {
       key: "fixed",
       header: (
         <button
@@ -449,23 +444,16 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         </button>
       ),
       align: "center" as const,
-      width: isMobileViewport ? "40px" : "92px",
-      render: (row: MonthlyExpenseItem) =>
-        isMobileViewport ? (
-          <span
-            className="inline-flex items-center justify-center"
-            aria-label={row.isFixed ? "Fixo" : "Nao fixo"}
-            title={row.isFixed ? "Fixo" : "Nao fixo"}
-          >
-            {row.isFixed ? (
-              <LocateFixed size={15} strokeWidth={2.1} aria-hidden />
-            ) : (
-              <Bolt size={15} strokeWidth={2.1} aria-hidden />
-            )}
-          </span>
-        ) : (
-          (row.isFixed ? "Sim" : "Nao")
-        ),
+      width: isMobileViewport ? "60px" : "92px",
+      render: (row: MonthlyExpenseItem) => (
+        <span
+          className="inline-flex items-center justify-center"
+          aria-label={row.isFixed ? `Fixo ${formatFixedColumnValue(row)}` : "Nao fixo"}
+          title={row.isFixed ? `Fixo ${formatFixedColumnValue(row)}` : "Nao fixo"}
+        >
+          {formatFixedColumnValue(row)}
+        </span>
+      ),
     },
     {
       key: "amount",
