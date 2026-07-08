@@ -16,6 +16,18 @@ export type InstallmentGroupEditSeed = {
   cardName: string | null;
 };
 
+export type RecurringFixedCostEditSeed = {
+  fixedCostId: string;
+  name: string;
+  amount: CurrencyAmount;
+  dueDay: number | null;
+  competence: string | null;
+  paymentStatus: FixedCostStatus;
+  category: string;
+  paymentMethod: string;
+  isActive: boolean;
+};
+
 export type SummaryMetrics = {
   totalExpenses: CurrencyAmount;
   balance: CurrencyAmount;
@@ -59,7 +71,9 @@ export type MonthlyExpenseItem = {
   competence: string | null;
   isInstallmentGroupTransaction: boolean;
   canEditSimpleTransaction: boolean;
+  canManageRecurring: boolean;
   installmentGroupEdit: InstallmentGroupEditSeed | null;
+  recurringEdit: RecurringFixedCostEditSeed | null;
   amount: CurrencyAmount;
 };
 

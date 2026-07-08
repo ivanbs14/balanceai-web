@@ -7,7 +7,9 @@ type DeleteTransactionModalProps = {
   isOpen: boolean;
   isSubmitting: boolean;
   transactionLabel: string;
-  isInstallmentPurchase: boolean;
+  title?: string;
+  description: string;
+  confirmLabel?: string;
   onClose: () => void;
   onConfirm: () => void;
 };
@@ -16,7 +18,9 @@ export function DeleteTransactionModal({
   isOpen,
   isSubmitting,
   transactionLabel,
-  isInstallmentPurchase,
+  title = "Confirmar exclusao",
+  description,
+  confirmLabel = "Deletar",
   onClose,
   onConfirm,
 }: DeleteTransactionModalProps) {
@@ -68,7 +72,7 @@ export function DeleteTransactionModal({
               id="delete-transaction-modal-title"
               className="text-[1rem] font-semibold tracking-tight sm:text-[1.6rem]"
             >
-              Confirmar exclusao
+              {title}
             </h2>
           </div>
           <button
@@ -85,11 +89,7 @@ export function DeleteTransactionModal({
         <div className="space-y-3 px-3 py-3.5 sm:space-y-5 sm:px-8 sm:py-9">
           <div className="rounded-[0.8rem] border border-border bg-surface-soft px-2.5 py-2.5 text-[0.8rem] leading-4.5 text-muted sm:px-4 sm:py-4 sm:text-[0.98rem] sm:leading-6">
             <p className="font-semibold text-foreground">{transactionLabel}</p>
-            <p className="mt-1 sm:mt-2">
-              {isInstallmentPurchase
-                ? "As parcelas ja pagas serao mantidas no historico. Apenas as parcelas em aberto serao deletadas."
-                : "Esta transacao sera deletada permanentemente."}
-            </p>
+            <p className="mt-1 sm:mt-2">{description}</p>
           </div>
 
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
@@ -108,7 +108,7 @@ export function DeleteTransactionModal({
               className="inline-flex items-center justify-center gap-1 rounded-[0.7rem] bg-ring px-3 py-2 text-[0.74rem] font-semibold uppercase tracking-[0.1em] text-white transition hover:bg-primary-strong disabled:cursor-not-allowed disabled:opacity-60 sm:gap-2 sm:px-5 sm:py-3 sm:text-sm sm:tracking-[0.16em]"
             >
               <Trash2 size={14} strokeWidth={2.1} aria-hidden />
-              <span>{isSubmitting ? "Deletando..." : "Deletar"}</span>
+              <span>{isSubmitting ? "Confirmando..." : confirmLabel}</span>
             </button>
           </div>
         </div>

@@ -47,6 +47,15 @@ export type CreateFixedCostPayload = {
   isActive?: boolean;
 };
 
+export type UpdateFixedCostPayload = {
+  name?: string;
+  defaultAmount?: string;
+  paymentMethod?: string;
+  category?: string;
+  dueDay?: number;
+  isActive?: boolean;
+};
+
 export type ApiFixedCostsResponse = {
   data?: ApiFixedCostItem[];
 };
