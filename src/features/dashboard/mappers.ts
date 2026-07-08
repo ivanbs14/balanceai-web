@@ -239,7 +239,9 @@ function mapTransactionMonthlyExpenses(transactions: ApiTransaction[]): MonthlyE
         isInstallmentGroupTransaction: installmentGroupEdit !== null,
         canEditSimpleTransaction:
           installmentGroupEdit === null && transaction.paymentStatus !== "PAID",
+        canManageRecurring: false,
         installmentGroupEdit,
+        recurringEdit: null,
         amount: toNumber(transaction.amount),
       } satisfies MonthlyExpenseItem;
     });
@@ -268,7 +270,19 @@ function mapFixedCostMonthlyExpenses(
     competence: fixedCost.monthly?.competence ?? fixedCost.startDate.slice(0, 7),
     isInstallmentGroupTransaction: false,
     canEditSimpleTransaction: false,
+    canManageRecurring: true,
     installmentGroupEdit: null,
+    recurringEdit: {
+      fixedCostId: fixedCost.id,
+      name: fixedCost.name,
+      amount: toNumber(fixedCost.monthly?.amount ?? fixedCost.defaultAmount),
+      dueDay: fixedCost.dueDay,
+      competence: fixedCost.monthly?.competence ?? fixedCost.startDate.slice(0, 7),
+      paymentStatus: fixedCost.monthly?.status === "PAID" ? "paid" : "pending",
+      category: fixedCost.category ?? "OTHER",
+      paymentMethod: fixedCost.paymentMethod ?? fixedCost.paymentType ?? "OTHER",
+      isActive: fixedCost.isActive,
+    },
     amount: toNumber(fixedCost.monthly?.amount ?? fixedCost.defaultAmount),
   }));
 }

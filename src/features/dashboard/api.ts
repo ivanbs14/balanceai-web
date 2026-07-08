@@ -7,6 +7,7 @@ import type {
   ApiTransaction,
   CreateFixedCostPayload,
   CreateCardPayload,
+  UpdateFixedCostPayload,
 } from "./api-types";
 import { API_BASE_URL } from "../../shared/api-config";
 
@@ -131,10 +132,30 @@ export async function createFixedCost(payload: CreateFixedCostPayload) {
   return parseJsonResponse(response);
 }
 
+export async function updateFixedCost(params: {
+  fixedCostId: string;
+  payload: UpdateFixedCostPayload;
+}) {
+  const response = await fetch(
+    `${API_BASE_URL}/fixed-costs/${encodeURIComponent(params.fixedCostId)}`,
+    {
+      method: "PATCH",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(params.payload),
+    },
+  );
+
+  return parseJsonResponse(response);
+}
+
 export async function updateFixedCostMonthlyStatus(params: {
   fixedCostId: string;
   monthId: string;
   status: ApiFixedCostMonthlyStatus;
+  amount?: string;
 }) {
   const response = await fetch(
     `${API_BASE_URL}/fixed-costs/${encodeURIComponent(params.fixedCostId)}/monthly/${encodeURIComponent(params.monthId)}`,
@@ -146,6 +167,7 @@ export async function updateFixedCostMonthlyStatus(params: {
       },
       body: JSON.stringify({
         status: params.status,
+        ...(params.amount ? { amount: params.amount } : {}),
       }),
     },
   );

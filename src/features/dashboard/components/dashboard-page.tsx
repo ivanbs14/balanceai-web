@@ -19,6 +19,7 @@ import {
   deleteTransation,
   getDashboardApiPayload,
   getTransactionsByCard,
+  updateFixedCost,
   updateFixedCostMonthlyStatus,
   updateInstallmentGroup,
   updateTransation,
@@ -37,6 +38,7 @@ import type {
   InstallmentGroupEditSeed,
   MonthlyExpenseItem,
   MonthId,
+  RecurringFixedCostEditSeed,
 } from "../types";
 import { BreakdownListCard } from "./breakdown-list-card";
 import { AccordionCard } from "./accordion-card";
@@ -50,6 +52,7 @@ import { CategoryCard } from "./category-card";
 import { DeleteTransactionModal } from "./delete-transaction-modal";
 import { DashboardShell } from "./dashboard-shell";
 import { EditInstallmentGroupModal } from "./edit-installment-group-modal";
+import { EditRecurringFixedCostModal } from "./edit-recurring-fixed-cost-modal";
 import { EditTransactionModal } from "./edit-transaction-modal";
 import { IncomeTransactionsModal } from "./income-transactions-modal";
 import { LedgerTableCard } from "./ledger-table-card";
@@ -181,6 +184,7 @@ type FixedFilter = "all" | "fixed" | "not-fixed";
 type PendingDeleteTransaction = {
   id: string;
   label: string;
+  kind: "transaction" | "fixed-cost";
   isInstallmentGroupTransaction: boolean;
 };
 
@@ -191,6 +195,7 @@ type PendingEditTransaction = {
 };
 
 type PendingEditInstallmentGroup = InstallmentGroupEditSeed;
+type PendingEditRecurringFixedCost = RecurringFixedCostEditSeed;
 
 type OpenCardTransactionsState = {
   cardName: string;
@@ -226,6 +231,8 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     useState<PendingEditTransaction | null>(null);
   const [pendingEditInstallmentGroup, setPendingEditInstallmentGroup] =
     useState<PendingEditInstallmentGroup | null>(null);
+  const [pendingEditRecurringFixedCost, setPendingEditRecurringFixedCost] =
+    useState<PendingEditRecurringFixedCost | null>(null);
   const [cardSuccessMessage, setCardSuccessMessage] = useState<string | null>(null);
   const [isAddCardModalOpen, setIsAddCardModalOpen] = useState(false);
   const [isAddIncomeModalOpen, setIsAddIncomeModalOpen] = useState(false);
@@ -495,11 +502,13 @@ export function DashboardPage({ userId }: DashboardPageProps) {
       align: "center" as const,
       width: isMobileViewport ? "72px" : "112px",
       render: (row: MonthlyExpenseItem) => {
-        const isDeleting = deletingTransactionIds.includes(row.id);
-        const isEditing = editingTransactionIds.includes(row.id);
+        const actionStateId = row.sourceType === "fixed-cost" ? row.sourceId : row.id;
+        const isDeleting = deletingTransactionIds.includes(actionStateId);
+        const isEditing = editingTransactionIds.includes(actionStateId);
         const canEditInstallmentGroup = row.installmentGroupEdit !== null;
         const canEditSimpleTransaction = row.canEditSimpleTransaction;
         const canDeleteTransaction = row.sourceType === "transaction";
+        const canManageRecurring = row.canManageRecurring;
 
         return (
           <div className="inline-flex items-center justify-center gap-2">
@@ -531,6 +540,20 @@ export function DashboardPage({ userId }: DashboardPageProps) {
                 <Pencil size={16} strokeWidth={2} aria-hidden />
               </button>
             ) : null}
+            {canManageRecurring ? (
+              <button
+                type="button"
+                onClick={() => {
+                  handleOpenEditRecurringFixedCost(row);
+                }}
+                disabled={isEditing}
+                aria-label={`Editar recorrencia de ${row.name}`}
+                title="Editar recorrencia"
+                className="inline-flex items-center justify-center text-primary transition hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <Pencil size={16} strokeWidth={2} aria-hidden />
+              </button>
+            ) : null}
             {canDeleteTransaction ? (
               <button
                 type="button"
@@ -540,6 +563,20 @@ export function DashboardPage({ userId }: DashboardPageProps) {
                 disabled={isDeleting}
                 aria-label={`Deletar ${row.name}`}
                 title="Deletar transacao"
+                className="inline-flex items-center justify-center text-primary transition hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <Trash2 size={16} strokeWidth={2} aria-hidden />
+              </button>
+            ) : null}
+            {row.sourceType === "fixed-cost" ? (
+              <button
+                type="button"
+                onClick={() => {
+                  void handleDeleteMonthlyExpense(row);
+                }}
+                disabled={isDeleting}
+                aria-label={`Desativar recorrencia de ${row.name}`}
+                title="Desativar recorrencia"
                 className="inline-flex items-center justify-center text-primary transition hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <Trash2 size={16} strokeWidth={2} aria-hidden />
@@ -682,11 +719,13 @@ export function DashboardPage({ userId }: DashboardPageProps) {
   async function deleteTransactionWithConfirmation(params: {
     transactionId: string;
     label: string;
+    kind: "transaction" | "fixed-cost";
     isInstallmentGroupTransaction: boolean;
   }) {
     setPendingDeleteTransaction({
       id: params.transactionId,
       label: params.label,
+      kind: params.kind,
       isInstallmentGroupTransaction: params.isInstallmentGroupTransaction,
     });
   }
@@ -701,6 +740,14 @@ export function DashboardPage({ userId }: DashboardPageProps) {
       name: row.name,
       amount: row.amount,
     });
+  }
+
+  function handleOpenEditRecurringFixedCost(row: MonthlyExpenseItem) {
+    if (!row.recurringEdit) {
+      return;
+    }
+
+    setPendingEditRecurringFixedCost(row.recurringEdit);
   }
 
   function handleOpenIncomeTransactions() {
@@ -719,6 +766,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     void deleteTransactionWithConfirmation({
       transactionId: row.id,
       label: row.name,
+      kind: "transaction",
       isInstallmentGroupTransaction: false,
     });
   }
@@ -764,6 +812,58 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     }
   }
 
+  async function handleConfirmEditRecurringFixedCost(payload: {
+    fixedCostId: string;
+    name: string;
+    defaultAmount: string;
+    dueDay: number;
+    competence: string | null;
+    paymentStatus: "paid" | "pending";
+    deactivateRecurring: boolean;
+  }) {
+    setEditingTransactionIds((current) => [...current, payload.fixedCostId]);
+    setErrorMessage(null);
+
+    try {
+      await updateFixedCost({
+        fixedCostId: payload.fixedCostId,
+        payload: {
+          name: payload.name,
+          defaultAmount: payload.defaultAmount,
+          dueDay: payload.dueDay,
+          isActive: payload.deactivateRecurring ? false : true,
+        },
+      });
+
+      if (
+        !payload.deactivateRecurring &&
+        payload.competence &&
+        payload.paymentStatus === "pending"
+      ) {
+        await updateFixedCostMonthlyStatus({
+          fixedCostId: payload.fixedCostId,
+          monthId: payload.competence,
+          status: "PENDING",
+          amount: payload.defaultAmount,
+        });
+      }
+
+      setPendingEditRecurringFixedCost(null);
+      setIsLoading(true);
+      setReloadToken((current) => current + 1);
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Nao foi possivel editar a recorrencia.",
+      );
+    } finally {
+      setEditingTransactionIds((current) =>
+        current.filter((id) => id !== payload.fixedCostId),
+      );
+    }
+  }
+
   async function handleConfirmEditInstallmentGroup(payload: {
     transationId: string;
     name: string;
@@ -803,7 +903,16 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     setErrorMessage(null);
 
     try {
-      await deleteTransation({ transationId: pendingDeleteTransaction.id });
+      if (pendingDeleteTransaction.kind === "fixed-cost") {
+        await updateFixedCost({
+          fixedCostId: pendingDeleteTransaction.id,
+          payload: {
+            isActive: false,
+          },
+        });
+      } else {
+        await deleteTransation({ transationId: pendingDeleteTransaction.id });
+      }
       setPendingDeleteTransaction(null);
       setIsLoading(true);
       setReloadToken((current) => current + 1);
@@ -886,13 +995,10 @@ export function DashboardPage({ userId }: DashboardPageProps) {
   }
 
   async function handleDeleteMonthlyExpense(row: MonthlyExpenseItem) {
-    if (row.sourceType !== "transaction") {
-      return;
-    }
-
     await deleteTransactionWithConfirmation({
       transactionId: row.sourceId,
       label: row.name,
+      kind: row.sourceType,
       isInstallmentGroupTransaction: row.isInstallmentGroupTransaction,
     });
   }
@@ -901,6 +1007,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     await deleteTransactionWithConfirmation({
       transactionId: row.id,
       label: row.description,
+      kind: "transaction",
       isInstallmentGroupTransaction: row.canDeletePendingInstallments,
     });
   }
@@ -1094,8 +1201,22 @@ export function DashboardPage({ userId }: DashboardPageProps) {
             : false
         }
         transactionLabel={pendingDeleteTransaction?.label ?? ""}
-        isInstallmentPurchase={
-          pendingDeleteTransaction?.isInstallmentGroupTransaction ?? false
+        title={
+          pendingDeleteTransaction?.kind === "fixed-cost"
+            ? "Desativar recorrencia"
+            : "Confirmar exclusao"
+        }
+        description={
+          pendingDeleteTransaction?.kind === "fixed-cost"
+            ? "As competencias pagas permanecerao no historico. As ocorrencias abertas e futuras deixarao de fazer parte da recorrencia."
+            : pendingDeleteTransaction?.isInstallmentGroupTransaction
+              ? "As parcelas ja pagas serao mantidas no historico. Apenas as parcelas em aberto serao deletadas."
+              : "Esta transacao sera deletada permanentemente."
+        }
+        confirmLabel={
+          pendingDeleteTransaction?.kind === "fixed-cost"
+            ? "Desativar"
+            : "Deletar"
         }
         onClose={() => setPendingDeleteTransaction(null)}
         onConfirm={() => {
@@ -1113,6 +1234,19 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         onClose={() => setPendingEditTransaction(null)}
         onConfirm={(payload) => {
           void handleConfirmEditTransaction(payload);
+        }}
+      />
+      <EditRecurringFixedCostModal
+        isOpen={pendingEditRecurringFixedCost !== null}
+        isSubmitting={
+          pendingEditRecurringFixedCost
+            ? editingTransactionIds.includes(pendingEditRecurringFixedCost.fixedCostId)
+            : false
+        }
+        fixedCost={pendingEditRecurringFixedCost}
+        onClose={() => setPendingEditRecurringFixedCost(null)}
+        onConfirm={(payload) => {
+          void handleConfirmEditRecurringFixedCost(payload);
         }}
       />
       <EditInstallmentGroupModal
