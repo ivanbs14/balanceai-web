@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { format, parseISO } from "date-fns";
 import {
   BadgeDollarSign,
   Bolt,
@@ -135,19 +136,22 @@ function getMonthNumberFromMonthId(monthId: MonthId) {
 function isTransactionInMonthId(transactionDate: string, monthId: MonthId) {
   const normalizedTransactionDate = transactionDate.trim();
 
+  // Check rápido para strings já em formato YYYY-MM
   if (/^\d{4}-\d{2}/.test(normalizedTransactionDate)) {
     return normalizedTransactionDate.slice(0, 7) === monthId;
   }
 
-  const parsedDate = new Date(transactionDate);
-
-  if (Number.isNaN(parsedDate.getTime())) {
+  // Usa date-fns para evitar bug de timezone com getFullYear/getMonth
+  // Corrige problema onde parcelas de 2027 desapareciam devido conversão UTC
+  try {
+    const parsedDate = parseISO(transactionDate);
+    if (Number.isNaN(parsedDate.getTime())) {
+      return false;
+    }
+    return format(parsedDate, "yyyy-MM") === monthId;
+  } catch {
     return false;
   }
-
-  const transactionMonthId = `${parsedDate.getFullYear()}-${`${parsedDate.getMonth() + 1}`.padStart(2, "0")}`;
-
-  return transactionMonthId === monthId;
 }
 
 function resolveMonthIdForYear(params: {
