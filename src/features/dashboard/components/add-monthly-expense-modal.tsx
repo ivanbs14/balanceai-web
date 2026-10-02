@@ -357,7 +357,6 @@ export function AddMonthlyExpenseModal({
             try {
               if (formState.isRecurring) {
                 await createFixedCost({
-                  userId,
                   name,
                   defaultAmount: amount,
                   recurrence: "MONTHLY",

@@ -8,7 +8,6 @@ import { createCard } from "../api";
 type AddCardModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  userId: string;
   onCreated: (cardName: string) => void;
 };
 
@@ -78,7 +77,6 @@ function normalizeAmountInput(value: string) {
 export function AddCardModal({
   isOpen,
   onClose,
-  userId,
   onCreated,
 }: AddCardModalProps) {
   const [formState, setFormState] = useState<CardFormState>(() =>
@@ -179,7 +177,6 @@ export function AddCardModal({
                 invoiceDate: formState.invoiceDate,
                 invoicePayment: formState.invoicePayment,
                 limitBalance,
-                userId,
               });
 
               onCreated(name);

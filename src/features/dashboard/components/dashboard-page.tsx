@@ -1270,7 +1270,6 @@ export function DashboardPage({ userId }: DashboardPageProps) {
       <AddCardModal
         isOpen={isAddCardModalOpen}
         onClose={() => setIsAddCardModalOpen(false)}
-        userId={userId}
         onCreated={(cardName) => {
           setCardSuccessMessage(`Cartao ${cardName} cadastrado com sucesso.`);
         }}

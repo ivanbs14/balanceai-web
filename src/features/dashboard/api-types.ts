@@ -36,7 +36,6 @@ export type ApiFixedCostItem = {
 };
 
 export type CreateFixedCostPayload = {
-  userId: string;
   name: string;
   defaultAmount: string;
   recurrence: "MONTHLY" | "BIMONTHLY" | "QUARTERLY" | "YEARLY";
@@ -114,7 +113,6 @@ export type CreateCardPayload = {
   invoiceDate: string;
   limitBalance: string;
   invoicePayment: string;
-  userId: string;
 };
 
 export type ApiDashboardMonthlyResponse = {
