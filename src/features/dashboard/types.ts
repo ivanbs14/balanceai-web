@@ -16,6 +16,8 @@ export type InstallmentGroupEditSeed = {
   cardName: string | null;
 };
 
+export type InstallmentGroupEditAnchor = Pick<InstallmentGroupEditSeed, "transactionId">;
+
 export type RecurringFixedCostEditSeed = {
   fixedCostId: string;
   name: string;
@@ -53,7 +55,7 @@ export type CreditCardItem = {
   installmentCurrent: number;
   installmentTotal: number;
   canDeletePendingInstallments: boolean;
-  installmentGroupEdit: InstallmentGroupEditSeed | null;
+  installmentGroupEdit: InstallmentGroupEditAnchor | null;
   amount: CurrencyAmount;
 };
 
@@ -72,7 +74,7 @@ export type MonthlyExpenseItem = {
   isInstallmentGroupTransaction: boolean;
   canEditSimpleTransaction: boolean;
   canManageRecurring: boolean;
-  installmentGroupEdit: InstallmentGroupEditSeed | null;
+  installmentGroupEdit: InstallmentGroupEditAnchor | null;
   recurringEdit: RecurringFixedCostEditSeed | null;
   amount: CurrencyAmount;
 };

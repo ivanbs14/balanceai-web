@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { format, parseISO } from "date-fns";
 import {
   BadgeDollarSign,
@@ -19,6 +19,7 @@ import {
 import {
   deleteTransation,
   getDashboardApiPayload,
+  getInstallmentGroupSummary,
   getTransactionsByCard,
   updateFixedCost,
   updateFixedCostMonthlyStatus,
@@ -36,6 +37,7 @@ import type {
   CreditCardItem,
   DashboardViewModel,
   IncomeTransactionItem,
+  InstallmentGroupEditAnchor,
   InstallmentGroupEditSeed,
   MonthlyExpenseItem,
   MonthId,
@@ -235,6 +237,11 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     useState<PendingEditTransaction | null>(null);
   const [pendingEditInstallmentGroup, setPendingEditInstallmentGroup] =
     useState<PendingEditInstallmentGroup | null>(null);
+  const [loadingInstallmentGroupId, setLoadingInstallmentGroupId] = useState<string | null>(null);
+  const [installmentGroupLoadError, setInstallmentGroupLoadError] = useState<string | null>(null);
+  const [failedInstallmentGroupRequest, setFailedInstallmentGroupRequest] =
+    useState<{ group: InstallmentGroupEditAnchor; closeCardOnSuccess: boolean } | null>(null);
+  const installmentGroupRequestId = useRef(0);
   const [pendingEditRecurringFixedCost, setPendingEditRecurringFixedCost] =
     useState<PendingEditRecurringFixedCost | null>(null);
   const [cardSuccessMessage, setCardSuccessMessage] = useState<string | null>(null);
@@ -775,12 +782,45 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     });
   }
 
-  function handleOpenEditInstallmentGroup(group: InstallmentGroupEditSeed | null) {
+  async function handleOpenEditInstallmentGroup(
+    group: InstallmentGroupEditAnchor | null,
+    closeCardOnSuccess = false,
+  ) {
     if (!group) {
       return;
     }
 
-    setPendingEditInstallmentGroup(group);
+    const requestId = ++installmentGroupRequestId.current;
+    setPendingEditInstallmentGroup(null);
+    setLoadingInstallmentGroupId(group.transactionId);
+    setInstallmentGroupLoadError(null);
+    setFailedInstallmentGroupRequest(null);
+
+    try {
+      const summary = await getInstallmentGroupSummary(group.transactionId);
+      if (requestId !== installmentGroupRequestId.current) return;
+      if (closeCardOnSuccess) setOpenCardTransactionsState(null);
+      setPendingEditInstallmentGroup({
+        transactionId: group.transactionId,
+        name: summary.name,
+        totalAmount: Number(summary.totalAmount),
+        startDate: summary.startDate,
+        installments: summary.installments,
+        paymentMethod: summary.paymentMethod,
+        cardId: summary.cardId,
+        cardName: summary.cardName,
+      });
+    } catch (error) {
+      if (requestId !== installmentGroupRequestId.current) return;
+      setInstallmentGroupLoadError(
+        error instanceof Error ? error.message : "Nao foi possivel carregar o grupo parcelado.",
+      );
+      setFailedInstallmentGroupRequest({ group, closeCardOnSuccess });
+    } finally {
+      if (requestId === installmentGroupRequestId.current) {
+        setLoadingInstallmentGroupId(null);
+      }
+    }
   }
 
   async function handleConfirmEditTransaction(payload: {
@@ -986,8 +1026,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
   }
 
   function handleOpenEditInstallmentGroupFromCard(transaction: ApiTransaction) {
-    setOpenCardTransactionsState(null);
-    handleOpenEditInstallmentGroup(
+    void handleOpenEditInstallmentGroup(
       mapDashboardViewModel({
         monthId: activeMonthId ?? currentMonthId,
         summary: {},
@@ -995,6 +1034,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         transactions: [transaction],
         creditCard: {},
       }).creditCard[0]?.installmentGroupEdit ?? null,
+      true,
     );
   }
 
@@ -1195,8 +1235,38 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         errorMessage={openCardTransactionsState?.errorMessage ?? null}
         editingTransactionIds={editingTransactionIds}
         onEditInstallmentGroup={handleOpenEditInstallmentGroupFromCard}
-        onClose={() => setOpenCardTransactionsState(null)}
+        onClose={() => {
+          ++installmentGroupRequestId.current;
+          setOpenCardTransactionsState(null);
+          setLoadingInstallmentGroupId(null);
+          setInstallmentGroupLoadError(null);
+          setFailedInstallmentGroupRequest(null);
+        }}
       />
+      {loadingInstallmentGroupId ? (
+        <div role="status" className="fixed bottom-4 left-4 right-4 z-[70] mx-auto max-w-lg border border-border bg-surface p-4 text-sm text-muted shadow-lg">
+          Carregando valor total do grupo parcelado...
+        </div>
+      ) : null}
+      {installmentGroupLoadError ? (
+        <div role="alert" className="fixed bottom-4 left-4 right-4 z-[70] mx-auto flex max-w-lg flex-col gap-3 border border-border bg-danger-soft p-4 text-sm text-danger-foreground shadow-lg sm:flex-row sm:items-center sm:justify-between">
+          <p>Nao foi possivel abrir o grupo parcelado: {installmentGroupLoadError}</p>
+          {failedInstallmentGroupRequest ? (
+            <button
+              type="button"
+              onClick={() => {
+                void handleOpenEditInstallmentGroup(
+                  failedInstallmentGroupRequest.group,
+                  failedInstallmentGroupRequest.closeCardOnSuccess,
+                );
+              }}
+              className="inline-flex items-center justify-center border border-primary px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-primary transition hover:bg-primary hover:text-white"
+            >
+              Tentar novamente
+            </button>
+          ) : null}
+        </div>
+      ) : null}
       <DeleteTransactionModal
         isOpen={pendingDeleteTransaction !== null}
         isSubmitting={

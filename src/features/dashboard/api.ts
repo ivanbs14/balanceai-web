@@ -5,6 +5,7 @@ import type {
   ApiFixedCostsResponse,
   ApiSummaryResponse,
   ApiTransaction,
+  ApiInstallmentGroupSummary,
   CreateFixedCostPayload,
   CreateCardPayload,
   UpdateFixedCostPayload,
@@ -103,6 +104,14 @@ export async function getTransactionsByCard(
 ): Promise<ApiTransaction[]> {
   return fetchDashboardResource<ApiTransaction[]>(
     `/transations/open-by-card/${encodeURIComponent(cardName)}`,
+  );
+}
+
+export async function getInstallmentGroupSummary(
+  transationId: string,
+): Promise<ApiInstallmentGroupSummary> {
+  return fetchDashboardResource<ApiInstallmentGroupSummary>(
+    `/transations/${encodeURIComponent(transationId)}/installment-group`,
   );
 }
 

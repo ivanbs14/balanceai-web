@@ -12,7 +12,7 @@ import type {
   CreditCardItem,
   DashboardViewModel,
   IncomeTransactionItem,
-  InstallmentGroupEditSeed,
+  InstallmentGroupEditAnchor,
   MonthlyExpenseItem,
 } from "./types";
 
@@ -177,9 +177,9 @@ function formatDateInputValue(value: Date) {
   return `${year}-${month}-${day}`;
 }
 
-function buildInstallmentGroupEditSeed(
+function buildInstallmentGroupEditAnchor(
   transaction: ApiTransaction,
-): InstallmentGroupEditSeed | null {
+): InstallmentGroupEditAnchor | null {
   const installments = Number(transaction.installments ?? 0);
 
   if (
@@ -190,36 +190,14 @@ function buildInstallmentGroupEditSeed(
     return null;
   }
 
-  const installment = parseInstallmentInfo(
-    transaction.installmentInfo,
-    transaction.installments,
-  );
-  const parsedDate = new Date(transaction.Date);
-  const startDate = new Date(parsedDate);
-
-  if (!Number.isNaN(startDate.getTime())) {
-    startDate.setMonth(startDate.getMonth() - (installment.installmentCurrent - 1));
-  }
-
-  return {
-    transactionId: transaction.id,
-    name: transaction.name,
-    totalAmount: Number((toNumber(transaction.amount) * installment.installmentTotal).toFixed(2)),
-    startDate: Number.isNaN(startDate.getTime())
-      ? transaction.Date.slice(0, 10)
-      : formatDateInputValue(startDate),
-    installments: installment.installmentTotal,
-    paymentMethod: transaction.paymentMethod as InstallmentGroupEditSeed["paymentMethod"],
-    cardId: transaction.cardId ?? null,
-    cardName: transaction.nameCard ?? null,
-  };
+  return { transactionId: transaction.id };
 }
 
 function mapTransactionMonthlyExpenses(transactions: ApiTransaction[]): MonthlyExpenseItem[] {
   return transactions
     .filter((transaction) => transaction.type === "EXPENSE")
     .map((transaction) => {
-      const installmentGroupEdit = buildInstallmentGroupEditSeed(transaction);
+      const installmentGroupEdit = buildInstallmentGroupEditAnchor(transaction);
 
       return {
         id: transaction.id,
@@ -312,7 +290,7 @@ function mapCreditCardItems(
         transaction.installmentInfo,
         transaction.installments,
       );
-      const installmentGroupEdit = buildInstallmentGroupEditSeed(transaction);
+      const installmentGroupEdit = buildInstallmentGroupEditAnchor(transaction);
 
       return {
         id: transaction.id,

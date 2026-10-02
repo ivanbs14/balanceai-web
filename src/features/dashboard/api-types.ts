@@ -77,6 +77,16 @@ export type ApiTransaction = {
   Date: string;
 };
 
+export type ApiInstallmentGroupSummary = {
+  name: string;
+  totalAmount: string;
+  startDate: string;
+  installments: number;
+  paymentMethod: "CREDIT_CARD" | "PIX";
+  cardId: string | null;
+  cardName: string | null;
+};
+
 export type ApiTransactionsResponse = {
   transactions?: ApiTransaction[];
   totalPages?: number;
