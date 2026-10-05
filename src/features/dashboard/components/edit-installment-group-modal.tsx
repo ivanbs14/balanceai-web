@@ -241,7 +241,7 @@ export function EditInstallmentGroupModal({
 
             const name = formState.name.trim();
             const amount = normalizeAmountInput(formState.amount);
-            const installments = Number.parseInt(formState.installments, 10);
+            const installments = Number(formState.installments);
 
             if (!name) {
               setErrorMessage("Informe o nome da compra.");
@@ -258,8 +258,8 @@ export function EditInstallmentGroupModal({
               return;
             }
 
-            if (!Number.isFinite(installments) || installments < 2) {
-              setErrorMessage("Informe uma quantidade de parcelas maior ou igual a 2.");
+            if (!Number.isInteger(installments) || installments < 2 || installments > 24) {
+              setErrorMessage("Informe uma quantidade de 2 a 24 parcelas.");
               return;
             }
 
@@ -325,6 +325,7 @@ export function EditInstallmentGroupModal({
               <input
                 type="number"
                 min={2}
+                max={24}
                 step={1}
                 value={formState.installments}
                 onChange={(event) => {
