@@ -806,6 +806,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         totalAmount: Number(summary.totalAmount),
         startDate: summary.startDate,
         installments: summary.installments,
+        paidInstallments: summary.paidInstallments ?? 0,
         paymentMethod: summary.paymentMethod,
         cardId: summary.cardId,
         cardName: summary.cardName,

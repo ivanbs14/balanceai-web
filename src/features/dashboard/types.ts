@@ -11,6 +11,7 @@ export type InstallmentGroupEditSeed = {
   totalAmount: CurrencyAmount;
   startDate: string;
   installments: number;
+  paidInstallments: number;
   paymentMethod: InstallmentGroupPaymentMethod;
   cardId: string | null;
   cardName: string | null;
@@ -32,6 +33,8 @@ export type RecurringFixedCostEditSeed = {
 
 export type SummaryMetrics = {
   totalExpenses: CurrencyAmount;
+  forecastExpenses: CurrencyAmount;
+  investedPosition: CurrencyAmount;
   balance: CurrencyAmount;
 };
 

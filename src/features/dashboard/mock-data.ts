@@ -6,6 +6,8 @@ export const dashboardMonths: DashboardMonthData[] = [
     label: "Janeiro",
     summary: {
       totalExpenses: 6968.54,
+      forecastExpenses: 0,
+      investedPosition: 0,
       balance: -23.54,
     },
     fixedCosts: [
@@ -177,6 +179,8 @@ export const dashboardMonths: DashboardMonthData[] = [
     label: "Fevereiro",
     summary: {
       totalExpenses: 5824.2,
+      forecastExpenses: 0,
+      investedPosition: 0,
       balance: 1120.8,
     },
     fixedCosts: [

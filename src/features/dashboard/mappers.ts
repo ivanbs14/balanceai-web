@@ -420,6 +420,8 @@ export function createEmptyDashboardViewModel(monthId: string): DashboardViewMod
     monthLabel: toMonthLabel(monthId),
     summary: {
       totalExpenses: 0,
+      forecastExpenses: 0,
+      investedPosition: 0,
       balance: 0,
     },
     monthlyExpenses: [],
@@ -448,6 +450,8 @@ export function mapDashboardViewModel(params: {
     monthLabel: statementMonthLabel,
     summary: {
       totalExpenses: toNumber(summary.totalValues?.totalExpenses ?? null),
+      forecastExpenses: toNumber(summary.totalValues?.forecastExpenses ?? null),
+      investedPosition: toNumber(summary.totalValues?.investedPosition ?? summary.totalValues?.totalInvestments ?? null),
       balance: toNumber(summary.totalValues?.balance ?? null),
     },
     monthlyExpenses: mapMonthlyExpenses(transactions, fixedCosts),

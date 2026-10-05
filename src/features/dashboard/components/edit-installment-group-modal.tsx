@@ -219,7 +219,7 @@ export function EditInstallmentGroupModal({
                 Editar grupo parcelado
               </h2>
               <p className="mt-0.5 text-[0.72rem] uppercase tracking-[0.16em] text-white/78 sm:text-[0.8rem]">
-                Atualiza todas as parcelas, inclusive as pagas
+                Edita apenas as parcelas pendentes
               </p>
             </div>
           </div>
@@ -258,8 +258,10 @@ export function EditInstallmentGroupModal({
               return;
             }
 
-            if (!Number.isInteger(installments) || installments < 2 || installments > 24) {
-              setErrorMessage("Informe uma quantidade de 2 a 24 parcelas.");
+            const minimumInstallments = group.paidInstallments > 0 ? 1 : 2;
+            const maximumInstallments = 24 - group.paidInstallments;
+            if (!Number.isInteger(installments) || installments < minimumInstallments || installments > maximumInstallments) {
+              setErrorMessage(`Informe de ${minimumInstallments} a ${maximumInstallments} parcelas pendentes.`);
               return;
             }
 
@@ -281,7 +283,9 @@ export function EditInstallmentGroupModal({
           }}
         >
           <div className="rounded-[0.8rem] border border-border bg-primary-soft/50 px-4 py-3 text-sm text-primary-strong">
-            Esta alteracao recalcula o grupo inteiro a partir da data inicial informada.
+            {group.paidInstallments > 0
+              ? `${group.paidInstallments} parcela(s) paga(s) serão preservadas. Valor, data e quantidade abaixo se aplicam somente às pendentes.`
+              : "Esta alteração recalcula apenas as parcelas pendentes a partir da data informada."}
           </div>
 
           <div className="space-y-1.5 sm:space-y-2">
@@ -303,7 +307,7 @@ export function EditInstallmentGroupModal({
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5 sm:space-y-2">
               <label className="block font-mono text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-primary sm:text-[0.78rem] sm:tracking-[0.24em]">
-                Valor total
+                Valor das parcelas pendentes
               </label>
               <input
                 type="text"
@@ -320,12 +324,12 @@ export function EditInstallmentGroupModal({
 
             <div className="space-y-1.5 sm:space-y-2">
               <label className="block font-mono text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-primary sm:text-[0.78rem] sm:tracking-[0.24em]">
-                Parcelas
+                Parcelas pendentes
               </label>
               <input
                 type="number"
-                min={2}
-                max={24}
+                min={group.paidInstallments > 0 ? 1 : 2}
+                max={24 - group.paidInstallments}
                 step={1}
                 value={formState.installments}
                 onChange={(event) => {
@@ -343,7 +347,7 @@ export function EditInstallmentGroupModal({
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1.5 sm:space-y-2">
               <label className="block font-mono text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-primary sm:text-[0.78rem] sm:tracking-[0.24em]">
-                Data inicial
+                Data inicial das pendentes
               </label>
               <div className="relative">
                 <input

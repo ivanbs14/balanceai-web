@@ -16,13 +16,22 @@ export function MonthlySummary({ summary }: MonthlySummaryProps) {
   return (
     <>
       <SummaryCard
-        label="Total Gastos"
+        label="Despesas pagas"
         value={formatCurrency(summary.totalExpenses)}
       />
       <SummaryCard
-        label="Saldo"
+        label="Despesas previstas"
+        value={formatCurrency(summary.forecastExpenses)}
+      />
+      <SummaryCard
+        label="Saldo disponível"
         value={formatCurrency(summary.balance)}
         tone={summary.balance < 0 ? "negative" : "default"}
+      />
+      <SummaryCard
+        label="Posição investida"
+        value={formatCurrency(summary.investedPosition)}
+        tone={summary.investedPosition < 0 ? "negative" : "default"}
       />
     </>
   );

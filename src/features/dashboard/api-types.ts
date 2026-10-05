@@ -3,9 +3,15 @@ export type ApiNumericValue = number | string | null;
 export type ApiSummaryResponse = {
   totalValues?: {
     totalExpenses?: ApiNumericValue;
+    realizedExpenses?: ApiNumericValue;
+    forecastExpenses?: ApiNumericValue;
+    paidFixedCosts?: ApiNumericValue;
+    pendingFixedCosts?: ApiNumericValue;
     totalInvestments?: ApiNumericValue;
+    investedPosition?: ApiNumericValue;
     totalDeposits?: ApiNumericValue;
     balance?: ApiNumericValue;
+    projectedBalance?: ApiNumericValue;
   };
   topCategories?: Array<{
     category?: string;
@@ -82,6 +88,7 @@ export type ApiInstallmentGroupSummary = {
   totalAmount: string;
   startDate: string;
   installments: number;
+  paidInstallments?: number;
   paymentMethod: "CREDIT_CARD" | "PIX";
   cardId: string | null;
   cardName: string | null;
