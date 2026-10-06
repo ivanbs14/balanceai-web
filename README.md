@@ -2,6 +2,10 @@
 
 Aplicação Next.js 16/React 19 do Balance. O login e o dashboard usam a API real com cookie de sessão; cartões, transações, custos fixos e investimentos têm leitura e mutação. A frente de IA está pausada. Uma rota histórica de feedback permanece no código, mas não integra o escopo ativo desta entrega.
 
+## Nomes de commits
+
+Escreva em inglês todos os títulos de commit e todas as sugestões de título de commit. Exemplo: `feat(web): align dashboard and authentication with TECH-004`.
+
 ## Desenvolvimento
 
 Requer Node.js 20+, npm, a API e um PostgreSQL de desenvolvimento isolado. Configure `NEXT_PUBLIC_API_URL=http://localhost:4000` em `.env.local` se necessário. Execute `npm ci`, `npm run dev` e abra `http://localhost:3000`. Os requests usam `credentials: "include"`; configure `FRONTEND_URL` e CORS da API para a origem do browser. Para verificação local, execute `npm run lint` e `npm run build`.
