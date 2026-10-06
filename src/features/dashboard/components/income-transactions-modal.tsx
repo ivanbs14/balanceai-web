@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { List, Pencil, Trash2, X } from "lucide-react";
 import type { IncomeTransactionItem } from "../types";
+import { formatCivilDatePtBr } from "../../../shared/civil-date";
 
 type IncomeTransactionsModalProps = {
   isOpen: boolean;
@@ -23,17 +24,7 @@ function formatCurrency(value: number) {
 }
 
 function formatDate(value: string) {
-  const parsedDate = new Date(value);
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(parsedDate);
+  return formatCivilDatePtBr(value);
 }
 
 export function IncomeTransactionsModal({

@@ -66,6 +66,8 @@ export type MonthlyExpenseItem = {
   id: string;
   sourceType: "transaction" | "fixed-cost";
   sourceId: string;
+  accountingSource?: string;
+  linkedFixedCostId?: string;
   name: string;
   category: string;
   isFixed: boolean;

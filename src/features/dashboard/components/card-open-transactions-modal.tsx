@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { Pencil, ReceiptText, X } from "lucide-react";
 import type { ApiTransaction } from "../api-types";
+import { formatCivilDatePtBr } from "../../../shared/civil-date";
 
 type CardOpenTransactionsModalProps = {
   isOpen: boolean;
@@ -24,17 +25,7 @@ function formatCurrency(value: number) {
 }
 
 function formatDate(value: string) {
-  const parsedDate = new Date(value);
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    return value;
-  }
-
-  return new Intl.DateTimeFormat("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(parsedDate);
+  return formatCivilDatePtBr(value);
 }
 
 function parseAmount(value: ApiTransaction["amount"]) {

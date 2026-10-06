@@ -184,6 +184,31 @@ export async function updateFixedCostMonthlyStatus(params: {
   await parseJsonResponse<unknown>(response);
 }
 
+export async function linkFixedCostMonthly(params: {
+  fixedCostId: string;
+  monthId: string;
+  transactionId: string;
+}) {
+  const response = await fetch(
+    `${API_BASE_URL}/fixed-costs/${encodeURIComponent(params.fixedCostId)}/monthly/${encodeURIComponent(params.monthId)}/link`,
+    {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ transactionId: params.transactionId }),
+    },
+  );
+  return parseJsonResponse(response);
+}
+
+export async function unlinkFixedCostMonthly(params: { fixedCostId: string; monthId: string }) {
+  const response = await fetch(
+    `${API_BASE_URL}/fixed-costs/${encodeURIComponent(params.fixedCostId)}/monthly/${encodeURIComponent(params.monthId)}/link`,
+    { method: "DELETE", credentials: "include" },
+  );
+  return parseJsonResponse(response);
+}
+
 export async function updateTransationPaymentStatus(params: {
   transationId: string;
   paymentStatus: ApiTransationPaymentStatus;

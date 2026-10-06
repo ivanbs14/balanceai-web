@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 import { CalendarDays, ChevronDown, X } from "lucide-react";
+import { todayCivilDate } from "../../../shared/civil-date";
 import {
   createFixedCost,
   createTransation,
@@ -125,7 +126,7 @@ function resolveDate(value: string, fallbackMonthId: string | null) {
     return `${fallbackMonthId}-01`;
   }
 
-  return new Date().toISOString().slice(0, 10);
+  return todayCivilDate();
 }
 
 function parseInstallments(value: string) {

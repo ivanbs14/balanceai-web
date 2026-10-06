@@ -5,6 +5,16 @@ export function getGoogleLoginUrl() {
   return `${API_BASE_URL}/auth/google`;
 }
 
+export async function startGoogleLink(currentPassword: string) {
+  const response = await fetch(`${API_BASE_URL}/auth/google/link`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ currentPassword }),
+  });
+  return parseJsonResponse<{ authorizationUrl: string }>(response);
+}
+
 async function parseJsonResponse<T>(response: Response): Promise<T> {
   const data = await response.json().catch(() => null);
 

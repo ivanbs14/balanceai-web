@@ -15,6 +15,7 @@ import type {
   InstallmentGroupEditAnchor,
   MonthlyExpenseItem,
 } from "./types";
+import { civilDateFromApi } from "../../shared/civil-date";
 
 const categoryColorClasses = [
   "bg-chart-1",
@@ -169,14 +170,6 @@ function parseInstallmentInfo(
   };
 }
 
-function formatDateInputValue(value: Date) {
-  const year = value.getFullYear();
-  const month = `${value.getMonth() + 1}`.padStart(2, "0");
-  const day = `${value.getDate()}`.padStart(2, "0");
-
-  return `${year}-${month}-${day}`;
-}
-
 function buildInstallmentGroupEditAnchor(
   transaction: ApiTransaction,
 ): InstallmentGroupEditAnchor | null {
@@ -193,7 +186,10 @@ function buildInstallmentGroupEditAnchor(
   return { transactionId: transaction.id };
 }
 
-function mapTransactionMonthlyExpenses(transactions: ApiTransaction[]): MonthlyExpenseItem[] {
+function mapTransactionMonthlyExpenses(transactions: ApiTransaction[], fixedCostsResponse: ApiFixedCostsResponse): MonthlyExpenseItem[] {
+  const linked = new Map((fixedCostsResponse.data ?? [])
+    .filter((fixedCost) => fixedCost.monthly?.transactionId)
+    .map((fixedCost) => [fixedCost.monthly!.transactionId!, fixedCost]));
   return transactions
     .filter((transaction) => transaction.type === "EXPENSE")
     .map((transaction) => {
@@ -203,6 +199,8 @@ function mapTransactionMonthlyExpenses(transactions: ApiTransaction[]): MonthlyE
         id: transaction.id,
         sourceType: "transaction" as const,
         sourceId: transaction.id,
+        accountingSource: linked.has(transaction.id) ? `Transação vinculada a ${linked.get(transaction.id)!.name}` : "Transação",
+        linkedFixedCostId: linked.get(transaction.id)?.id,
         name: transaction.name,
         category: toCategoryLabel(transaction.category),
         isFixed: Boolean(transaction.isFixed),
@@ -228,10 +226,11 @@ function mapTransactionMonthlyExpenses(transactions: ApiTransaction[]): MonthlyE
 function mapFixedCostMonthlyExpenses(
   fixedCostsResponse: ApiFixedCostsResponse,
 ): MonthlyExpenseItem[] {
-  return (fixedCostsResponse.data ?? []).map((fixedCost) => ({
+  return (fixedCostsResponse.data ?? []).filter((fixedCost) => !fixedCost.monthly?.transactionId).map((fixedCost) => ({
     id: `fixed-cost:${fixedCost.id}:${fixedCost.monthly?.competence ?? fixedCost.startDate.slice(0, 7)}`,
     sourceType: "fixed-cost" as const,
     sourceId: fixedCost.id,
+    accountingSource: "Custo fixo previsto",
     name: fixedCost.name,
     category: toCategoryLabel(fixedCost.category ?? "FIXED_COST"),
     isFixed: true,
@@ -243,7 +242,7 @@ function mapFixedCostMonthlyExpenses(
       recurrence: fixedCost.recurrence,
       paymentType: fixedCost.paymentType,
     }),
-    dueDay: fixedCost.dueDay,
+    dueDay: fixedCost.monthly?.dueDate ? Number(fixedCost.monthly.dueDate.slice(8, 10)) : fixedCost.dueDay,
     paymentStatus: fixedCost.monthly?.status === "PAID" ? "paid" : "pending",
     competence: fixedCost.monthly?.competence ?? fixedCost.startDate.slice(0, 7),
     isInstallmentGroupTransaction: false,
@@ -270,7 +269,7 @@ function mapMonthlyExpenses(
   fixedCostsResponse: ApiFixedCostsResponse,
 ): MonthlyExpenseItem[] {
   return [
-    ...mapTransactionMonthlyExpenses(transactions),
+    ...mapTransactionMonthlyExpenses(transactions, fixedCostsResponse),
     ...mapFixedCostMonthlyExpenses(fixedCostsResponse),
   ].sort((left, right) => right.amount - left.amount);
 }
@@ -341,14 +340,10 @@ function mapIncomeTransactions(transactions: ApiTransaction[]): IncomeTransactio
   return transactions
     .filter((transaction) => transaction.type === "DEPOSIT")
     .map((transaction) => {
-      const parsedDate = new Date(transaction.Date);
-
       return {
         id: transaction.id,
         name: transaction.name,
-        date: Number.isNaN(parsedDate.getTime())
-          ? transaction.Date.slice(0, 10)
-          : formatDateInputValue(parsedDate),
+        date: civilDateFromApi(transaction.Date),
         paymentMethod: toPaymentMethodLabel(transaction.paymentMethod),
         amount: toNumber(transaction.amount),
       };

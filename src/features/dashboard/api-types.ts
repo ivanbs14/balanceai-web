@@ -35,9 +35,11 @@ export type ApiFixedCostItem = {
   monthly?: {
     id: string | null;
     competence: string;
+    dueDate?: string;
     status: "PAID" | "PENDING";
     amount: ApiNumericValue;
     paidAt: string | null;
+    transactionId?: string | null;
   };
 };
 
