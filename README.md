@@ -2,7 +2,7 @@
 
 Aplicação web de **gestão financeira pessoal**, desenvolvida com Next.js, React e TypeScript. O Balance AI reúne visão mensal de receitas e despesas, transações, cartões e custos fixos em uma interface integrada à API do projeto.
 
-> **Projeto de portfólio Full Stack.** Este repositório contém o frontend; o backend está em [balanceai-api](https://github.com/ivanbs14/balanceai-api).
+Este repositório contém o frontend; o backend está em [balanceai-api](https://github.com/ivanbs14/balanceai-api).
 
 **Aplicação em produção:** https://balanceaiw.netlify.app/
 
