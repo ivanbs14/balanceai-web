@@ -4,6 +4,8 @@ Aplicação web de **gestão financeira pessoal**, desenvolvida com Next.js, Rea
 
 > **Projeto de portfólio Full Stack.** Este repositório contém o frontend; o backend está em [balanceai-api](https://github.com/ivanbs14/balanceai-api).
 
+**Aplicação em produção:** https://balanceaiw.netlify.app/
+
 ## Funcionalidades implementadas no código
 
 - **Autenticação:** login por e-mail e senha, início do fluxo de login com Google, consulta de sessão e logout.
@@ -87,10 +89,6 @@ Acesse **http://localhost:3000**. As requisições usam `credentials: "include"`
 ## Docker
 
 O projeto inclui configuração para containerização; consulte os arquivos Docker/Compose do repositório e ajuste os endereços conforme seu ambiente.
-
-## Evolução do projeto
-
-O README anterior descrevia o dashboard como uma tela exclusivamente baseada em mocks. Essa descrição ficou **desatualizada**: a base atual possui chamadas reais à API para consulta mensal e operações financeiras. A documentação foi atualizada para refletir as integrações identificadas, sem afirmar que todos os cenários foram validados em produção.
 
 ## Projeto relacionado
 
