@@ -22,7 +22,6 @@ import {
   getTransactionsByCard,
   updateFixedCost,
   updateFixedCostMonthlyStatus,
-  unlinkFixedCostMonthly,
   updateInstallmentGroup,
   updateTransation,
   updateTransationPaymentStatus,
@@ -59,7 +58,6 @@ import { EditRecurringFixedCostModal } from "./edit-recurring-fixed-cost-modal";
 import { EditTransactionModal } from "./edit-transaction-modal";
 import { IncomeTransactionsModal } from "./income-transactions-modal";
 import { LedgerTableCard } from "./ledger-table-card";
-import { LinkFixedCostModal } from "./link-fixed-cost-modal";
 import { MonthlySummary } from "./monthly-summary";
 import { MonthSelector } from "./month-selector";
 
@@ -226,7 +224,6 @@ export function DashboardPage({ userId }: DashboardPageProps) {
   const [deletingTransactionIds, setDeletingTransactionIds] = useState<string[]>([]);
   const [pendingDeleteTransaction, setPendingDeleteTransaction] =
     useState<PendingDeleteTransaction | null>(null);
-  const [pendingLinkFixedCost, setPendingLinkFixedCost] = useState<MonthlyExpenseItem | null>(null);
   const [pendingEditTransaction, setPendingEditTransaction] =
     useState<PendingEditTransaction | null>(null);
   const [pendingEditInstallmentGroup, setPendingEditInstallmentGroup] =
@@ -418,7 +415,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
       key: "name",
       header: "Nome",
       width: isMobileViewport ? "minmax(96px, 1.65fr)" : undefined,
-      render: (row: MonthlyExpenseItem) => <span title={row.accountingSource}>{row.name}</span>,
+      render: (row: MonthlyExpenseItem) => row.name,
     },
     {
       key: "category",
@@ -512,7 +509,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         const isEditing = editingTransactionIds.includes(actionStateId);
         const canEditInstallmentGroup = row.installmentGroupEdit !== null;
         const canEditSimpleTransaction = row.canEditSimpleTransaction;
-        const canDeleteTransaction = row.sourceType === "transaction" && !row.linkedFixedCostId;
+        const canDeleteTransaction = row.sourceType === "transaction";
         const canManageRecurring = row.canManageRecurring;
 
         return (
@@ -558,20 +555,6 @@ export function DashboardPage({ userId }: DashboardPageProps) {
               >
                 <Pencil size={16} strokeWidth={2} aria-hidden />
               </button>
-            ) : null}
-            {row.sourceType === "fixed-cost" ? (
-              <button type="button" onClick={() => setPendingLinkFixedCost(row)} aria-label={`Vincular pagamento de ${row.name}`} title="Vincular a uma transação" className="text-primary underline">Vincular</button>
-            ) : null}
-            {row.linkedFixedCostId && row.competence ? (
-              <button type="button" className="text-primary underline" title="Desvincular sem apagar o histórico" aria-label={`Desvincular ${row.name} do custo fixo`} onClick={async () => {
-                if (!window.confirm(`Desvincular ${row.name}? Os dois lançamentos passarão a contar separadamente.`)) return;
-                try {
-                  await unlinkFixedCostMonthly({ fixedCostId: row.linkedFixedCostId!, monthId: row.competence! });
-                  setReloadToken((value) => value + 1);
-                } catch (cause) {
-                  setErrorMessage(cause instanceof Error ? cause.message : "Não foi possível desvincular.");
-                }
-              }}>Desvincular</button>
             ) : null}
             {canDeleteTransaction ? (
               <button
@@ -1364,14 +1347,6 @@ export function DashboardPage({ userId }: DashboardPageProps) {
           setReloadToken((current) => current + 1);
         }}
       />
-      {pendingLinkFixedCost ? (
-        <LinkFixedCostModal
-          fixedCost={pendingLinkFixedCost}
-          candidates={dashboardData.monthlyExpenses.filter((row) => row.sourceType === "transaction" && !row.linkedFixedCostId && row.competence === pendingLinkFixedCost.competence)}
-          onClose={() => setPendingLinkFixedCost(null)}
-          onLinked={() => { setPendingLinkFixedCost(null); setReloadToken((value) => value + 1); }}
-        />
-      ) : null}
       <AddIncomeModal
         isOpen={isAddIncomeModalOpen}
         onClose={() => setIsAddIncomeModalOpen(false)}

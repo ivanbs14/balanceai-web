@@ -15,12 +15,12 @@ Requer Node.js 20+, npm, a API e um PostgreSQL de desenvolvimento isolado. Confi
 - A sessão vem de `GET /auth/me`; login local usa `POST /auth`, logout usa `POST /auth/logout`. O OAuth Google novo usa `GET /auth/google`. Uma conta local autenticada pode vincular Google após confirmar a senha em `POST /auth/google/link` e concluir o redirecionamento do provedor.
 - O mês escolhido é `YYYY-MM`. Datas de lançamentos e vencimentos são datas civis `YYYY-MM-DD`; o web calcula o dia atual pelo calendário local do usuário e a API interpreta a data civil em UTC, sem deslocar a competência.
 - Montantes enviados à API são strings decimais com duas casas, por exemplo `"100.00"`. O web preserva a grafia pública `/transations` e os enums atuais.
-- `GET /fixed-costs?month=YYYY-MM` inclui a mensalidade projetada e informa `monthly.transactionId` quando há vínculo. O dashboard mostra a transação como fonte contábil desse pagamento, sem somar a mensalidade de novo. O usuário pode vincular uma despesa existente à mensalidade da mesma competência e desfazer o vínculo; uma transação vinculada não é excluída diretamente.
+- `GET /fixed-costs?month=YYYY-MM` pode informar `monthly.transactionId` para dados legados. O dashboard preserva os totais retornados pela API, mas não exibe indicação nem oferece ações de vínculo entre custo fixo e transação.
 - Endpoints legados com `:userId` continuam funcionando apenas para o titular da sessão. Payload novo não precisa enviar `userId`; um valor divergente é rejeitado.
 
 ## Verificação e limites
 
-O workflow em `.github/workflows/checks.yml` executa `npm ci`, lint e build em PR e nas branches configuradas. Os fluxos de duas contas, OAuth real, edição e vínculo no browser ainda exigem validação manual com dados fictícios. No workspace conjunto, o status e as evidências desta rodada estão em `balance-doc/features/TECH-004-EXECUCAO-2026-10-06.md`; este arquivo não é publicado automaticamente com o repositório web.
+O workflow em `.github/workflows/checks.yml` executa `npm ci`, lint e build em PR e nas branches configuradas. Os fluxos de duas contas, OAuth real e edição no browser ainda exigem validação manual com dados fictícios. No workspace conjunto, o status e as evidências desta rodada estão em `balance-doc/features/TECH-004-EXECUCAO-2026-10-06.md`; este arquivo não é publicado automaticamente com o repositório web.
 
 ## Docker
 

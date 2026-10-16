@@ -186,10 +186,9 @@ function buildInstallmentGroupEditAnchor(
   return { transactionId: transaction.id };
 }
 
-function mapTransactionMonthlyExpenses(transactions: ApiTransaction[], fixedCostsResponse: ApiFixedCostsResponse): MonthlyExpenseItem[] {
-  const linked = new Map((fixedCostsResponse.data ?? [])
-    .filter((fixedCost) => fixedCost.monthly?.transactionId)
-    .map((fixedCost) => [fixedCost.monthly!.transactionId!, fixedCost]));
+function mapTransactionMonthlyExpenses(
+  transactions: ApiTransaction[],
+): MonthlyExpenseItem[] {
   return transactions
     .filter((transaction) => transaction.type === "EXPENSE")
     .map((transaction) => {
@@ -199,8 +198,6 @@ function mapTransactionMonthlyExpenses(transactions: ApiTransaction[], fixedCost
         id: transaction.id,
         sourceType: "transaction" as const,
         sourceId: transaction.id,
-        accountingSource: linked.has(transaction.id) ? `Transação vinculada a ${linked.get(transaction.id)!.name}` : "Transação",
-        linkedFixedCostId: linked.get(transaction.id)?.id,
         name: transaction.name,
         category: toCategoryLabel(transaction.category),
         isFixed: Boolean(transaction.isFixed),
@@ -230,7 +227,6 @@ function mapFixedCostMonthlyExpenses(
     id: `fixed-cost:${fixedCost.id}:${fixedCost.monthly?.competence ?? fixedCost.startDate.slice(0, 7)}`,
     sourceType: "fixed-cost" as const,
     sourceId: fixedCost.id,
-    accountingSource: "Custo fixo previsto",
     name: fixedCost.name,
     category: toCategoryLabel(fixedCost.category ?? "FIXED_COST"),
     isFixed: true,
@@ -269,7 +265,7 @@ function mapMonthlyExpenses(
   fixedCostsResponse: ApiFixedCostsResponse,
 ): MonthlyExpenseItem[] {
   return [
-    ...mapTransactionMonthlyExpenses(transactions, fixedCostsResponse),
+    ...mapTransactionMonthlyExpenses(transactions),
     ...mapFixedCostMonthlyExpenses(fixedCostsResponse),
   ].sort((left, right) => right.amount - left.amount);
 }
