@@ -1,124 +1,97 @@
-# Balance Web
+# Balance AI — Frontend
 
-Frontend web app for the Balance personal finance product. This repository currently contains:
+Aplicação web de **gestão financeira pessoal**, desenvolvida com Next.js, React e TypeScript. O Balance AI reúne visão mensal de receitas e despesas, transações, cartões e custos fixos em uma interface integrada à API do projeto.
 
-- a login flow that talks to the Balance backend;
-- a monthly dashboard shell rendered from local typed mock data;
-- UI foundations built with Next.js 16, React 19, TypeScript, and Tailwind CSS 4.
+> **Projeto de portfólio Full Stack.** Este repositório contém o frontend; o backend está em [balanceai-api](https://github.com/ivanbs14/balanceai-api).
 
-## Current Scope
+## Funcionalidades implementadas no código
 
-The dashboard is intentionally in a transitional state:
+- **Autenticação:** login por e-mail e senha, início do fluxo de login com Google, consulta de sessão e logout.
+- **Dashboard mensal:** consulta de dados agregados na API conforme usuário e mês selecionado.
+- **Transações:** chamadas de criação, edição, exclusão e atualização do status de pagamento.
+- **Cartões:** consulta e cadastro; visualização de transações vinculadas a cartões.
+- **Custos fixos:** chamadas de cadastro, edição e atualização do status mensal.
+- **Interface responsiva:** componentes organizados por funcionalidades, com modais e visualizações financeiras.
 
-- authentication is real from the frontend perspective and calls the backend API;
-- dashboard data is still local and mock-driven;
-- create, edit, delete, and persistence flows are not implemented yet.
+As integrações acima estão presentes no código-fonte. O comportamento de ponta a ponta depende da configuração e disponibilidade do backend e do banco de dados.
 
-## Stack
+## Tecnologias
 
-- Next.js 16 App Router
-- React 19
-- TypeScript
-- Tailwind CSS 4
-- ESLint 9
+- **Next.js 16** (App Router), **React 19** e **TypeScript**
+- **Tailwind CSS 4**, Material UI e Lucide React
+- **date-fns** para operações com datas
+- API REST com autenticação baseada em cookies
 
-## Requirements
+## Arquitetura e integração
 
-- Node.js 20 or newer
-- npm
-- Balance backend running locally if you want to exercise login/session flows
+```text
+Usuário → Next.js / React → API REST (NestJS) → Prisma → PostgreSQL
+                     ↕
+          Sessão autenticada (cookie)
+```
 
-## Local Setup
+Organização principal:
 
-Install dependencies:
+- `src/app/`: rotas e entrada da aplicação;
+- `src/features/auth/`: autenticação e gerenciamento de sessão;
+- `src/features/dashboard/`: dashboard, componentes, contratos e comunicação com a API;
+- `src/features/dashboard/api.ts`: funções de acesso aos endpoints financeiros.
+
+Exemplos de chamadas utilizadas no frontend:
+
+| Operação | Endpoint |
+| --- | --- |
+| Consultar sessão | `GET /auth/me` |
+| Autenticar | `POST /auth` |
+| Consultar dados mensais | `GET /transations/dashboard/:userId/:monthId` |
+| Criar transação | `POST /transations` |
+| Editar transação | `PUT /transations/:id` |
+| Excluir transação | `DELETE /transations/:id` |
+| Atualizar status de pagamento | `PATCH /transations/:id/payment-status` |
+
+> A grafia `transations` segue os endpoints existentes no backend.
+
+## Executar localmente
+
+**Pré-requisitos:** Node.js 20+, npm e [Balance API](https://github.com/ivanbs14/balanceai-api) configurada.
 
 ```bash
+git clone https://github.com/ivanbs14/balanceai-web.git
+cd balanceai-web
 npm install
 ```
 
-Create a `.env.local` file if you need to point the frontend at a non-default backend:
+Crie `.env.local`:
 
-```bash
+```env
 NEXT_PUBLIC_API_URL=http://localhost:4000
 ```
 
-If `NEXT_PUBLIC_API_URL` is omitted, the app defaults to `http://localhost:4000`.
-
-Start the development server:
+Execute:
 
 ```bash
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Acesse **http://localhost:3000**. As requisições usam `credentials: "include"`, portanto o backend precisa permitir a origem do frontend e cookies nas configurações de CORS.
+
+## Scripts
+
+| Comando | Descrição |
+| --- | --- |
+| `npm run dev` | Ambiente de desenvolvimento |
+| `npm run build` | Build de produção |
+| `npm run start` | Executa o build |
+| `npm run lint` | Verificação com ESLint |
 
 ## Docker
 
-This repository now includes a Docker image definition for local development and production-style builds.
+O projeto inclui configuração para containerização; consulte os arquivos Docker/Compose do repositório e ajuste os endereços conforme seu ambiente.
 
-Build the web image directly:
+## Evolução do projeto
 
-```bash
-docker build -t balance-web-dev ./balance-web
-```
+O README anterior descrevia o dashboard como uma tela exclusivamente baseada em mocks. Essa descrição ficou **desatualizada**: a base atual possui chamadas reais à API para consulta mensal e operações financeiras. A documentação foi atualizada para refletir as integrações identificadas, sem afirmar que todos os cenários foram validados em produção.
 
-Run the frontend through the workspace compose file:
+## Projeto relacionado
 
-```bash
-docker compose up --build web
-```
-
-Build only the web service from compose:
-
-```bash
-docker compose build web
-```
-
-Run both apps together:
-
-```bash
-docker compose up --build
-```
-
-Notes:
-
-- The frontend container publishes `http://localhost:3000`.
-- The default API target in Docker local flow is `http://localhost:4000`.
-- `next.config.ts` uses `output: "standalone"` for leaner production images.
-
-## Available Scripts
-
-```bash
-npm run dev
-npm run build
-npm run start
-npm run lint
-```
-
-## Authentication Contract
-
-The homepage loads `AuthenticatedHome`, which:
-
-- checks the current session with `GET /auth/me`;
-- performs email/password login with `POST /auth`;
-- starts Google auth via `GET /auth/google`;
-- logs out with `POST /auth/logout`.
-
-Requests are made with `credentials: "include"`, so the backend must be configured for cookie-based auth and local CORS accordingly.
-
-## Dashboard Structure
-
-The root route currently resolves to:
-
-- `src/app/page.tsx`: app entrypoint
-- `src/features/auth/components/authenticated-home.tsx`: auth gate
-- `src/features/dashboard/components/`: dashboard UI building blocks
-- `src/features/dashboard/mock-data.ts`: single local source of truth for dashboard mocks
-- `src/features/dashboard/types.ts`: shared dashboard contracts
-
-The dashboard supports switching between mocked months and recomputes visible sections from the selected month data.
-
-## Notes
-
-- Text in the current UI is primarily Portuguese.
-- README scope reflects the repository state as of June 6, 2026.
+- [Balance AI — API NestJS](https://github.com/ivanbs14/balanceai-api)
