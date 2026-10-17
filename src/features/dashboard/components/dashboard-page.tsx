@@ -644,7 +644,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
         const isEditing = editingTransactionIds.includes(row.id);
 
         return (
-          <div className="inline-flex items-center justify-center gap-2">
+          <div className="inline-grid grid-cols-[1.5rem_1.5rem] items-center justify-center gap-2">
             {row.installmentGroupEdit ? (
               <button
                 type="button"
@@ -654,7 +654,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
                 disabled={isEditing}
                 aria-label={`Editar grupo parcelado de ${row.description}`}
                 title="Editar grupo parcelado"
-                className="inline-flex items-center justify-center text-primary transition hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-40"
+                className="inline-flex h-6 w-6 items-center justify-center text-primary transition hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <Pencil size={16} strokeWidth={2} aria-hidden />
               </button>
@@ -667,7 +667,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
               disabled={isDeleting}
               aria-label={`Deletar ${row.description}`}
               title="Deletar transacao"
-              className="inline-flex items-center justify-center text-primary transition hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-40"
+              className="col-start-2 inline-flex h-6 w-6 items-center justify-center text-primary transition hover:opacity-70 disabled:cursor-not-allowed disabled:opacity-40"
             >
               <Trash2 size={16} strokeWidth={2} aria-hidden />
             </button>
