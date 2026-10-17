@@ -211,7 +211,9 @@ export function AuthenticatedHome() {
           <div className="hidden h-10 items-center border border-border bg-surface px-5 text-sm text-primary sm:inline-flex">
             {user.name}
           </div>
-          <button type="button" onClick={() => setShowGoogleLink(true)} className="inline-flex h-8 items-center border border-primary bg-surface px-3 text-[0.8rem] text-primary sm:h-10 sm:px-5 sm:text-sm">Vincular Google</button>
+          {!user.googleLinked ? (
+            <button type="button" onClick={() => setShowGoogleLink(true)} className="inline-flex h-8 items-center border border-primary bg-surface px-3 text-[0.8rem] text-primary sm:h-10 sm:px-5 sm:text-sm">Vincular Google</button>
+          ) : null}
           <button
             type="button"
             onClick={handleLogout}
@@ -222,7 +224,7 @@ export function AuthenticatedHome() {
           </button>
         </div>
       </div>
-      {showGoogleLink ? <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay p-4" role="presentation" onClick={() => setShowGoogleLink(false)}>
+      {showGoogleLink && !user.googleLinked ? <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay p-4" role="presentation" onClick={() => setShowGoogleLink(false)}>
         <form className="w-full max-w-sm rounded-xl bg-surface p-6 text-foreground shadow-xl" role="dialog" aria-modal="true" aria-labelledby="google-link-title" onClick={(event) => event.stopPropagation()} onSubmit={async (event) => {
           event.preventDefault();
           setIsSubmitting(true);
