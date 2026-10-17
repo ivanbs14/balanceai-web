@@ -1,8 +1,7 @@
 "use client";
 
-import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { AppHeader } from "@/components/app-header";
 import { useAIFeedback } from "@/features/ai-feedback/hooks/useAIFeedback";
 import { MonthSelector } from "@/features/ai-feedback/components/MonthSelector";
 import { MetricsDisplay } from "@/features/ai-feedback/components/MetricsDisplay";
@@ -11,14 +10,7 @@ import { LoadingFeedback } from "@/features/ai-feedback/components/LoadingFeedba
 import { EmptyState } from "@/features/ai-feedback/components/EmptyState";
 import { ErrorState } from "@/features/ai-feedback/components/ErrorState";
 
-const navItems = [
-  { label: "Dashboard", href: "/" },
-  { label: "IA Feedback", href: "/ai-feedback" },
-];
-
 export default function AIFeedbackPage() {
-  const pathname = usePathname();
-  const router = useRouter();
   const { feedback, loading, error, generating, fetchFeedback, generate, reset } = useAIFeedback();
   
   const currentDate = new Date();
@@ -42,42 +34,7 @@ export default function AIFeedbackPage() {
 
   return (
     <main className="min-h-screen">
-      {/* Header */}
-      <header className="border-b border-border bg-background/95">
-        <div className="mx-auto w-full max-w-none px-1 py-2.5 sm:max-w-[1440px] sm:px-6 sm:py-4 lg:relative lg:px-10">
-          <div className="flex items-center">
-            <Image
-              src="/logonameai.svg"
-              alt="Balance-ai"
-              width={220}
-              height={48}
-              className="h-9 sm:h-12"
-              style={{ width: "auto" }}
-              priority
-            />
-          </div>
-
-          <nav className="mt-2 flex flex-wrap items-center justify-center gap-2 text-[0.88rem] text-foreground sm:mt-4 sm:gap-3 sm:text-[1.1rem] lg:absolute lg:top-1/2 lg:left-1/2 lg:mt-0 lg:w-max lg:-translate-x-1/2 lg:-translate-y-1/2">
-            {navItems.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <button
-                  key={item.href}
-                  type="button"
-                  onClick={() => router.push(item.href)}
-                  className={
-                    isActive
-                      ? "border-b-3 border-primary pb-1 font-semibold text-primary sm:border-b-4 sm:pb-2 cursor-pointer bg-transparent border-0 outline-none"
-                      : "pb-1 sm:pb-2 cursor-pointer hover:text-primary transition-colors bg-transparent border-0 outline-none"
-                  }
-                >
-                  {item.label}
-                </button>
-              );
-            })}
-          </nav>
-        </div>
-      </header>
+      <AppHeader />
 
       {/* Content */}
       <div className="mx-auto w-full max-w-none px-1 pt-4 pb-8 sm:max-w-[1440px] sm:px-6 lg:px-10 lg:pt-5 lg:pb-10">
