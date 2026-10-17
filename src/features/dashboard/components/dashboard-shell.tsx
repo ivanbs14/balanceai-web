@@ -23,9 +23,9 @@ export function DashboardShell({
       <AppHeader />
 
       <div className="mx-auto w-full max-w-none px-1 pt-4 pb-8 sm:max-w-[1440px] sm:px-6 lg:px-10 lg:pt-5 lg:pb-10">
-        <section className="flex flex-col gap-2 sm:gap-6 xl:flex-row xl:items-start xl:justify-between">
+        <section className="flex flex-col gap-3 sm:gap-4">
           <div className="min-w-0">{monthSelector}</div>
-          <div className="min-w-0 grid grid-cols-2 gap-2 sm:gap-4 xl:min-w-[520px]">
+          <div className="grid min-w-0 grid-cols-1 gap-2 min-[420px]:grid-cols-2 sm:gap-4 lg:grid-cols-4">
             {summaryCards}
           </div>
         </section>
