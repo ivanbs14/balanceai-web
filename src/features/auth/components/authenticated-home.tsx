@@ -1,5 +1,6 @@
 "use client";
 
+import LinearProgress from "@mui/material/LinearProgress";
 import { startTransition, useEffect, useState } from "react";
 import { DashboardPage } from "@/features/dashboard/components/dashboard-page";
 import {
@@ -171,12 +172,26 @@ export function AuthenticatedHome() {
     window.location.assign(getGoogleLoginUrl());
   }
 
-  if (isLoading) {
+  const isPreparingAuth =
+    isLoading ||
+    isApiWaking ||
+    (!user && !isApiReady && !apiWakeErrorMessage);
+
+  if (isPreparingAuth) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[linear-gradient(180deg,var(--color-background)_0%,var(--color-canvas)_100%)] px-6 text-primary">
-        <p className="font-mono text-sm uppercase tracking-[0.2em]">
-          Carregando sessao...
-        </p>
+        <div className="w-full max-w-lg space-y-4 border border-border bg-surface px-6 py-6 shadow-sm sm:px-8">
+          <div className="space-y-2">
+            <p className="font-mono text-sm uppercase tracking-[0.2em]">
+              Carregando sessao...
+            </p>
+            <p className="text-sm leading-6 text-foreground">
+              Servidores gratuitos tendem a hibernar com inatividade. Aguarde
+              enquanto estamos acordando a API para liberar o login.
+            </p>
+          </div>
+          <LinearProgress color="inherit" />
+        </div>
       </main>
     );
   }
@@ -187,7 +202,6 @@ export function AuthenticatedHome() {
         apiWakeErrorMessage={apiWakeErrorMessage}
         errorMessage={errorMessage ?? returnAuthError}
         isApiReady={isApiReady}
-        isApiWaking={isApiWaking}
         isSubmitting={isSubmitting}
         onGoogleLogin={handleGoogleLogin}
         onRetryApiWake={handleRetryApiWake}

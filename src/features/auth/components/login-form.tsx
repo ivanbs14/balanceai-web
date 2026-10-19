@@ -1,6 +1,5 @@
 "use client";
 
-import LinearProgress from "@mui/material/LinearProgress";
 import Image from "next/image";
 import { FormEvent, useState } from "react";
 import {
@@ -15,7 +14,6 @@ type LoginFormProps = {
   apiWakeErrorMessage: string | null;
   errorMessage: string | null;
   isApiReady: boolean;
-  isApiWaking: boolean;
   isSubmitting: boolean;
   onGoogleLogin: () => void;
   onRetryApiWake: () => void;
@@ -54,7 +52,6 @@ export function LoginForm({
   apiWakeErrorMessage,
   errorMessage,
   isApiReady,
-  isApiWaking,
   isSubmitting,
   onGoogleLogin,
   onRetryApiWake,
@@ -63,7 +60,7 @@ export function LoginForm({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const areLoginActionsDisabled = isSubmitting || isApiWaking || !isApiReady;
+  const areLoginActionsDisabled = isSubmitting || !isApiReady;
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -115,21 +112,6 @@ export function LoginForm({
 
         <section className="rounded-md border border-border bg-surface/95 px-6 py-5 sm:px-8 sm:py-6">
           <form className="space-y-4" onSubmit={handleSubmit}>
-            {isApiWaking ? (
-              <div className="space-y-3 border border-border bg-surface-soft px-4 py-4">
-                <div className="space-y-2">
-                  <p className="font-mono text-xs uppercase tracking-[0.2em] text-primary">
-                    Acordando API
-                  </p>
-                  <p className="text-sm leading-5 text-foreground">
-                    Servidores gratuitos tendem a hibernar com inatividade. Aguarde
-                    enquanto estamos acordando a API para liberar o login.
-                  </p>
-                </div>
-                <LinearProgress color="inherit" />
-              </div>
-            ) : null}
-
             {apiWakeErrorMessage ? (
               <div className="space-y-3 border border-destructive/20 bg-danger-soft px-4 py-4 text-danger-foreground">
                 <p className="text-sm">{apiWakeErrorMessage}</p>
@@ -229,11 +211,7 @@ export function LoginForm({
               disabled={areLoginActionsDisabled}
               className="w-full border-b-4 border-black/10 bg-primary px-4 py-3.5 text-[20px] font-semibold leading-7 text-white transition hover:bg-primary-strong disabled:cursor-not-allowed disabled:opacity-70"
             >
-              {isSubmitting
-                ? "Entrando..."
-                : isApiWaking
-                  ? "Aguardando API..."
-                  : "Entrar"}
+              {isSubmitting ? "Entrando..." : "Entrar"}
             </button>
 
             <button
