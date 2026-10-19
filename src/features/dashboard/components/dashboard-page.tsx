@@ -16,6 +16,7 @@ import {
   Wallet,
 } from "lucide-react";
 import {
+  DashboardApiError,
   deleteTransation,
   getDashboardApiPayload,
   getInstallmentGroupSummary,
@@ -476,7 +477,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     },
     {
       key: "paid",
-      header: "Pago",
+      header: isMobileViewport ? <span aria-label="Pagamento">Pgto.</span> : "Pagamento",
       align: "center" as const,
       width: isMobileViewport ? "48px" : "76px",
       render: (row: MonthlyExpenseItem) => {
@@ -497,6 +498,13 @@ export function DashboardPage({ userId }: DashboardPageProps) {
           </label>
         );
       },
+    },
+    {
+      key: "recurrenceEnd",
+      header: isMobileViewport ? <span aria-label="Fim recorrência">Fim</span> : "Fim recorrência",
+      align: "center" as const,
+      width: isMobileViewport ? "72px" : "118px",
+      render: (row: MonthlyExpenseItem) => row.recurrenceEndLabel ?? "—",
     },
     {
       key: "actions",
@@ -856,6 +864,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     competence: string | null;
     paymentStatus: "paid" | "pending";
     deactivateRecurring: boolean;
+    endDate: string | null;
   }) {
     setEditingTransactionIds((current) => [...current, payload.fixedCostId]);
     setErrorMessage(null);
@@ -868,6 +877,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
           defaultAmount: payload.defaultAmount,
           dueDay: payload.dueDay,
           isActive: payload.deactivateRecurring ? false : true,
+          endDate: payload.endDate,
         },
       });
 
@@ -888,6 +898,44 @@ export function DashboardPage({ userId }: DashboardPageProps) {
       setIsLoading(true);
       setReloadToken((current) => current + 1);
     } catch (error) {
+      if (
+        error instanceof DashboardApiError &&
+        error.code === "FIXED_COST_END_DATE_CONFIRMATION_REQUIRED"
+      ) {
+        const pendingCount = error.pendingMonthlyCount ?? 0;
+        const confirmed = window.confirm(
+          pendingCount > 0
+            ? `A recorrencia sera encerrada e ${pendingCount} mensalidade(s) pendente(s) posterior(es) sera(ao) excluida(s). Deseja continuar?`
+            : "A recorrencia sera encerrada na data escolhida. Deseja continuar?",
+        );
+        if (confirmed) {
+          try {
+            await updateFixedCost({
+              fixedCostId: payload.fixedCostId,
+              payload: {
+                name: payload.name,
+                defaultAmount: payload.defaultAmount,
+                dueDay: payload.dueDay,
+                isActive: payload.deactivateRecurring ? false : true,
+                endDate: payload.endDate,
+                confirmEndDateChange: true,
+              },
+            });
+            setPendingEditRecurringFixedCost(null);
+            setIsLoading(true);
+            setReloadToken((current) => current + 1);
+            return;
+          } catch (confirmationError) {
+            setErrorMessage(
+              confirmationError instanceof Error
+                ? confirmationError.message
+                : "Nao foi possivel confirmar o encerramento da recorrencia.",
+            );
+            return;
+          }
+        }
+        return;
+      }
       setErrorMessage(
         error instanceof Error
           ? error.message

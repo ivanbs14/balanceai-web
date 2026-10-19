@@ -54,6 +54,7 @@ type MonthlyExpenseFormState = {
   cardId: string;
   amount: string;
   date: string;
+  endDate: string;
   isRecurring: boolean;
 };
 
@@ -66,6 +67,7 @@ function createInitialFormState(): MonthlyExpenseFormState {
     cardId: "",
     amount: "",
     date: "",
+    endDate: "",
     isRecurring: false,
   };
 }
@@ -352,6 +354,18 @@ export function AddMonthlyExpenseModal({
               return;
             }
 
+            if (formState.isRecurring && formState.endDate) {
+              const endDay = Number.parseInt(formState.endDate.slice(8, 10), 10);
+              if (formState.endDate < resolvedDate) {
+                setErrorMessage("A data fim deve ser igual ou posterior a data inicial.");
+                return;
+              }
+              if (endDay !== dueDay) {
+                setErrorMessage("A data fim deve manter o mesmo dia da data inicial.");
+                return;
+              }
+            }
+
             setIsSubmitting(true);
             setErrorMessage(null);
 
@@ -362,6 +376,7 @@ export function AddMonthlyExpenseModal({
                   defaultAmount: amount,
                   recurrence: "MONTHLY",
                   startDate: resolvedDate,
+                  endDate: formState.endDate || null,
                   paymentMethod,
                   category: mapExpenseCategoryToApi(formState.category),
                   dueDay,
@@ -623,6 +638,27 @@ export function AddMonthlyExpenseModal({
               </span>
             </label>
           </div>
+
+          {formState.isRecurring ? (
+            <div>
+              <FieldLabel>Data fim (opcional)</FieldLabel>
+              <FieldShell>
+                <input
+                  type="date"
+                  lang="pt-BR"
+                  value={formState.endDate}
+                  min={resolveDate(formState.date, fallbackMonthId)}
+                  onChange={(event) =>
+                    setFormState((current) => ({ ...current, endDate: event.target.value }))
+                  }
+                  className="h-9 w-full rounded-[0.55rem] border-0 bg-transparent px-2 text-[0.74rem] text-foreground outline-none sm:h-14 sm:px-4 sm:text-[1.05rem]"
+                />
+              </FieldShell>
+              <p className="mt-1 text-[0.72rem] text-muted sm:text-sm">
+                Deixe vazio para manter a recorrencia sem fim.
+              </p>
+            </div>
+          ) : null}
 
           {errorMessage ? (
             <div className="rounded-[0.5rem] border border-border bg-danger-soft px-2.5 py-2 text-[0.78rem] text-danger-foreground sm:px-4 sm:py-3 sm:text-sm">

@@ -17,6 +17,7 @@ type EditRecurringFixedCostModalProps = {
     competence: string | null;
     paymentStatus: "paid" | "pending";
     deactivateRecurring: boolean;
+    endDate: string | null;
   }) => void;
 };
 
@@ -25,6 +26,7 @@ type FormState = {
   amount: string;
   dueDay: string;
   deactivateRecurring: boolean;
+  endDate: string;
 };
 
 function normalizeAmountInput(value: string) {
@@ -63,6 +65,7 @@ export function EditRecurringFixedCostModal({
     amount: "",
     dueDay: "",
     deactivateRecurring: false,
+    endDate: "",
   });
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -73,6 +76,7 @@ export function EditRecurringFixedCostModal({
         amount: "",
         dueDay: "",
         deactivateRecurring: false,
+        endDate: "",
       });
       setErrorMessage(null);
       return;
@@ -83,6 +87,7 @@ export function EditRecurringFixedCostModal({
       amount: formatAmountInput(fixedCost.amount),
       dueDay: fixedCost.dueDay ? String(fixedCost.dueDay) : "",
       deactivateRecurring: false,
+      endDate: fixedCost.endDate?.slice(0, 10) ?? "",
     });
     setErrorMessage(null);
   }, [fixedCost, isOpen]);
@@ -173,6 +178,18 @@ export function EditRecurringFixedCostModal({
               return;
             }
 
+            const startDate = fixedCost.startDate.slice(0, 10);
+            if (formState.endDate) {
+              if (formState.endDate < startDate) {
+                setErrorMessage("A data fim deve ser igual ou posterior a data inicial.");
+                return;
+              }
+              if (formState.endDate.slice(8, 10) !== startDate.slice(8, 10)) {
+                setErrorMessage("A data fim deve manter o mesmo dia da data inicial.");
+                return;
+              }
+            }
+
             setErrorMessage(null);
             onConfirm({
               fixedCostId: fixedCost.fixedCostId,
@@ -182,6 +199,7 @@ export function EditRecurringFixedCostModal({
               competence: fixedCost.competence,
               paymentStatus: fixedCost.paymentStatus,
               deactivateRecurring: formState.deactivateRecurring,
+              endDate: formState.endDate || null,
             });
           }}
         >
@@ -198,6 +216,24 @@ export function EditRecurringFixedCostModal({
               disabled={isSubmitting}
               className="w-full rounded-[0.55rem] border border-border bg-surface-soft px-3 py-2.5 text-sm text-foreground outline-none transition placeholder:text-muted focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60 sm:px-4 sm:py-3 sm:text-base"
             />
+          </div>
+
+          <div className="space-y-1.5 sm:space-y-2">
+            <label className="block font-mono text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-primary sm:text-[0.78rem] sm:tracking-[0.24em]">
+              Data fim (opcional)
+            </label>
+            <input
+              type="date"
+              lang="pt-BR"
+              min={fixedCost.startDate.slice(0, 10)}
+              value={formState.endDate}
+              onChange={(event) => {
+                setFormState((current) => ({ ...current, endDate: event.target.value }));
+              }}
+              disabled={isSubmitting}
+              className="w-full rounded-[0.55rem] border border-border bg-surface-soft px-3 py-2.5 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60 sm:px-4 sm:py-3 sm:text-base"
+            />
+            <p className="text-xs text-muted">Deixe vazio para manter a recorrencia sem fim.</p>
           </div>
 
           <div className="space-y-1.5 sm:space-y-2">

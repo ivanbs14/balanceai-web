@@ -27,6 +27,7 @@ export type ApiFixedCostItem = {
   defaultAmount: ApiNumericValue;
   recurrence: string;
   startDate: string;
+  endDate: string | null;
   paymentType?: string;
   paymentMethod?: string;
   category?: string;
@@ -48,6 +49,7 @@ export type CreateFixedCostPayload = {
   defaultAmount: string;
   recurrence: "MONTHLY" | "BIMONTHLY" | "QUARTERLY" | "YEARLY";
   startDate: string;
+  endDate?: string | null;
   paymentMethod?: string;
   category?: string;
   dueDay: number;
@@ -61,6 +63,8 @@ export type UpdateFixedCostPayload = {
   category?: string;
   dueDay?: number;
   isActive?: boolean;
+  endDate?: string | null;
+  confirmEndDateChange?: boolean;
 };
 
 export type ApiFixedCostsResponse = {

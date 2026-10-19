@@ -29,6 +29,8 @@ export type RecurringFixedCostEditSeed = {
   category: string;
   paymentMethod: string;
   isActive: boolean;
+  startDate: string;
+  endDate: string | null;
 };
 
 export type SummaryMetrics = {
@@ -71,6 +73,7 @@ export type MonthlyExpenseItem = {
   isFixed: boolean;
   paymentType: string;
   recurrenceLabel: string | null;
+  recurrenceEndLabel: string | null;
   dueDay: number | null;
   paymentStatus: FixedCostStatus;
   competence: string | null;

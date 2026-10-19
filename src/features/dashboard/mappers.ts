@@ -188,11 +188,18 @@ function buildInstallmentGroupEditAnchor(
 
 function mapTransactionMonthlyExpenses(
   transactions: ApiTransaction[],
+  fixedCostsResponse: ApiFixedCostsResponse,
 ): MonthlyExpenseItem[] {
+  const fixedCostByTransactionId = new Map(
+    (fixedCostsResponse.data ?? [])
+      .filter((fixedCost) => fixedCost.monthly?.transactionId)
+      .map((fixedCost) => [fixedCost.monthly!.transactionId!, fixedCost]),
+  );
   return transactions
     .filter((transaction) => transaction.type === "EXPENSE")
     .map((transaction) => {
       const installmentGroupEdit = buildInstallmentGroupEditAnchor(transaction);
+      const linkedFixedCost = fixedCostByTransactionId.get(transaction.id);
 
       return {
         id: transaction.id,
@@ -202,7 +209,12 @@ function mapTransactionMonthlyExpenses(
         category: toCategoryLabel(transaction.category),
         isFixed: Boolean(transaction.isFixed),
         paymentType: toPaymentMethodLabel(transaction.paymentMethod),
-        recurrenceLabel: null,
+        recurrenceLabel: linkedFixedCost ? "Mensal" : null,
+        recurrenceEndLabel: linkedFixedCost
+          ? linkedFixedCost.endDate
+            ? new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" }).format(new Date(linkedFixedCost.endDate))
+            : "Sem fim"
+          : null,
         dueDay: null,
         paymentStatus:
           transaction.paymentStatus === "PAID"
@@ -238,6 +250,9 @@ function mapFixedCostMonthlyExpenses(
       recurrence: fixedCost.recurrence,
       paymentType: fixedCost.paymentType,
     }),
+    recurrenceEndLabel: fixedCost.endDate
+      ? new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" }).format(new Date(fixedCost.endDate))
+      : "Sem fim",
     dueDay: fixedCost.monthly?.dueDate ? Number(fixedCost.monthly.dueDate.slice(8, 10)) : fixedCost.dueDay,
     paymentStatus: fixedCost.monthly?.status === "PAID" ? "paid" : "pending",
     competence: fixedCost.monthly?.competence ?? fixedCost.startDate.slice(0, 7),
@@ -255,6 +270,8 @@ function mapFixedCostMonthlyExpenses(
       category: fixedCost.category ?? "OTHER",
       paymentMethod: fixedCost.paymentMethod ?? fixedCost.paymentType ?? "OTHER",
       isActive: fixedCost.isActive,
+      startDate: fixedCost.startDate,
+      endDate: fixedCost.endDate,
     },
     amount: toNumber(fixedCost.monthly?.amount ?? fixedCost.defaultAmount),
   }));
@@ -265,7 +282,7 @@ function mapMonthlyExpenses(
   fixedCostsResponse: ApiFixedCostsResponse,
 ): MonthlyExpenseItem[] {
   return [
-    ...mapTransactionMonthlyExpenses(transactions),
+    ...mapTransactionMonthlyExpenses(transactions, fixedCostsResponse),
     ...mapFixedCostMonthlyExpenses(fixedCostsResponse),
   ].sort((left, right) => right.amount - left.amount);
 }

@@ -12,6 +12,18 @@ import type {
 } from "./api-types";
 import { API_BASE_URL } from "../../shared/api-config";
 
+export class DashboardApiError extends Error {
+  code?: string;
+  pendingMonthlyCount?: number;
+
+  constructor(message: string, details?: { code?: string; pendingMonthlyCount?: number }) {
+    super(message);
+    this.name = "DashboardApiError";
+    this.code = details?.code;
+    this.pendingMonthlyCount = details?.pendingMonthlyCount;
+  }
+}
+
 async function parseJsonResponse<T>(response: Response): Promise<T> {
   const data = await response.json().catch(() => null);
 
@@ -20,7 +32,13 @@ async function parseJsonResponse<T>(response: Response): Promise<T> {
       data && typeof data === "object" && "message" in data
         ? String(data.message)
         : "Nao foi possivel concluir a requisicao";
-    throw new Error(message);
+    throw new DashboardApiError(message, {
+      code: data && typeof data === "object" && "code" in data ? String(data.code) : undefined,
+      pendingMonthlyCount:
+        data && typeof data === "object" && "pendingMonthlyCount" in data
+          ? Number(data.pendingMonthlyCount)
+          : undefined,
+    });
   }
 
   return data as T;
