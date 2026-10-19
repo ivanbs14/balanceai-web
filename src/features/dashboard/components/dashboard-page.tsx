@@ -501,7 +501,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     },
     {
       key: "recurrenceEnd",
-      header: isMobileViewport ? <span aria-label="Fim recorrência">Fim</span> : "Fim recorrência",
+      header: <span aria-label="Fim recorrência">Fim R</span>,
       align: "center" as const,
       width: isMobileViewport ? "72px" : "118px",
       render: (row: MonthlyExpenseItem) => row.recurrenceEndLabel ?? "—",
