@@ -477,7 +477,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     },
     {
       key: "paid",
-      header: isMobileViewport ? <span aria-label="Pagamento">Pgto.</span> : "Pagamento",
+      header: "Pago",
       align: "center" as const,
       width: isMobileViewport ? "48px" : "76px",
       render: (row: MonthlyExpenseItem) => {
@@ -508,7 +508,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     },
     {
       key: "actions",
-      header: "Acoes",
+      header: "Ações",
       align: "center" as const,
       width: isMobileViewport ? "72px" : "112px",
       render: (row: MonthlyExpenseItem) => {
@@ -1180,7 +1180,7 @@ export function DashboardPage({ userId }: DashboardPageProps) {
     <AccordionCard
       title="Cartão de Crédito"
       titleBadge={creditCardCountLabel}
-      titleActionLabel="Cadastrar cartao"
+      titleActionLabel="Cadastrar cartão"
       onTitleActionClick={() => {
         setCardSuccessMessage(null);
         setIsAddCardModalOpen(true);

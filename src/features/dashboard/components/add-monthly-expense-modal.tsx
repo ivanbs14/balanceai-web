@@ -188,6 +188,7 @@ export function AddMonthlyExpenseModal({
   onCreated,
 }: AddMonthlyExpenseModalProps) {
   const dateInputRef = useRef<HTMLInputElement | null>(null);
+  const endDateInputRef = useRef<HTMLInputElement | null>(null);
   const [formState, setFormState] = useState<MonthlyExpenseFormState>(() =>
     createInitialFormState(),
   );
@@ -204,6 +205,20 @@ export function AddMonthlyExpenseModal({
 
   function handleDateIconClick() {
     const input = dateInputRef.current;
+
+    if (!input) {
+      return;
+    }
+
+    input.focus();
+
+    if ("showPicker" in HTMLInputElement.prototype) {
+      input.showPicker();
+    }
+  }
+
+  function handleEndDateIconClick() {
+    const input = endDateInputRef.current;
 
     if (!input) {
       return;
@@ -644,6 +659,7 @@ export function AddMonthlyExpenseModal({
               <FieldLabel>Data fim (opcional)</FieldLabel>
               <FieldShell>
                 <input
+                  ref={endDateInputRef}
                   type="date"
                   lang="pt-BR"
                   value={formState.endDate}
@@ -651,8 +667,24 @@ export function AddMonthlyExpenseModal({
                   onChange={(event) =>
                     setFormState((current) => ({ ...current, endDate: event.target.value }))
                   }
-                  className="h-9 w-full rounded-[0.55rem] border-0 bg-transparent px-2 text-[0.74rem] text-foreground outline-none sm:h-14 sm:px-4 sm:text-[1.05rem]"
+                  aria-label="Selecionar data fim"
+                  className="absolute inset-0 h-full w-full opacity-0"
                 />
+                <input
+                  type="text"
+                  readOnly
+                  value={formState.endDate ? formState.endDate.split("-").reverse().join("/") : ""}
+                  placeholder="dd/mm/aaaa"
+                  className="h-9 w-full rounded-[0.55rem] border-0 bg-transparent px-2 pr-7 text-[0.74rem] text-foreground outline-none placeholder:text-muted/70 sm:h-14 sm:px-4 sm:pr-11 sm:text-[1.05rem]"
+                />
+                <button
+                  type="button"
+                  onClick={handleEndDateIconClick}
+                  aria-label="Abrir calendario da data fim"
+                  className="absolute top-1/2 right-2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-foreground transition hover:bg-surface-soft sm:right-3 sm:h-8 sm:w-8"
+                >
+                  <CalendarDays aria-hidden size={16} />
+                </button>
               </FieldShell>
               <p className="mt-1 text-[0.72rem] text-muted sm:text-sm">
                 Deixe vazio para manter a recorrencia sem fim.

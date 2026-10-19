@@ -212,7 +212,12 @@ function mapTransactionMonthlyExpenses(
         recurrenceLabel: linkedFixedCost ? "Mensal" : null,
         recurrenceEndLabel: linkedFixedCost
           ? linkedFixedCost.endDate
-            ? new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" }).format(new Date(linkedFixedCost.endDate))
+            ? new Intl.DateTimeFormat("pt-BR", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "2-digit",
+                timeZone: "UTC",
+              }).format(new Date(linkedFixedCost.endDate))
             : "Sem fim"
           : null,
         dueDay: null,
@@ -251,7 +256,12 @@ function mapFixedCostMonthlyExpenses(
       paymentType: fixedCost.paymentType,
     }),
     recurrenceEndLabel: fixedCost.endDate
-      ? new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" }).format(new Date(fixedCost.endDate))
+      ? new Intl.DateTimeFormat("pt-BR", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "2-digit",
+          timeZone: "UTC",
+        }).format(new Date(fixedCost.endDate))
       : "Sem fim",
     dueDay: fixedCost.monthly?.dueDate ? Number(fixedCost.monthly.dueDate.slice(8, 10)) : fixedCost.dueDay,
     paymentStatus: fixedCost.monthly?.status === "PAID" ? "paid" : "pending",
