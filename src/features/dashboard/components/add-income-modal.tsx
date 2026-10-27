@@ -105,6 +105,20 @@ function resolveDate(value: string, fallbackMonthId: string | null) {
   return todayCivilDate();
 }
 
+function supportsIncomeInstallments(method: string) {
+  return method === "Pix";
+}
+
+function parseInstallments(value: string) {
+  const installments = Number.parseInt(value.split("/")[1] ?? "1", 10);
+
+  return Number.isInteger(installments) &&
+    installments >= 1 &&
+    installments <= 24
+    ? installments
+    : 1;
+}
+
 function mapIncomeMethodToApi(method: string): ApiTransationPaymentMethod {
   switch (method) {
     case "Pix":
@@ -234,6 +248,10 @@ export function AddIncomeModal({
             setErrorMessage(null);
 
             try {
+              const installments = supportsIncomeInstallments(formState.method)
+                ? parseInstallments(formState.installments)
+                : 1;
+
               await createTransation({
                 userId,
                 name,
@@ -241,7 +259,7 @@ export function AddIncomeModal({
                 amount,
                 category: mapIncomeCategoryToApi(formState.category),
                 paymentMethod: mapIncomeMethodToApi(formState.method),
-                installments: 1,
+                installments,
                 Date: resolveDate(formState.date, fallbackMonthId),
               });
 
@@ -281,12 +299,17 @@ export function AddIncomeModal({
               <FieldShell>
                 <select
                   value={formState.method}
-                  onChange={(event) =>
+                  onChange={(event) => {
+                    const method = event.target.value;
+
                     setFormState((current) => ({
                       ...current,
-                      method: event.target.value,
-                    }))
-                  }
+                      method,
+                      installments: supportsIncomeInstallments(method)
+                        ? current.installments
+                        : installmentOptions[0],
+                    }));
+                  }}
                   className="h-9 w-full appearance-none rounded-[0.55rem] border-0 bg-transparent px-2 pr-7 text-[0.74rem] text-foreground outline-none sm:h-14 sm:px-4 sm:pr-12 sm:text-[1.05rem]"
                 >
                   {incomeMethodOptions.map((option) => (
@@ -337,13 +360,14 @@ export function AddIncomeModal({
               <FieldShell>
                 <select
                   value={formState.installments}
+                  disabled={!supportsIncomeInstallments(formState.method)}
                   onChange={(event) =>
                     setFormState((current) => ({
                       ...current,
                       installments: event.target.value,
                     }))
                   }
-                  className="h-9 w-full appearance-none rounded-[0.55rem] border-0 bg-transparent px-2 pr-7 text-[0.74rem] text-foreground outline-none sm:h-14 sm:px-4 sm:pr-12 sm:text-[1.05rem]"
+                  className="h-9 w-full appearance-none rounded-[0.55rem] border-0 bg-transparent px-2 pr-7 text-[0.74rem] text-foreground outline-none disabled:cursor-not-allowed disabled:opacity-60 sm:h-14 sm:px-4 sm:pr-12 sm:text-[1.05rem]"
                 >
                   {installmentOptions.map((option) => (
                     <option key={option} value={option}>
